@@ -1,13 +1,15 @@
 import { ImageOff } from 'lucide-react'
 import { useState } from 'react'
 
+import { Zoomable } from './Lightbox'
 import { cn } from '../../lib/cn'
 
 /**
  * A fixed-size rounded image (2rem, 40px in the shell, by default; resize with `className`), with a grey placeholder
- * when there is no `src` or it fails to load.
+ * when there is no `src` or it fails to load. `zoom` opens it full screen: `true` for this image (`full` being the
+ * large file, if `src` is a thumbnail), or `{ images, index }` to step through its group.
  */
-export function Thumb({ src, alt = '', className }) {
+export function Thumb({ src, full, alt = '', zoom = false, className }) {
     const [failed, setFailed] = useState(null)
     const frame = cn('size-8 shrink-0 overflow-hidden rounded border border-zinc-200 bg-zinc-100', className)
 
@@ -19,5 +21,11 @@ export function Thumb({ src, alt = '', className }) {
         )
     }
 
-    return <img src={src} alt={alt} loading="lazy" onError={() => setFailed(src)} className={cn('object-cover', frame)} />
+    const image = <img src={src} alt={alt} loading="lazy" onError={() => setFailed(src)} className={cn('object-cover', frame)} />
+
+    if (!zoom) {
+        return image
+    }
+
+    return zoom === true ? <Zoomable src={src} full={full} alt={alt}>{image}</Zoomable> : <Zoomable images={zoom.images} index={zoom.index}>{image}</Zoomable>
 }

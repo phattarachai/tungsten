@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 
-import { SearchInput } from '@tungsten'
+import { SearchInput, Thumb, Zoomable } from '@tungsten'
 
 function mount(element) {
     const host = document.createElement('div')
@@ -60,6 +60,66 @@ const checks = {
         box.unmount()
     },
 }
+
+const viewer = () => document.querySelector('[role="dialog"]')
+const key = (name, extra = {}) => act(() => document.dispatchEvent(new window.KeyboardEvent('keydown', { key: name, bubbles: true, ...extra })))
+
+Object.assign(checks, {
+    'Zoomable opens its group full screen: focus on ×, body locked, arrows step, Tab stays inside, Escape restores': () => {
+        const images = [
+            { src: '/a-thumb.jpg', full: '/a.jpg', alt: 'สลิปโอน' },
+            { src: '/b.jpg', alt: 'คูปอง' },
+        ]
+        const box = mount(
+            <Zoomable images={images} index={0}>
+                <img src="/a-thumb.jpg" alt="" />
+            </Zoomable>,
+        )
+        const trigger = document.querySelector('button[aria-label="ดูรูป สลิปโอน"]')
+
+        act(() => trigger.focus())
+        act(() => trigger.click())
+
+        assert.ok(viewer(), 'the viewer opens')
+        assert.equal(viewer().querySelector('img').getAttribute('src'), '/a.jpg', 'shows the full image')
+        assert.match(viewer().textContent, /สลิปโอน\s*1 \/ 2/)
+        assert.equal(document.body.style.overflow, 'hidden')
+        assert.equal(document.activeElement.getAttribute('aria-label'), 'ปิด')
+
+        key('ArrowRight')
+        assert.match(viewer().textContent, /คูปอง\s*2 \/ 2/)
+
+        const buttons = [...viewer().querySelectorAll('button')]
+        act(() => buttons.at(-1).focus())
+        key('Tab')
+        assert.equal(document.activeElement, buttons[0], 'Tab wraps to the first control')
+
+        key('Escape')
+        assert.equal(viewer(), null)
+        assert.equal(document.body.style.overflow, '')
+        assert.equal(document.activeElement, trigger, 'focus goes back to the thumbnail')
+        box.unmount()
+    },
+
+    'a click outside the image closes the viewer, a click on it does not': () => {
+        const box = mount(<Thumb src="/p.jpg" alt="สินค้า" zoom />)
+
+        act(() => document.querySelector('button[aria-label="ดูรูป สินค้า"]').click())
+        act(() => viewer().querySelector('img').click())
+        assert.ok(viewer())
+
+        act(() => viewer().click())
+        assert.equal(viewer(), null)
+        box.unmount()
+    },
+
+    'a Thumb without an image is not zoomable': () => {
+        const box = mount(<Thumb src={null} alt="ไม่มีรูป" zoom />)
+
+        assert.equal(document.querySelector('button[aria-label^="ดูรูป"]'), null)
+        box.unmount()
+    },
+})
 
 for (const [name, check] of Object.entries(checks)) {
     await check()

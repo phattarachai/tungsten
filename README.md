@@ -445,7 +445,8 @@ Route::post('ui-kit/toast', UiKitToastController::class)->name('ui-kit.toast');
 - **Lists**: `DataTable` (sortable, selection, row actions, groups with subtotals, sticky columns), `DataList`,
   `TreeTable`, `Filters` (bar or menu), `FilterBar` / `FilterField`, `FilterMenu`, `FilterChip`, `TableToolbar`, `Pagination` (optional per-page picker), `Pills` (scrolls
   sideways when narrow), `SearchInput`, `Dropdown`, `ColumnsMenu`, `SelectionBar`, `AvatarStack` (the first `max`,
-  then +N with the rest in its tooltip), `Thumb` (a 2rem rounded image, grey placeholder without one).
+  then +N with the rest in its tooltip), `Thumb` (a 2rem rounded image, grey placeholder without one; `zoom`
+  opens it full screen).
   `DataTable`, `FilterBar`, `TableToolbar` and `Pagination` take `flush` to drop their frame and side padding, for a
   table on a sheet or a bare page. A `DataTable` column takes `valign: 'top'` for multi-line cells (or the table its
   own `valign`), and `plainLinks` makes `rowHref` render a plain `<a>` for rows that open non-Inertia pages.
@@ -458,6 +459,23 @@ Route::post('ui-kit/toast', UiKitToastController::class)->name('ui-kit.toast');
   `ActionMenu`, `RowActions`, `ButtonBar`, `ButtonGroup`, `SyncButton`, `Badge` (colour tones and status tones, below).
 
 Components take `className` where it makes sense; nothing stops a page from using plain elements beside them.
+
+### Lightbox
+
+Every image can open full screen. AppLayout provides one shared viewer; outside it, `Zoomable` brings its own.
+
+```jsx
+<Thumb src={product.thumb} full={product.image} alt={product.name} zoom />            // one image
+<Thumb src={slip.url} alt="สลิป" zoom={{ images: slips, index }} />                    // step through a group
+<Avatar person={user} zoom />
+<Zoomable images={[{ src, full, alt }]} index={0}><img … /></Zoomable>                // any markup
+const open = useLightbox(); open(images, index)                                        // from code
+```
+
+Images are `{ src, full?, alt? }` (`full` is the large file when `src` is a thumbnail). The viewer shows the image with
+its caption and "n / N"; ← / → and the side buttons step through the group; Escape, the × or a click outside the
+image closes it. It traps focus (focus starts on ×, goes back to the thumbnail on close) and locks the page scroll.
+Nothing renders on the server.
 
 ### Links: a string or `{url, method}`
 

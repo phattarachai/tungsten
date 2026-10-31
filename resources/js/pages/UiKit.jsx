@@ -60,6 +60,14 @@ import { useColumnVisibility } from '../lib/useColumnVisibility'
 
 const RAMP = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950]
 const BADGE_TONES = ['zinc', 'brand', 'green', 'amber', 'red', 'blue']
+const swatch = (fill, label) =>
+    `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420"><rect width="640" height="420" fill="${fill}"/><text x="320" y="225" font-size="44" text-anchor="middle" fill="#fff" font-family="sans-serif">${label}</text></svg>`)}`
+const GALLERY = [
+    { src: swatch('#0d9488', 'สลิป'), alt: 'สลิปโอนเงิน SO-10241' },
+    { src: swatch('#b45309', 'คูปอง'), alt: 'คูปองส่วนลด 10%' },
+    { src: swatch('#1f57b0', 'สินค้า'), alt: 'วิตามินซี 1000 มก.' },
+]
+
 const STATUS_TONES_DEMO = [
     ['draft', 'ร่าง'],
     ['waiting', 'รอลูกค้าชำระ'],
@@ -266,6 +274,11 @@ function Chips() {
                     <Badge key={tone} tone={tone}>
                         {tone}
                     </Badge>
+                ))}
+            </Row>
+            <Row label="Lightbox">
+                {GALLERY.map((image, index) => (
+                    <Thumb key={image.alt} src={image.src} alt={image.alt} zoom={{ images: GALLERY, index }} />
                 ))}
             </Row>
             <Row label="status tones">

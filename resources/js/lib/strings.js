@@ -5,6 +5,10 @@
  */
 export const strings = {
     close: 'ปิด',
+    image: 'รูปภาพ',
+    viewImage: (alt) => (alt ? `ดูรูป ${alt}` : 'ดูรูป'),
+    previousImage: 'รูปก่อนหน้า',
+    nextImage: 'รูปถัดไป',
     cancel: 'ยกเลิก',
     save: 'บันทึก',
     confirm: 'ยืนยัน',
