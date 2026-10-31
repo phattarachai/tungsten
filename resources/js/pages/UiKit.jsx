@@ -447,15 +447,13 @@ const SHIPPING = [
 
 const FILTERS = [
     {
-        key: 'period',
-        label: 'ช่วงเวลา',
-        type: 'buttons',
-        default: 'all',
+        key: 'date',
+        label: 'วันที่สั่ง',
+        type: 'dates',
         options: [
             { value: 'today', label: 'วันนี้' },
             { value: 'week', label: '7 วัน' },
             { value: 'month', label: '30 วัน' },
-            { value: 'all', label: 'ทั้งหมด' },
         ],
     },
     {
@@ -480,7 +478,7 @@ const FILTERS = [
         ],
     },
     { key: 'vip', label: 'ลูกค้า VIP', type: 'toggle' },
-    { key: 'shipping', label: 'จัดส่ง', type: 'pills', row: 'below', default: 'pending', options: SHIPPING },
+    { key: 'shipping', label: 'จัดส่ง', type: 'buttons', default: 'pending', options: SHIPPING },
 ]
 
 function Filtering() {
@@ -513,7 +511,7 @@ function Filtering() {
                     filters={FILTERS}
                     values={values}
                     onChange={(changes) => setValues((current) => ({ ...current, ...changes }))}
-                    search={<SearchInput placeholder="ค้นหาเลขที่ ชื่อ เบอร์โทร" />}
+                    search={{ value: values.search, placeholder: 'ค้นหาเลขที่ ชื่อ เบอร์โทร', className: 'w-48' }}
                 />
                 <DataTable flush columns={ORDER_COLUMNS} rows={ORDERS} rowHref={() => '#filters'} plainLinks />
                 <Pagination flush paginator={{ current_page: 1, last_page: 4, per_page: perPage, total: 96, from: 1, to: Math.min(perPage, 96) }} onPage={() => {}} onPerPage={setPerPage} />
