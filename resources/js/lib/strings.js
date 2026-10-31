@@ -30,6 +30,7 @@ export const strings = {
     filters: 'ตัวกรอง',
     clearFilter: 'ล้างตัวกรองนี้',
     clearFilters: 'ล้างตัวกรองทั้งหมด',
+    customDates: 'วันที่กำหนดเอง',
     actions: 'การทำงาน',
     actionsFor: (title) => `การทำงาน ${title}`,
     columns: 'คอลัมน์',

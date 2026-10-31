@@ -370,13 +370,16 @@ bar above the table with every filter shown (`bar`), or as a dropdown with a chi
 that stays one line). A project picks its default in `config('tungsten.filter_layout')`, a panel with
 `->filterLayout('menu')`, and a page with `<Filters layout="menu">`.
 
+The bar has the project-wide list shape: **row 1** the date presets (and the custom range when picked); **row 2** the
+search first, then the other filters, then a clear-all icon while anything is set (it also empties the search);
+filters with `row: 'below'` make a third row.
+
 ```jsx
 const filters = [
-    { key: 'period', label: 'ช่วงเวลา', type: 'buttons', default: 'all', options: periods },
-    { key: 'channel', label: 'ช่องทาง', type: 'select', multiple: true, options: channels },
-    { key: 'paid', label: 'ชำระเงิน', type: 'select', options: paidStates },
-    { key: 'vip', label: 'ลูกค้า VIP', type: 'toggle' },
-    tab === 'shipping' && { key: 'shipping', label: 'จัดส่ง', type: 'pills', row: 'below', options: shippingTabs },
+    { key: 'date', label: 'วันที่สั่ง', type: 'dates', options: [{ value: 'today', label: 'วันนี้' }, { value: '7d', label: '7 วัน' }] },
+    { key: 'type', label: 'ประเภท', type: 'select', multiple: true, options: types },
+    { key: 'channel', label: 'ช่องทาง', type: 'select', options: channels },
+    tab === 'shipping' && { key: 'shipping', label: 'สถานะการจัดส่ง', type: 'buttons', default: 'pending', options: shippingStates },
 ]
 
 <Filters
@@ -384,8 +387,7 @@ const filters = [
     filters={filters}
     values={orders.filters}
     onChange={query.setFilters}
-    start={<Pills options={tabs} value={tab} onChange={(value) => query.setFilter('tab', value)} />}
-    search={<SearchInput value={orders.search} onSearch={query.setSearch} />}
+    search={{ value: orders.search, placeholder: 'ค้นหาเลขที่ ชื่อ เบอร์โทร' }}
 />
 <DataTable flush columns={columns} rows={orders.rows} sort={orders.sort} onSort={query.setSort} />
 <Pagination flush paginator={orders.pagination} onPage={query.setPage} onPerPage={query.setPerPage} />
@@ -393,13 +395,17 @@ const filters = [
 
 | Field | Meaning |
 |---|---|
-| `type` | `select` (`Combobox`, `multiple` for an array), `buttons` (segmented), `pills`, `toggle` (`1` or null), `custom` (`render({ value, onChange, size })`) |
+| `type` | `select` (`Combobox`, `multiple` for an array), `buttons` (segmented), `pills`, `toggle` (`1` or null), `dates`, `custom` (`render({ value, values, onChange, change, size })`) |
+| `dates` | presets from `options`, with ทั้งหมด first and วันที่กำหนดเอง last; the custom one opens a range picker writing the `from` / `to` keys (rename with `from:` / `to:`). A preset clears the range and the range clears the preset. Goes to row 1. |
 | `default` | the value that counts as "not filtered" (no chip, no clear) |
-| `row: 'below'` | the bar's second row |
-| `chip(value)` | the chip's label, instead of `label: option` |
+| `row` | `'top'` (row 1), `'below'` (row 3); row 2 when unset (row 1 for `dates`) |
+| `chip(value, values)` | the chip's label, instead of `label: option` |
 
-`onChange` gets `{ key: value }` changes (null clears), which is what `useTableQuery().setFilters` takes. The parts are
-exported for a layout of your own: `FilterBar` (+ `FilterField`), `FilterMenu`, `FilterChip`.
+`search` is `{ value, placeholder?, onSearch?, key? }`: a `SearchInput` leading row 2 that writes `search` through
+`onChange` and that clear-all empties. A node works too, drawn as given. `start` leads row 1 (tabs, say). In the bar,
+`buttons` and `pills` filters outside row 1 show their label. `onChange` gets `{ key: value }` changes (null
+clears), which is what `useTableQuery().setFilters` takes. The parts are exported for a layout of your own:
+`FilterBar` (`top`, `end`, `below`, + `FilterField`), `FilterMenu`, `FilterChip`.
 
 `onPerPage` adds a 25 / 50 / 100 picker (`perPageOptions` to change it); the server allows the same values with
 `->perPage(25, [25, 50, 100])`.

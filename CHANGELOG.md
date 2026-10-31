@@ -7,6 +7,18 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.5 — 2026-10-31
+
+The project's list shape for `<Filters layout="bar">`:
+
+- Row 1: the date presets and custom range; row 2: the search first, then the other filters, then a clear-all icon
+  (`FilterX`, "ล้างตัวกรองทั้งหมด") that also empties the search; `row: 'below'` filters a third row. Was: search at
+  the end of row 1 and a text clear-all.
+- New filter type `dates` (presets + ทั้งหมด + วันที่กำหนดเอง with a range picker on `from` / `to`), in both layouts.
+- `search` may be `{ value, placeholder, onSearch?, key? }`, drawn as a `SearchInput` that clear-all resets; a node
+  still works. `row: 'top'` places any filter in row 1; `buttons` / `pills` outside it show their label.
+- `FilterBar` takes a `top` row. The menu layout is unchanged.
+
 ## v0.2.4 — 2026-10-31
 
 - **Optional panel login**: `->login(guard:, labels:, forgotPasswordUrl:, authorize:)` adds `{path}/login` and
