@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Phattarachai\Tungsten;
 
+use Illuminate\Routing\Events\PreparingResponse;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Override;
@@ -11,6 +13,7 @@ use Phattarachai\Tungsten\Console\InstallCommand;
 use Phattarachai\Tungsten\Console\MakePageCommand;
 use Phattarachai\Tungsten\Http\Controllers\LoginController;
 use Phattarachai\Tungsten\Http\Middleware\HandleTungstenRequests;
+use Phattarachai\Tungsten\Listeners\GuardReservedProps;
 
 class TungstenServiceProvider extends ServiceProvider
 {
@@ -29,6 +32,7 @@ class TungstenServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'tungsten');
+        Event::listen(PreparingResponse::class, GuardReservedProps::class);
 
         if ($this->app->runningInConsole()) {
             $this->publishes([__DIR__.'/../config/tungsten.php' => config_path('tungsten.php')], 'tungsten-config');

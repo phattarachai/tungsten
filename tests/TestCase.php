@@ -16,6 +16,7 @@ use Phattarachai\Tungsten\Http\Controllers\UiKitToastController;
 use Phattarachai\Tungsten\Pages\HomePage;
 use Phattarachai\Tungsten\Pages\UiKitPage;
 use Phattarachai\Tungsten\Tests\Fixtures\AdminPanelProvider;
+use Phattarachai\Tungsten\Tests\Fixtures\Http\ClashingPropsController;
 use Phattarachai\Tungsten\Tests\Fixtures\Models\User;
 use Phattarachai\Tungsten\Tests\Fixtures\ToolsPanelProvider;
 use Phattarachai\Tungsten\Tungsten;
@@ -66,6 +67,7 @@ abstract class TestCase extends Orchestra
             $router->get('/', HomePage::class)->name('dashboard')->nav('หน้าหลัก', icon: 'layout-grid', sort: -1);
             $router->get('ui-kit', UiKitPage::class)->name('ui-kit')->nav('UI Kit', icon: 'palette', sort: 1000);
             $router->post('ui-kit/toast', UiKitToastController::class)->name('ui-kit.toast');
+            $router->get('clashing-props', ClashingPropsController::class)->name('clashing-props');
         });
 
         Tungsten::routes('tools', function () use ($router): void {

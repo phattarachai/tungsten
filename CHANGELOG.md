@@ -7,6 +7,13 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.7 — 2026-10-31
+
+- Guard: a panel page returning a prop the panel shares (`panel`, `panels`, `nav`, `auth`, `flash`, `errors`) now
+  throws `ReservedPropName` while debugging and is reported in production, instead of silently replacing the shared
+  value and crashing `AppLayout`. Checked on Laravel's `PreparingResponse` event, so it covers `Page` classes and plain
+  controllers alike. `breadcrumbs` and `layout` stay overridable.
+
 ## v0.2.6 — 2026-10-31
 
 - Fix: after the Filters clear-all, the search text stayed in the box. `SearchInput` (with `onSearch`) now follows

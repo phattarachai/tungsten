@@ -562,6 +562,10 @@ only. Sizes are rem only — the shell scales the rem base to 125%, so write `te
 ## Things that will bite you
 
 - **Inertia v3 layout callbacks get no `.props`.** A layout or toolbar reads page props with `usePage()`.
+- **A page prop can't reuse a shared prop's name.** Inertia lets page props win, so a page returning `panels` (or
+  `panel`, `nav`, `auth`, `flash`, `errors`) would replace the panel's own and crash the shell. Tungsten checks every
+  panel response: it throws `ReservedPropName` while `app.debug` is on and reports it otherwise. Rename the prop.
+  `breadcrumbs` and `layout` are meant to be overridden by a page.
 - **`form.transform()` doesn't chain** — call it, then `form.post()`.
 - **Breadcrumbs use `find()`, never `findOrFail()`** — a missing record must give the page's own 404, not a crash in
   the trail.
