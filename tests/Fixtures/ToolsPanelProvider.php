@@ -19,6 +19,6 @@ class ToolsPanelProvider extends PanelProvider
     {
         app(PanelRegistry::class)->entry(id: 'filament', label: 'ระบบเดิม', url: '/', short: 'v1');
 
-        return $panel->label('Tools')->rail('#1d1f36')->logoutUrl(false)->layout(['sheet' => true, 'mainClassName' => 'tools-main'])->filterLayout('menu');
+        return $panel->label('Tools')->brand('Tools', icon: 'wrench', logo: 'https://cdn.example.com/mark.svg')->rail('#1d1f36')->logoutUrl(false)->layout(['sheet' => true, 'mainClassName' => 'tools-main'])->filterLayout('menu');
     }
 }

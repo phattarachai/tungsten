@@ -10,7 +10,7 @@ function Brand({ panel }) {
 
     return (
         <div className="mb-4 flex items-center justify-center gap-2">
-            <PanelChip entry={{ color: panel?.color, short: panel?.short, icon: brand?.icon ?? panel?.icon }} className="size-7 text-[0.6875rem]" />
+            <PanelChip entry={{ color: panel?.color, short: panel?.short, icon: brand?.icon ?? panel?.icon, logo: brand?.logo }} className="size-7 text-[0.6875rem]" />
             <span className="text-[0.9375rem] font-semibold text-zinc-900">{brand?.label ?? panel?.label}</span>
             {brand?.tag && <span className="rounded bg-zinc-200 px-1 text-[0.625rem] leading-4 font-semibold text-zinc-500">{brand.tag}</span>}
         </div>

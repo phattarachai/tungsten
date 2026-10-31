@@ -150,7 +150,7 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->path('admin')                      // mounted at /admin
             ->label('ร้านค้า')
-            ->brand('My Shop', 'store', 'v2')    // sidebar head: name, icon, tag
+            ->brand('My Shop', tag: 'v2', logo: 'images/brand-mark.svg')   // sidebar head + login: name, tag, mark
             ->brandColor('#0d9488')              // accent; or theme it in CSS, see "Theme"
             ->middleware(['panel.enabled'])      // on top of config('tungsten.middleware')
             ->navigationGroups(['การขาย', 'ลูกค้า', 'ระบบ'])
@@ -163,6 +163,12 @@ Other options: `->ability('…' | null)`, `->sets([...])`, `->routes(fn () => �
 `->help(fn ($routeName) => $url)`, `->login(...)` (see Sign-in), `->logoutUrl('logout' | url | closure | false)`, `->rail('#14262a')` (sidebar tint),
 `->filterLayout('bar' | 'menu')` (how `<Filters>` draws), `->layout(['sheet' => true])` (panel-wide `AppLayout` defaults; a route's `->layout()` overrides them key by key),
 `->color()` / `->icon()` / `->short()` (switcher chip), `->business()`, `->replaces('filament')`.
+
+**The brand mark** on the sidebar head and the login page is a chip in the panel's `->color()`, holding (first that is
+set) `brand(logo:)` — a single-colour SVG drawn white as a CSS mask; a public path goes through `asset()`, a full URL
+is kept — then `brand(icon:)`, then the panel's `short` letters. The switcher's rows keep their own chips. The tab
+icon is `config('tungsten.favicon')`: one path, or several for the browser to choose from
+(`['favicon.png', 'images/brand-mark.svg']`, SVG last), plus `tungsten.apple_touch_icon`.
 
 **The switcher** lists every panel the user may open. Add a row for something that isn't a Tungsten panel — the
 Filament admin you are migrating from — and `->replaces('filament')` on the new panel draws it as a chip on that row:

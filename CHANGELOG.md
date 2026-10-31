@@ -7,6 +7,14 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## Unreleased
+
+- **Brand logo**: `->brand($label, icon:, tag:, logo:)` takes a single-colour SVG (public path or URL), drawn white as
+  a CSS mask on the panel-colour chip in the sidebar head, the topbar's compact switcher and the login page; logo,
+  then icon, then `short`. Switcher rows are unchanged.
+- **Favicon pair**: `tungsten.favicon` takes one path or a list (each linked with its type, e.g. PNG then SVG), and
+  `tungsten.apple_touch_icon` adds the home-screen icon.
+
 ## v0.2.7 — 2026-10-31
 
 - Guard: a panel page returning a prop the panel shares (`panel`, `panels`, `nav`, `auth`, `flash`, `errors`) now

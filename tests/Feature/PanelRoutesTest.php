@@ -93,6 +93,28 @@ it('lets a page replace the breadcrumbs, ending the parent trail in a record nam
             ->where('breadcrumbs', [['label' => 'การขาย'], ['label' => 'คำสั่งซื้อ', 'url' => url('/admin/orders')], ['label' => 'SO-9']]));
 });
 
+it('shares the brand with its logo as a URL: a public path through asset(), a full URL kept', function (): void {
+    $this->actingAs($this->admin())
+        ->get('/admin/orders')
+        ->assertInertia(fn (Assert $page): Assert => $page->where('panel.brand', ['label' => 'ร้านค้า', 'icon' => null, 'tag' => 'v2', 'logo' => asset('images/brand-mark.svg')]));
+
+    $this->actingAs($this->admin())
+        ->get('/tools')
+        ->assertInertia(fn (Assert $page): Assert => $page->where('panel.brand.logo', 'https://cdn.example.com/mark.svg'));
+});
+
+it('links a favicon pair and an apple touch icon', function (): void {
+    config(['tungsten.favicon' => ['favicon.png', 'images/brand-mark.svg'], 'tungsten.apple_touch_icon' => 'apple-touch-icon.png']);
+
+    $this->actingAs($this->admin())
+        ->get('/admin/orders')
+        ->assertSeeInOrder([
+            'rel="icon" href="'.asset('favicon.png').'"', 'type="image/png"',
+            'rel="icon" href="'.asset('images/brand-mark.svg').'"', 'type="image/svg+xml"',
+            'rel="apple-touch-icon" href="'.asset('apple-touch-icon.png').'"',
+        ], false);
+});
+
 it('puts the panel brand colour on the root element', function (): void {
     $this->actingAs($this->admin())
         ->get('/admin/orders')

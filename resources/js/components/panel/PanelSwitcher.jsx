@@ -79,7 +79,7 @@ export function PanelSwitcher({ compact = false }) {
                     compact ? 'border border-zinc-200 px-1.5 py-0.5 text-zinc-800 hover:bg-topbar-hover' : 'w-full px-2 py-1.5 text-rail-ink-active hover:bg-rail-hover',
                 )}
             >
-                <PanelChip entry={brand ? { ...current, icon: brand.icon } : current} className={compact ? 'size-5 text-[0.5625rem]' : undefined} />
+                <PanelChip entry={brand ? { ...current, icon: brand.icon, logo: brand.logo } : current} className={compact ? 'size-5 text-[0.5625rem]' : undefined} />
                 <span className="truncate">{brand?.label ?? current.label}</span>
                 {brand?.tag && (
                     <span className={cn('shrink-0 rounded px-1 text-[0.625rem] leading-4 font-semibold', compact ? 'bg-zinc-100 text-zinc-500' : 'bg-rail-active text-rail-muted')}>{brand.tag}</span>

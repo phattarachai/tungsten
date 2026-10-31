@@ -15,6 +15,7 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->path('admin')
             ->label('ร้านค้า')
+            ->brand('ร้านค้า', tag: 'v2', logo: 'images/brand-mark.svg')
             ->description('คำสั่งซื้อ · ลูกค้า')
             ->color('#0d9488')
             ->brandColor('#0d9488')

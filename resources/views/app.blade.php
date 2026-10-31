@@ -12,8 +12,11 @@
 
     <title inertia>{{ config('app.name') }}</title>
 
-    @if (config('tungsten.favicon'))
-        <link rel="icon" href="{{ asset(config('tungsten.favicon')) }}">
+    @foreach (array_filter((array) config('tungsten.favicon')) as $tungstenIcon)
+        <link rel="icon" href="{{ asset($tungstenIcon) }}" @if (str_ends_with($tungstenIcon, '.svg')) type="image/svg+xml" @elseif (str_ends_with($tungstenIcon, '.png')) type="image/png" @endif>
+    @endforeach
+    @if (config('tungsten.apple_touch_icon'))
+        <link rel="apple-touch-icon" href="{{ asset(config('tungsten.apple_touch_icon')) }}">
     @endif
 
     @viteReactRefresh

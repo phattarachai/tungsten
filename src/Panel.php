@@ -55,7 +55,7 @@ class Panel
     private ?string $brandColor = null;
 
     /**
-     * @var array{label: string, icon: ?string, tag: ?string}|null
+     * @var array{label: string, icon: ?string, tag: ?string, logo: ?string}|null
      */
     private ?array $brand = null;
 
@@ -225,11 +225,13 @@ class Panel
     }
 
     /**
-     * What the sidebar head shows instead of the panel label: an app name, an icon, an optional tag such as "v2".
+     * What the sidebar head and the login page show instead of the panel label: an app name, an optional tag such as
+     * "v2", and the chip's mark: `$logo` (a single-colour SVG, a URL or a public path, drawn white on the panel colour)
+     * else `$icon` else the panel's `short` letters.
      */
-    public function brand(string $label, ?string $icon = null, ?string $tag = null): self
+    public function brand(string $label, ?string $icon = null, ?string $tag = null, ?string $logo = null): self
     {
-        $this->brand = ['label' => $label, 'icon' => $icon, 'tag' => $tag];
+        $this->brand = ['label' => $label, 'icon' => $icon, 'tag' => $tag, 'logo' => $logo];
 
         return $this;
     }
@@ -420,11 +422,19 @@ class Panel
     }
 
     /**
-     * @return array{label: string, icon: ?string, tag: ?string}|null
+     * The brand with its logo as a URL: a path goes through `asset()`, a full URL or a root path is kept.
+     *
+     * @return array{label: string, icon: ?string, tag: ?string, logo: ?string}|null
      */
     public function getBrand(): ?array
     {
-        return $this->brand;
+        $logo = $this->brand['logo'] ?? null;
+
+        if ($this->brand === null || $logo === null || str_starts_with($logo, '/') || str_contains($logo, '://')) {
+            return $this->brand;
+        }
+
+        return [...$this->brand, 'logo' => asset($logo)];
     }
 
     public function isBusiness(): bool
