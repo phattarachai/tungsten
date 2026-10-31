@@ -26,6 +26,12 @@ return [
     'favicon' => null,
 
     /*
+    | How `<Filters>` lays out a list's filters: 'bar' shows them all above the table, 'menu' puts them in a dropdown
+    | with a chip per active filter. A panel overrides it with `->filterLayout()`, a page with `<Filters layout>`.
+    */
+    'filter_layout' => 'bar',
+
+    /*
     | The panel's root Blade view loads this Vite entry (the one `tungsten:install` writes), and modulepreloads the
     | current page's chunk from `pages`. Page components are named relative to `pages`, e.g. `panel/orders/Index`.
     */

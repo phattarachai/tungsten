@@ -23,8 +23,7 @@ import {
     DateTimePicker,
     DetailList,
     Dialog,
-    FilterBar,
-    FilterField,
+    Filters,
     FormDialog,
     FormField,
     GroupedNav,
@@ -430,53 +429,76 @@ const SHIPPING = [
     { value: 'returned', label: 'ตีกลับ', count: 2 },
 ]
 
-function Filters() {
-    const [preset, setPreset] = useState('today')
-    const [channels, setChannels] = useState(['line'])
-    const [shipping, setShipping] = useState('pending')
+const FILTERS = [
+    {
+        key: 'period',
+        label: 'ช่วงเวลา',
+        type: 'buttons',
+        default: 'all',
+        options: [
+            { value: 'today', label: 'วันนี้' },
+            { value: 'week', label: '7 วัน' },
+            { value: 'month', label: '30 วัน' },
+            { value: 'all', label: 'ทั้งหมด' },
+        ],
+    },
+    {
+        key: 'channel',
+        label: 'ช่องทาง',
+        type: 'select',
+        multiple: true,
+        options: [
+            { value: 'line', label: 'LINE' },
+            { value: 'web', label: 'เว็บไซต์' },
+            { value: 'shopee', label: 'Shopee' },
+            { value: 'lazada', label: 'Lazada' },
+        ],
+    },
+    {
+        key: 'paid',
+        label: 'ชำระเงิน',
+        type: 'select',
+        options: [
+            { value: 'paid', label: 'ชำระแล้ว' },
+            { value: 'unpaid', label: 'ยังไม่ชำระ' },
+        ],
+    },
+    { key: 'vip', label: 'ลูกค้า VIP', type: 'toggle' },
+    { key: 'shipping', label: 'จัดส่ง', type: 'pills', row: 'below', default: 'pending', options: SHIPPING },
+]
+
+function Filtering() {
+    const [layout, setLayout] = useState('bar')
+    const [values, setValues] = useState({ channel: ['line'], shipping: 'pending' })
     const [perPage, setPerPage] = useState(25)
 
     return (
-        <Section id="filters" title="FilterBar · AvatarStack · Thumb" hint="ตัวกรองหลักแสดงเหนือตาราง ไม่ต้องกดเปิด" flush>
+        <Section
+            id="filters"
+            title="Filters · AvatarStack · Thumb"
+            hint="ตัวกรองชุดเดียว แสดงได้สองแบบ"
+            actions={
+                <ButtonGroup
+                    size="sm"
+                    options={[
+                        { value: 'bar', label: 'bar' },
+                        { value: 'menu', label: 'menu' },
+                    ]}
+                    value={layout}
+                    onChange={setLayout}
+                />
+            }
+            flush
+        >
             <div className="px-2.5">
-                <FilterBar
+                <Filters
                     flush
-                    end={<SearchInput placeholder="ค้นหาเลขที่ ชื่อ เบอร์โทร" />}
-                    below={<Pills options={SHIPPING} value={shipping} onChange={setShipping} />}
-                >
-                    <ButtonGroup
-                        size="sm"
-                        options={[
-                            { value: 'today', label: 'วันนี้' },
-                            { value: 'week', label: '7 วัน' },
-                            { value: 'month', label: '30 วัน' },
-                            { value: 'all', label: 'ทั้งหมด' },
-                        ]}
-                        value={preset}
-                        onChange={setPreset}
-                    />
-                    <Combobox
-                        size="sm"
-                        multiple
-                        clearable
-                        label="ช่องทาง"
-                        options={[
-                            { value: 'line', label: 'LINE' },
-                            { value: 'web', label: 'เว็บไซต์' },
-                            { value: 'shopee', label: 'Shopee' },
-                            { value: 'lazada', label: 'Lazada' },
-                        ]}
-                        value={channels}
-                        onChange={setChannels}
-                    />
-                    <FilterField label="ชำระเงิน">
-                        <Select size="sm" defaultValue="">
-                            <option value="">ทั้งหมด</option>
-                            <option value="paid">ชำระแล้ว</option>
-                            <option value="unpaid">ยังไม่ชำระ</option>
-                        </Select>
-                    </FilterField>
-                </FilterBar>
+                    layout={layout}
+                    filters={FILTERS}
+                    values={values}
+                    onChange={(changes) => setValues((current) => ({ ...current, ...changes }))}
+                    search={<SearchInput placeholder="ค้นหาเลขที่ ชื่อ เบอร์โทร" />}
+                />
                 <DataTable flush columns={ORDER_COLUMNS} rows={ORDERS} rowHref={() => '#filters'} plainLinks />
                 <Pagination flush paginator={{ current_page: 1, last_page: 4, per_page: perPage, total: 96, from: 1, to: Math.min(perPage, 96) }} onPage={() => {}} onPerPage={setPerPage} />
             </div>
@@ -729,7 +751,7 @@ export default function UiKit({ toastUrl }) {
                 </SectionGrid>
                 <SectionGrid min="36rem">
                     <GroupedTable />
-                    <Filters />
+                    <Filtering />
                     <Lists />
                     <Containers />
                     <Navs />

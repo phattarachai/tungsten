@@ -9,9 +9,12 @@ This file records anything released before that automation landed.
 
 ## v0.2.2 — 2026-10-31
 
-List parts for Filament-like lists, filters shown above the table (non-breaking):
+List parts for Filament-like lists (non-breaking):
 
-- `FilterBar` (+ `FilterField`): the filter row above a table, with `end` (search) and an optional `below` row.
+- `Filters`: one filter definition drawn as a bar above the table (`bar`) or a dropdown with active-filter chips
+  (`menu`). Default from `tungsten.filter_layout` (`bar`), per panel `->filterLayout()`, per page `layout`; shared as
+  `panel.filterLayout`.
+- `FilterBar` (+ `FilterField`), `FilterMenu`, `FilterChip`: the parts, for a layout of your own.
 - `AvatarStack`, `Thumb`.
 - `DataTable`: column `valign: 'top'` (or table `valign`), `plainLinks` for a plain `<a>` row link.
 - `Combobox size="sm"` with `label` (and a capped width) for a filter bar; `ButtonGroup size="sm"`.

@@ -161,7 +161,7 @@ class AdminPanelProvider extends PanelProvider
 
 Other options: `->ability('…' | null)`, `->sets([...])`, `->routes(fn () => …)`, `->navigationLinks([...])`,
 `->help(fn ($routeName) => $url)`, `->logoutUrl('logout' | url | closure | false)`, `->rail('#14262a')` (sidebar tint),
-`->layout(['sheet' => true])` (panel-wide `AppLayout` defaults; a route's `->layout()` overrides them key by key),
+`->filterLayout('bar' | 'menu')` (how `<Filters>` draws), `->layout(['sheet' => true])` (panel-wide `AppLayout` defaults; a route's `->layout()` overrides them key by key),
 `->color()` / `->icon()` / `->short()` (switcher chip), `->business()`, `->replaces('filament')`.
 
 **The switcher** lists every panel the user may open. Add a row for something that isn't a Tungsten panel — the
@@ -336,23 +336,41 @@ Blank values sort last in both directions, the model key breaks ties, and `->que
 builder for an export. In JSX, `useTableQuery()` gives `setSearch`, `setSort`, `setPage`, `setPerPage`, `setFilter`,
 `setFilters` and `clear`, each a `preserveState` visit that resets to page 1 (except `setPage`).
 
-A list with its main filters shown above the table, Filament-style, with no filter menu to open:
+**Filters: one definition, two layouts.** Describe a list's filters once and `<Filters>` draws them either as a
+bar above the table with every filter shown (`bar`), or as a dropdown with a chip per active filter (`menu`, a toolbar
+that stays one line). A project picks its default in `config('tungsten.filter_layout')`, a panel with
+`->filterLayout('menu')`, and a page with `<Filters layout="menu">`.
 
 ```jsx
-<FilterBar
+const filters = [
+    { key: 'period', label: 'ช่วงเวลา', type: 'buttons', default: 'all', options: periods },
+    { key: 'channel', label: 'ช่องทาง', type: 'select', multiple: true, options: channels },
+    { key: 'paid', label: 'ชำระเงิน', type: 'select', options: paidStates },
+    { key: 'vip', label: 'ลูกค้า VIP', type: 'toggle' },
+    tab === 'shipping' && { key: 'shipping', label: 'จัดส่ง', type: 'pills', row: 'below', options: shippingTabs },
+]
+
+<Filters
     flush
-    end={<SearchInput value={orders.search} onSearch={query.setSearch} />}
-    below={tab === 'shipping' && <Pills options={shippingTabs} value={filters.shipping} onChange={(value) => query.setFilter('shipping', value)} />}
->
-    <ButtonGroup size="sm" options={presets} value={filters.period} onChange={(value) => query.setFilter('period', value)} />
-    <Combobox size="sm" multiple clearable label="ช่องทาง" options={channels} value={filters.channel ?? []} onChange={(value) => query.setFilter('channel', value)} />
-    <FilterField label="ชำระเงิน">
-        <Select size="sm" value={filters.paid ?? ''} onChange={(event) => query.setFilter('paid', event.target.value)}>…</Select>
-    </FilterField>
-</FilterBar>
+    filters={filters}
+    values={orders.filters}
+    onChange={query.setFilters}
+    start={<Pills options={tabs} value={tab} onChange={(value) => query.setFilter('tab', value)} />}
+    search={<SearchInput value={orders.search} onSearch={query.setSearch} />}
+/>
 <DataTable flush columns={columns} rows={orders.rows} sort={orders.sort} onSort={query.setSort} />
 <Pagination flush paginator={orders.pagination} onPage={query.setPage} onPerPage={query.setPerPage} />
 ```
+
+| Field | Meaning |
+|---|---|
+| `type` | `select` (`Combobox`, `multiple` for an array), `buttons` (segmented), `pills`, `toggle` (`1` or null), `custom` (`render({ value, onChange, size })`) |
+| `default` | the value that counts as "not filtered" (no chip, no clear) |
+| `row: 'below'` | the bar's second row |
+| `chip(value)` | the chip's label, instead of `label: option` |
+
+`onChange` gets `{ key: value }` changes (null clears), which is what `useTableQuery().setFilters` takes. The parts are
+exported for a layout of your own: `FilterBar` (+ `FilterField`), `FilterMenu`, `FilterChip`.
 
 `onPerPage` adds a 25 / 50 / 100 picker (`perPageOptions` to change it); the server allows the same values with
 `->perPage(25, [25, 50, 100])`.
@@ -370,7 +388,7 @@ Route::post('ui-kit/toast', UiKitToastController::class)->name('ui-kit.toast');
 - **Shell**: `AppLayout` (`toolbar`, `sheet`, `flush`, `sidebar={false}`, `topbar={false}`, `className`, `mainClassName`), and
   its parts for a layout of your own: `Sidebar`, `Topbar`, `PanelSwitcher`, `FlashToast`, `TooltipLayer`, `Aside`.
 - **Lists**: `DataTable` (sortable, selection, row actions, groups with subtotals, sticky columns), `DataList`,
-  `TreeTable`, `FilterBar` / `FilterField`, `TableToolbar`, `Pagination` (optional per-page picker), `Pills` (scrolls
+  `TreeTable`, `Filters` (bar or menu), `FilterBar` / `FilterField`, `FilterMenu`, `FilterChip`, `TableToolbar`, `Pagination` (optional per-page picker), `Pills` (scrolls
   sideways when narrow), `SearchInput`, `Dropdown`, `ColumnsMenu`, `SelectionBar`, `AvatarStack` (the first `max`,
   then +N with the rest in its tooltip), `Thumb` (a 2rem rounded image, grey placeholder without one).
   `DataTable`, `FilterBar`, `TableToolbar` and `Pagination` take `flush` to drop their frame and side padding, for a

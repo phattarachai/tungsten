@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Inertia\Testing\AssertableInertia as Assert;
 use Phattarachai\Tungsten\Http\Middleware\HandleTungstenRequests;
+use Phattarachai\Tungsten\Panel;
 use Phattarachai\Tungsten\PanelRegistry;
 use Phattarachai\Tungsten\Tests\Fixtures\Models\Order;
 
@@ -194,6 +195,19 @@ it('shares the panel layout defaults, overridden key by key by the route', funct
         ->get('/tools/wide')
         ->assertInertia(fn (Assert $page): Assert => $page->where('layout', ['sheet' => false, 'mainClassName' => 'tools-main', 'flush' => true]));
 });
+
+it('shares the filter layout from config, overridden per panel', function (): void {
+    $this->actingAs($this->admin())->get('/admin/orders')->assertInertia(fn (Assert $page): Assert => $page->where('panel.filterLayout', 'bar'));
+    $this->actingAs($this->admin())->get('/tools')->assertInertia(fn (Assert $page): Assert => $page->where('panel.filterLayout', 'menu'));
+
+    config(['tungsten.filter_layout' => 'menu']);
+
+    $this->actingAs($this->admin())->get('/admin/orders')->assertInertia(fn (Assert $page): Assert => $page->where('panel.filterLayout', 'menu'));
+});
+
+it('refuses an unknown filter layout', function (): void {
+    Panel::make('x')->filterLayout('chips');
+})->throws(InvalidArgumentException::class);
 
 it('flashes a sample toast from the UI Kit page', function (): void {
     $this->actingAs($this->admin())
