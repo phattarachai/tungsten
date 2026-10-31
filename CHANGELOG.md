@@ -7,8 +7,11 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
-## Unreleased
+## v0.2.8 — 2026-10-31
 
+- **Switcher footer links**: `PanelRegistry::link($label, $url, icon:, image:, ability:)` (chains after `entry()`),
+  shared as `panel_links` and drawn under the switcher rows as a two-column grid of small links that open a new tab.
+  `panel_links` joins the reserved prop names.
 - **Brand logo**: `->brand($label, icon:, tag:, logo:)` takes a single-colour SVG (public path or URL), drawn white as
   a CSS mask on the panel-colour chip in the sidebar head, the topbar's compact switcher and the login page; logo,
   then icon, then `short`. Switcher rows are unchanged.

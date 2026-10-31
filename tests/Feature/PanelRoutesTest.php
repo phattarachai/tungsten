@@ -103,6 +103,19 @@ it('shares the brand with its logo as a URL: a public path through asset(), a fu
         ->assertInertia(fn (Assert $page): Assert => $page->where('panel.brand.logo', 'https://cdn.example.com/mark.svg'));
 });
 
+it('shares the switcher footer links, filtered by ability, with public paths made absolute', function (): void {
+    $store = ['label' => 'เว็บไซต์', 'url' => 'https://shop.example.com/', 'icon' => null, 'image' => asset('images/store.png')];
+    $metabase = ['label' => 'Metabase', 'url' => 'https://metabase.example.com', 'icon' => 'gauge', 'image' => null];
+
+    $this->actingAs($this->admin(1))
+        ->get('/admin/orders')
+        ->assertInertia(fn (Assert $page): Assert => $page->where('panel_links', [$store, $metabase]));
+
+    $this->actingAs($this->admin(2))
+        ->get('/admin/orders')
+        ->assertInertia(fn (Assert $page): Assert => $page->where('panel_links', [$store]));
+});
+
 it('links a favicon pair and an apple touch icon', function (): void {
     config(['tungsten.favicon' => ['favicon.png', 'images/brand-mark.svg'], 'tungsten.apple_touch_icon' => 'apple-touch-icon.png']);
 

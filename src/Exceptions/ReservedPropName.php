@@ -7,7 +7,7 @@ namespace Phattarachai\Tungsten\Exceptions;
 use LogicException;
 
 /**
- * A panel page returned a prop named like one the panel shares (`panel`, `panels`, `nav`, `auth`, `flash`): the page's
+ * A panel page returned a prop named like one the panel shares (`panel`, `panels`, `panel_links`, `nav`, `auth`, `flash`): the page's
  * value would replace the shared one and break the shell.
  */
 class ReservedPropName extends LogicException

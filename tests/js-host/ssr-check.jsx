@@ -11,6 +11,7 @@ const shared = {
     auth: { user: { id: 1, name: 'Admin', email: 'admin@example.com' }, logoutUrl: { url: '/logout', method: 'post' } },
     panel: { id: 'admin', label: 'ร้านค้า', short: 'S', icon: 'store', color: '#0d9488', rail: null, brand: { label: 'ร้านค้า', icon: null, tag: 'v2', logo: '/images/brand-mark.svg' }, help: '/help', home: '/admin', environment: 'local' },
     panels: [{ id: 'admin', label: 'ร้านค้า', description: '', url: '/admin', short: 'S', icon: 'store', color: '#0d9488', current: true, divider_after: false, replaces: null }],
+    panel_links: [{ label: 'เว็บไซต์', url: 'https://shop.example.com/', icon: null, image: '/images/store.png' }, { label: 'Metabase', url: 'https://metabase.example.com', icon: 'gauge', image: null }],
     nav: [{ group: 'การขาย', items: [{ label: 'คำสั่งซื้อ', icon: 'shopping-cart', url: { url: '/admin/orders', method: 'get' }, active: true, badge: null, external: false, legacy: false }] }],
     breadcrumbs: [{ label: 'การขาย' }, { label: 'คำสั่งซื้อ', url: '/admin/orders' }],
     flash: { message: 'บันทึกแล้ว', status: null },
@@ -20,7 +21,7 @@ const shared = {
 const table = { rows: [{ id: 1, created_at: '2026-10-31' }], pagination: { current_page: 1, last_page: 1, per_page: 25, total: 1, from: 1, to: 1 }, search: '', sort: null, filters: {} }
 
 const cases = [
-    ['tungsten::UiKit', { toastUrl: '/admin/ui-kit/toast' }, 'UI Kit'],
+    ['tungsten::UiKit', { toastUrl: '/admin/ui-kit/toast' }, 'Metabase'],
     ['tungsten::Home', { title: 'ร้านค้า', description: '' }, 'คำสั่งซื้อ'],
     ['tungsten::errors/Error', { status: 404, home: '/admin' }, '404'],
     ['panel/orders/Index', { title: 'คำสั่งซื้อ', table }, 'คำสั่งซื้อ'],
