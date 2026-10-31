@@ -7,6 +7,13 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.6 — 2026-10-31
+
+- Fix: after the Filters clear-all, the search text stayed in the box. `SearchInput` (with `onSearch`) now follows
+  `value` when it changes from outside and the box isn't focused (clear-all, back / forward), cancelling a pending
+  debounced search; `Filters` empties the box at once on clear-all. Checked in a DOM under Node
+  (`tests/js-host/dom-check.jsx`, jsdom, part of `npm run unit`).
+
 ## v0.2.5 — 2026-10-31
 
 The project's list shape for `<Filters layout="bar">`:

@@ -11,14 +11,25 @@ const SIZES = {
 
 /**
  * Controlled with `value` + `onChange`; with only `onSearch` it keeps its own text (starting from `value`, e.g. the
- * server's current `?search=`) and calls `onSearch(trimmed)` `debounce` ms after the last keystroke.
+ * server's current `?search=`) and calls `onSearch(trimmed)` `debounce` ms after the last keystroke. When `value`
+ * changes from outside (a clear-all, back / forward) the text follows it, unless the user is typing in the box.
  */
 export function SearchInput({ value, onChange, onSearch, debounce = 300, placeholder = strings.search, size = 'sm', className, inputClassName }) {
     const timer = useRef(null)
+    const input = useRef(null)
     const [local, setLocal] = useState(value ?? '')
     const controlled = onChange !== undefined
 
     useEffect(() => () => clearTimeout(timer.current), [])
+
+    useEffect(() => {
+        if (controlled || document.activeElement === input.current) {
+            return
+        }
+
+        clearTimeout(timer.current)
+        setLocal(value ?? '')
+    }, [value, controlled])
 
     function change(next) {
         if (controlled) {
@@ -39,6 +50,7 @@ export function SearchInput({ value, onChange, onSearch, debounce = 300, placeho
         <label className={cn('relative inline-flex items-center', className)}>
             <Search className={cn('pointer-events-none absolute text-zinc-400', SIZES[size].icon)} />
             <input
+                ref={input}
                 type="search"
                 value={controlled ? value : local}
                 onChange={(event) => change(event.target.value)}
