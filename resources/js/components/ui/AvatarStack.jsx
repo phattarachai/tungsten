@@ -1,4 +1,4 @@
-import { Avatar } from '../panel/Avatar'
+import { Avatar, initialOf } from '../panel/Avatar'
 import { cn } from '../../lib/cn'
 
 /**
@@ -14,7 +14,7 @@ export function AvatarStack({ people = [], max = 3, className, avatarClassName }
         <span className={cn('inline-flex items-center -space-x-1', className)}>
             {shown.map((person, index) => (
                 <span key={person.id ?? `${person.name}-${index}`} title={person.name} className="inline-flex rounded-full">
-                    <Avatar person={{ ...person, initial: person.initial ?? person.name?.charAt(0)?.toUpperCase() }} className={cn(ring, avatarClassName)} />
+                    <Avatar person={{ ...person, initial: person.initial ?? initialOf(person.name) }} className={cn(ring, avatarClassName)} />
                 </span>
             ))}
             {rest.length > 0 && (

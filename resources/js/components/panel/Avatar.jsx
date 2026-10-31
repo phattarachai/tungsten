@@ -1,6 +1,15 @@
 import { Zoomable } from '../ui/Lightbox'
 import { cn } from '../../lib/cn'
 
+/** The letter for an initials avatar: the first character, skipping a Thai leading vowel (เกศินี → ก). */
+export function initialOf(name) {
+    return String(name ?? '')
+        .trim()
+        .replace(/^[เแโใไ]/u, '')
+        .charAt(0)
+        .toUpperCase()
+}
+
 /**
  * A person's photo, else their initial. `zoom` opens the photo full screen.
  */

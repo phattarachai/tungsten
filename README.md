@@ -464,7 +464,8 @@ Route::post('ui-kit/toast', UiKitToastController::class)->name('ui-kit.toast');
   table on a sheet or a bare page. A `DataTable` column takes `valign: 'top'` for multi-line cells (or the table its
   own `valign`), and `plainLinks` makes `rowHref` render a plain `<a>` for rows that open non-Inertia pages.
 - **Forms**: `FormField` (inline label, `hint`, `info`, `error`), `Input`, `Select`, `Textarea`, `Combobox`
-  (searchable, multiple; `size="sm"` + `label` for a filter bar), `ButtonGroup` (`size="sm"` for toolbar presets), `Switch`, `DatePicker` / `DateTimePicker` / `DateRangePicker` (values stay ISO
+  (searchable, multiple; `size="sm"` + `label` for a filter bar; an option's `avatar` — a URL, or null for the
+  initial — draws a small round photo before its label), `ButtonGroup` (`size="sm"` for toolbar presets), `Switch`, `DatePicker` / `DateTimePicker` / `DateRangePicker` (values stay ISO
   Gregorian; display is พ.ศ.), `FormDialog`, `ConfirmDialog`, `Dialog`.
 - **Records**: `RecordLayout`, `PageHeader`, `GroupedNav`, `NavList`, `RecordPager`, `Section`, `SectionGrid`,
   `TabSection`, `DetailList`, `Timeline`, `Stepper`, `AuditPanel`, `LastEdited`.

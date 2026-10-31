@@ -68,6 +68,12 @@ const GALLERY = [
     { src: swatch('#1f57b0', 'สินค้า'), alt: 'วิตามินซี 1000 มก.' },
 ]
 
+const PEOPLE = [
+    { value: 'c-1', label: 'เกศินี วงศ์ใหญ่', avatar: swatch('#be185d', 'ก'), meta: '081-xxx-1234' },
+    { value: 'c-2', label: 'สมชาย มั่นคง', avatar: null, meta: '089-xxx-5678' },
+    { value: 'c-3', label: 'Wanida P.', avatar: null, meta: '062-xxx-9012' },
+]
+
 const STATUS_TONES_DEMO = [
     ['draft', 'ร่าง'],
     ['waiting', 'รอลูกค้าชำระ'],
@@ -330,6 +336,7 @@ function Chips() {
 }
 
 function Forms() {
+    const [customer, setCustomer] = useState('c-1')
     const [category, setCategory] = useState('vitamin')
     const [categories, setCategories] = useState(['vitamin', 'beauty'])
 
@@ -350,6 +357,9 @@ function Forms() {
                 </FormField>
                 <FormField label="หมวด">
                     <Combobox options={OPTIONS} value={category} onChange={setCategory} />
+                </FormField>
+                <FormField label="ลูกค้า" hint="option มี avatar: รูป หรือตัวอักษรแรก">
+                    <Combobox options={PEOPLE} value={customer} onChange={setCustomer} clearable />
                 </FormField>
                 <FormField label="หมวด หลายค่า">
                     <Combobox options={OPTIONS} value={categories} onChange={setCategories} multiple clearable />

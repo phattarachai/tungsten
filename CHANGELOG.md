@@ -7,6 +7,12 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.12 — 2026-11-01
+
+- `Combobox` options may carry `avatar` (an image URL, or null for the initial): a small round avatar before the label
+  in the list and in the chosen value. Options without the key look as before.
+- Initials skip a Thai leading vowel (เกศินี → ก) in `Combobox` and `AvatarStack` (`initialOf()`).
+
 ## v0.2.11 — 2026-11-01
 
 - Fix: the flash toast sat behind a dialog's overlay (both `z-50`). It now portals to `body` at `z-[70]`, above
