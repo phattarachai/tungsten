@@ -4,7 +4,8 @@
   "description": "A minimal host app that builds the kit through the @tungsten alias, the way an app does. CI runs `npm run build` here.",
   "scripts": {
     "build": "vite build",
-    "ssr": "vite build --ssr ssr-check.jsx --outDir ssr-dist && node ssr-dist/ssr-check.js"
+    "ssr": "vite build --ssr ssr-check.jsx --outDir ssr-dist && node ssr-dist/ssr-check.js",
+    "unit": "vite build --ssr unit-check.js --outDir unit-dist && node unit-dist/unit-check.js"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.0",

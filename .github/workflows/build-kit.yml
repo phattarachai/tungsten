@@ -31,3 +31,7 @@ jobs:
       - name: Render kit pages on the server (SSR safety)
         working-directory: tests/js-host
         run: npm run ssr
+
+      - name: Check the kit's pure helpers under Node
+        working-directory: tests/js-host
+        run: npm run unit
