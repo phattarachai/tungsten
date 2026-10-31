@@ -23,6 +23,9 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class HandleTungstenRequests extends Middleware
 {
+    /** The request attribute that marks a panel request (the panel's id). */
+    public const string PANEL = 'tungsten.panel';
+
     protected $rootView = 'tungsten::app';
 
     public function __construct(private readonly PanelRegistry $panels) {}
@@ -35,6 +38,7 @@ class HandleTungstenRequests extends Middleware
         abort_unless($panel instanceof Panel, 404);
 
         View::share('tungstenPanel', $panel);
+        $request->attributes->set(self::PANEL, $panel->getId());
 
         return parent::handle($request, $next);
     }
