@@ -18,6 +18,34 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class Tungsten
 {
+    /** Each environment's label and status tone; `tungsten.environments` overrides entries, null hides one. */
+    public const array ENVIRONMENTS = [
+        'production' => null,
+        'local' => ['label' => 'Local', 'tone' => 'active'],
+        'staging' => ['label' => 'Staging', 'tone' => 'done'],
+        'uat' => ['label' => 'UAT', 'tone' => 'todo'],
+    ];
+
+    /**
+     * The current environment as the panel shows it (switcher, login, tab title), or null to show nothing.
+     * Unlisted environments show their own name in the `draft` tone; production shows nothing.
+     *
+     * @return array{label: string, tone: string}|null
+     */
+    public static function environment(): ?array
+    {
+        $name = (string) app()->environment();
+        $environments = [...self::ENVIRONMENTS, ...(array) config('tungsten.environments', [])];
+
+        if (! array_key_exists($name, $environments)) {
+            return ['label' => $name, 'tone' => 'draft'];
+        }
+
+        $environment = $environments[$name];
+
+        return is_array($environment) ? ['label' => (string) $environment['label'], 'tone' => (string) ($environment['tone'] ?? 'draft')] : null;
+    }
+
     /**
      * Declares routes inside a panel — its path prefix, middleware (auth, gate, Tungsten's Inertia middleware) and
      * `{id}.` name prefix. Use it in a route file the way you would `Route::middleware(...)->group(...)`:

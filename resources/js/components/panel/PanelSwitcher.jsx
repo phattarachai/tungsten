@@ -4,7 +4,9 @@ import { useEffect, useRef } from 'react'
 
 import { cn } from '../../lib/cn'
 
+import { BrandLabel } from './EnvLine'
 import { PanelChip } from './PanelChip'
+import { Badge } from '../ui/Badge'
 import { Icon } from '../ui/Icon'
 import { urlOf } from '../../lib/href'
 
@@ -84,6 +86,7 @@ export function PanelSwitcher({ compact = false }) {
     const details = useRef(null)
     const current = panels.find((entry) => entry.current)
     const brand = panel?.brand
+    const env = panel?.env ?? null
 
     useCloseOnOutside(details)
 
@@ -100,10 +103,11 @@ export function PanelSwitcher({ compact = false }) {
                 )}
             >
                 <PanelChip entry={brand ? { ...current, icon: brand.icon, logo: brand.logo } : current} className={compact ? 'size-5 text-[0.5625rem]' : undefined} />
-                <span className="truncate">{brand?.label ?? current.label}</span>
+                <BrandLabel label={brand?.label ?? current.label} env={compact ? null : env} />
                 {brand?.tag && (
                     <span className={cn('shrink-0 rounded px-1 text-[0.625rem] leading-4 font-semibold', compact ? 'bg-zinc-100 text-zinc-500' : 'bg-rail-active text-rail-muted')}>{brand.tag}</span>
                 )}
+                {compact && env && <Badge tone={env.tone}>{env.label}</Badge>}
                 <ChevronsUpDown className={cn('ml-auto size-3.5 shrink-0', compact ? 'text-zinc-400' : 'text-rail-muted')} />
             </summary>
             <div className="absolute left-0 z-50 mt-1 w-72 group-open:animate-panel-drop rounded-md border border-zinc-200 bg-white p-1 shadow-lg">

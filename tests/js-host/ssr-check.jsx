@@ -9,7 +9,7 @@ const pages = import.meta.glob('./resources/js/pages/panel/**/*.jsx')
 const shared = {
     errors: {},
     auth: { user: { id: 1, name: 'Admin', email: 'admin@example.com' }, logoutUrl: { url: '/logout', method: 'post' } },
-    panel: { id: 'admin', label: 'ร้านค้า', short: 'S', icon: 'store', color: '#0d9488', rail: null, brand: { label: 'ร้านค้า', icon: null, tag: 'v2', logo: '/images/brand-mark.svg' }, help: '/help', home: '/admin', environment: 'local' },
+    panel: { id: 'admin', label: 'ร้านค้า', short: 'S', icon: 'store', color: '#0d9488', rail: null, brand: { label: 'ร้านค้า', icon: null, tag: 'v2', logo: '/images/brand-mark.svg' }, help: '/help', home: '/admin', environment: 'uat', env: { label: 'UAT', tone: 'todo' } },
     panels: [{ id: 'admin', label: 'ร้านค้า', description: '', url: '/admin', short: 'S', icon: 'store', color: '#0d9488', current: true, divider_after: false, replaces: null }],
     panel_links: [{ label: 'เว็บไซต์', url: 'https://shop.example.com/', icon: null, image: '/images/store.png' }, { label: 'Metabase', url: 'https://metabase.example.com', icon: 'gauge', image: null }],
     nav: [{ group: 'การขาย', items: [{ label: 'คำสั่งซื้อ', icon: 'shopping-cart', url: { url: '/admin/orders', method: 'get' }, active: true, badge: null, external: false, legacy: false }] }],
@@ -37,4 +37,16 @@ for (const [component, props, expected] of cases) {
     }
 
     console.log(`ssr ok  ${component}  (${body.length} bytes)`)
+}
+
+// The environment leads the tab title on the server too (the browser reads the root view's meta instead).
+{
+    const page = { component: 'tungsten::auth/Login', props: { ...shared, ...cases.find(([name]) => name === 'tungsten::auth/Login')[1] }, url: '/admin/login', version: null, clearHistory: false, encryptHistory: false }
+    const { head, body } = await createTungstenApp({ pages, prefix: './resources/js/pages/', page, render: renderToString })
+
+    if (!head.join('').includes('UAT · เข้าสู่ระบบ') || !body.includes('UAT')) {
+        throw new Error(`env prefix missing: ${head.join('')}`)
+    }
+
+    console.log('ssr ok  env line and "UAT · " title prefix')
 }

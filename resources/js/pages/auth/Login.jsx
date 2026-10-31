@@ -1,5 +1,6 @@
 import { Head, useForm, usePage } from '@inertiajs/react'
 
+import { BrandLabel } from '../../components/panel/EnvLine'
 import { PanelChip } from '../../components/panel/PanelChip'
 import { Button } from '../../components/ui/Button'
 import { FormField, Input } from '../../components/ui/form'
@@ -11,7 +12,7 @@ function Brand({ panel }) {
     return (
         <div className="mb-4 flex items-center justify-center gap-2">
             <PanelChip entry={{ color: panel?.color, short: panel?.short, icon: brand?.icon ?? panel?.icon, logo: brand?.logo }} className="size-7 text-[0.6875rem]" />
-            <span className="text-[0.9375rem] font-semibold text-zinc-900">{brand?.label ?? panel?.label}</span>
+            <BrandLabel label={brand?.label ?? panel?.label} env={panel?.env} className="text-[0.9375rem] font-semibold text-zinc-900" />
             {brand?.tag && <span className="rounded bg-zinc-200 px-1 text-[0.625rem] leading-4 font-semibold text-zinc-500">{brand.tag}</span>}
         </div>
     )

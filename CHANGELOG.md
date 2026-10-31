@@ -7,6 +7,14 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.10 — 2026-11-01
+
+- **Environment indicator**: `tungsten.environments` (env → `{label, tone}` or null, over the kit defaults: production
+  nothing, local Local/active, staging Staging/done, uat UAT/todo; others their own name in `draft`), shared as
+  `panel.env`. A "• Label" line in the tone's ink under the brand in the switcher head and on the login page, a tone
+  `Badge` in the compact switcher, and a "Label · " tab-title prefix (root view `<meta name="tungsten-env">` and the
+  first-paint `<title>`). The topbar's yellow environment chip is gone.
+
 ## v0.2.9 — 2026-10-31
 
 - **Lightbox**: `LightboxProvider` (AppLayout provides it), `Zoomable` (`images` + `index`, or `src` / `full` / `alt`;

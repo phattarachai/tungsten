@@ -8,14 +8,6 @@ import { PanelSwitcher } from './PanelSwitcher'
 import { strings } from '../../lib/strings'
 import { linkProps, urlOf } from '../../lib/href'
 
-function EnvChip({ environment }) {
-    if (!environment || environment === 'production') {
-        return null
-    }
-
-    return <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-700">{environment}</span>
-}
-
 function Breadcrumbs({ items }) {
     if (!items || items.length === 0) {
         return null
@@ -108,7 +100,6 @@ export function Topbar({ sidebarClosed, onToggleSidebar, toolbar, search }) {
                         <PanelLeft className="size-4" />
                     </button>
                 )}
-                <EnvChip environment={panel.environment} />
                 <div className={cn(!sidebarClosed && 'md:hidden')}>
                     <PanelSwitcher compact />
                 </div>
