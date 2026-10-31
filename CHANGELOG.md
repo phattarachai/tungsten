@@ -7,6 +7,12 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.3 — 2026-10-31
+
+- Fix: `useTableQuery` now drops a filter's indexed values (`type[0]`, `type[1]`, as Inertia writes them) when it
+  clears or changes the filter, so old array values no longer linger in the URL. The URL logic is `applyQuery()`
+  (exported), checked under Node in CI (`tests/js-host`, `npm run unit`).
+
 ## v0.2.2 — 2026-10-31
 
 List parts for Filament-like lists (non-breaking):

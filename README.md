@@ -536,7 +536,7 @@ only. Sizes are rem only — the shell scales the rem base to 125%, so write `te
 ```bash
 composer test          # Pest + Orchestra Testbench
 composer analyse       # Larastan
-cd tests/js-host && npm install && npm run build && npm run ssr   # build the kit through the alias, render it under Node
+cd tests/js-host && npm install && npm run build && npm run ssr && npm run unit   # build through the alias, render under Node, check pure helpers
 ```
 
 In a host app, a route that renders one of the kit's own pages (`HomePage`, `UiKitPage`) has no page file in the
