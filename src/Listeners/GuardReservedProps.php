@@ -16,7 +16,7 @@ use Phattarachai\Tungsten\Http\Middleware\HandleTungstenRequests;
  */
 class GuardReservedProps
 {
-    public const array RESERVED = ['auth', 'panel', 'panels', 'nav', 'flash', 'errors'];
+    public const array RESERVED = ['auth', 'panel', 'panels', 'panel_links', 'nav', 'flash', 'errors'];
 
     public function handle(PreparingResponse $event): void
     {

@@ -11,14 +11,14 @@ it('throws while debugging when a page returns a prop the panel shares', functio
     config(['app.debug' => true]);
 
     $this->withoutExceptionHandling()->actingAs($this->admin())->get('/admin/clashing-props');
-})->throws(ReservedPropName::class, 'page [panel/orders/More] returns the prop(s) [panels, nav]');
+})->throws(ReservedPropName::class, 'page [panel/orders/More] returns the prop(s) [panels, panel_links, nav]');
 
 it('reports it in production and still renders', function (): void {
     Exceptions::fake();
 
     $this->actingAs($this->admin())->get('/admin/clashing-props')->assertOk();
 
-    Exceptions::assertReported(fn (ReservedPropName $exception): bool => str_contains($exception->getMessage(), '[panels, nav]'));
+    Exceptions::assertReported(fn (ReservedPropName $exception): bool => str_contains($exception->getMessage(), '[panels, panel_links, nav]'));
 });
 
 it('leaves breadcrumbs and layout overridable, and other pages alone', function (): void {

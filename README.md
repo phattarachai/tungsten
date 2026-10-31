@@ -177,6 +177,20 @@ Filament admin you are migrating from — and `->replaces('filament')` on the ne
 app(PanelRegistry::class)->entry(id: 'filament', label: 'ระบบเดิม', url: '/', short: 'v1', color: '#7c2d12');
 ```
 
+An entry with `business: false` lists after the tool panels; every row is a plain link that opens in the same tab.
+**Footer links** are app-wide shortcuts at the foot of every panel's switcher menu (the store front, a BI tool):
+two to a row, each with a 16px image or icon and ↗, always opening a new tab, filtered by `ability` like entries.
+`entry()` and `link()` chain; register them in a provider's `boot()`:
+
+```php
+app(PanelRegistry::class)
+    ->entry(id: 'cms', label: 'CMS เว็บไซต์', url: 'https://shop.example.com/admin', description: 'shop.example.com/admin', icon: 'newspaper', color: '#111111', business: false)
+    ->link('เว็บไซต์', 'https://shop.example.com/', image: 'images/store-favicon.png')
+    ->link('Metabase', 'https://metabase.example.com', icon: 'gauge', ability: 'viewReports');
+```
+
+They're shared as `panel_links` (`{label, url, icon, image}`; a public path becomes a full URL).
+
 ## Sign-in (optional)
 
 A panel can have its own login page, in the panel's theme, or leave sign-in to the app (Breeze, SSO, Filament's):
@@ -569,7 +583,7 @@ only. Sizes are rem only — the shell scales the rem base to 125%, so write `te
 
 - **Inertia v3 layout callbacks get no `.props`.** A layout or toolbar reads page props with `usePage()`.
 - **A page prop can't reuse a shared prop's name.** Inertia lets page props win, so a page returning `panels` (or
-  `panel`, `nav`, `auth`, `flash`, `errors`) would replace the panel's own and crash the shell. Tungsten checks every
+  `panel`, `panel_links`, `nav`, `auth`, `flash`, `errors`) would replace the panel's own and crash the shell. Tungsten checks every
   panel response: it throws `ReservedPropName` while `app.debug` is on and reports it otherwise. Rename the prop.
   `breadcrumbs` and `layout` are meant to be overridden by a page.
 - **`form.transform()` doesn't chain** — call it, then `form.post()`.

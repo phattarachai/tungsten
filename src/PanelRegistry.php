@@ -24,6 +24,11 @@ class PanelRegistry
      */
     private array $entries = [];
 
+    /**
+     * @var list<array{label: string, url: string, icon: ?string, image: ?string, ability: ?string}>
+     */
+    private array $links = [];
+
     public function register(Panel $panel): self
     {
         $this->panels[$panel->getId()] = $panel;
@@ -39,6 +44,36 @@ class PanelRegistry
         $this->entries[] = compact('id', 'label', 'description', 'url', 'short', 'icon', 'color', 'business', 'ability');
 
         return $this;
+    }
+
+    /**
+     * An app-wide link at the foot of the switcher menu (the store front, a BI tool): a small icon or image, the label
+     * and ↗; it always opens a new tab. `$image` / `$url` may be a public path or a full URL.
+     */
+    public function link(string $label, string $url, ?string $icon = null, ?string $image = null, ?string $ability = null): self
+    {
+        $this->links[] = compact('label', 'url', 'icon', 'image', 'ability');
+
+        return $this;
+    }
+
+    /**
+     * The footer links `$user` may see, shared as `panel_links`.
+     *
+     * @return list<array{label: string, url: string, icon: ?string, image: ?string}>
+     */
+    public function linksFor(?Authenticatable $user): array
+    {
+        return collect($this->links)
+            ->filter(fn (array $link): bool => $link['ability'] === null || ($user !== null && Gate::forUser($user)->allows($link['ability'])))
+            ->map(fn (array $link): array => [
+                'label' => $link['label'],
+                'url' => $this->absolute($link['url']),
+                'icon' => $link['icon'],
+                'image' => $link['image'] === null ? null : $this->absolute($link['image'], asset: true),
+            ])
+            ->values()
+            ->all();
     }
 
     /**
@@ -133,7 +168,7 @@ class PanelRegistry
             'id' => $entry['id'],
             'label' => $entry['label'],
             'description' => $entry['description'],
-            'url' => str_starts_with($entry['url'], 'http') ? $entry['url'] : url($entry['url']),
+            'url' => $this->absolute($entry['url']),
             'short' => $entry['short'],
             'icon' => $entry['icon'],
             'color' => $entry['color'],
@@ -141,5 +176,14 @@ class PanelRegistry
             'divider_after' => false,
             'replaces' => $entry['replaces'] ?? null,
         ];
+    }
+
+    private function absolute(string $url, bool $asset = false): string
+    {
+        return match (true) {
+            str_contains($url, '://') || str_starts_with($url, '//') => $url,
+            $asset => asset($url),
+            default => url($url),
+        };
     }
 }

@@ -1,10 +1,11 @@
 import { usePage } from '@inertiajs/react'
-import { Check, ChevronsUpDown } from 'lucide-react'
+import { ArrowUpRight, Check, ChevronsUpDown } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 
 import { cn } from '../../lib/cn'
 
 import { PanelChip } from './PanelChip'
+import { Icon } from '../ui/Icon'
 import { urlOf } from '../../lib/href'
 
 function useCloseOnOutside(details) {
@@ -59,8 +60,27 @@ function PanelRow({ entry, replacements }) {
     )
 }
 
+/**
+ * App-wide links under the panel rows (`PanelRegistry::link()`), two to a row; they always open a new tab.
+ */
+function FooterLinks({ links }) {
+    return (
+        <div className="mt-1 grid grid-cols-2 gap-1 border-t border-zinc-100 pt-1">
+            {links.map((link) => (
+                <a key={`${link.label}-${link.url}`} href={urlOf(link.url)} target="_blank" rel="noopener" className="flex min-w-0 items-center gap-1.5 rounded px-2 py-1.5 text-xs text-zinc-700 hover:bg-zinc-50">
+                    <span className="grid size-4 shrink-0 place-items-center overflow-hidden rounded text-zinc-500">
+                        {link.image ? <img src={link.image} alt="" className="size-full object-contain" /> : <Icon name={link.icon} className="size-3" />}
+                    </span>
+                    <span className="truncate">{link.label}</span>
+                    <ArrowUpRight className="ml-auto size-3 shrink-0 text-zinc-400" />
+                </a>
+            ))}
+        </div>
+    )
+}
+
 export function PanelSwitcher({ compact = false }) {
-    const { panels = [], panel } = usePage().props
+    const { panels = [], panel_links: links = [], panel } = usePage().props
     const details = useRef(null)
     const current = panels.find((entry) => entry.current)
     const brand = panel?.brand
@@ -95,6 +115,7 @@ export function PanelSwitcher({ compact = false }) {
                             {entry.divider_after && <div className="my-1 border-t border-zinc-100" />}
                         </div>
                     ))}
+                {links.length > 0 && <FooterLinks links={links} />}
             </div>
         </details>
     )

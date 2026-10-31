@@ -59,6 +59,7 @@ class HandleTungstenRequests extends Middleware
             'auth' => fn (): array => $this->auth($request, $panel),
             'panel' => fn (): array => $this->panel($panel, $route),
             'panels' => fn (): array => $this->panels->switcherFor($request->user(), $panel->getId()),
+            'panel_links' => fn (): array => $this->panels->linksFor($request->user()),
             'nav' => fn (): array => $panel->navigation($request),
             'breadcrumbs' => fn (): array => $panel->breadcrumbs($route),
             'layout' => fn (): ?array => $this->layout($panel, $route),

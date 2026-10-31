@@ -11,6 +11,6 @@ class ClashingPropsController
 {
     public function __invoke(): Response
     {
-        return Inertia::render('panel/orders/More', ['panels' => ['tabs' => 'more'], 'nav' => 'x', 'title' => 'More']);
+        return Inertia::render('panel/orders/More', ['panels' => ['tabs' => 'more'], 'nav' => 'x', 'panel_links' => [], 'title' => 'More']);
     }
 }
