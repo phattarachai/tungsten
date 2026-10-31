@@ -57,12 +57,22 @@ class HandleTungstenRequests extends Middleware
             'panels' => fn (): array => $this->panels->switcherFor($request->user(), $panel->getId()),
             'nav' => fn (): array => $panel->navigation($request),
             'breadcrumbs' => fn (): array => $panel->breadcrumbs($route),
-            'layout' => fn (): ?array => RouteMeta::of($route)['layout'] ?? null,
+            'layout' => fn (): ?array => $this->layout($panel, $route),
             'flash' => fn (): array => [
                 'message' => $request->hasSession() ? $request->session()->get('flash') : null,
                 'status' => $request->hasSession() ? $request->session()->get('status') : null,
             ],
         ];
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function layout(Panel $panel, ?Route $route): ?array
+    {
+        $layout = [...$panel->getLayout(), ...(RouteMeta::of($route)['layout'] ?? [])];
+
+        return $layout === [] ? null : $layout;
     }
 
     /**

@@ -12,7 +12,7 @@ import { linkProps, urlOf } from '../../lib/href'
 function NavItem({ item }) {
     const className = cn(
         'flex h-7 items-center gap-2 rounded-md px-2 text-xs transition',
-        item.active ? 'bg-rail-active font-semibold text-white' : 'text-rail-ink hover:bg-rail-hover hover:text-white',
+        item.active ? 'bg-rail-active font-semibold text-rail-ink-active' : 'text-rail-ink hover:bg-rail-hover hover:text-rail-ink-active',
     )
 
     const body = (
@@ -85,6 +85,7 @@ export function Sidebar({ closed, mobileOpen, onClose }) {
             <aside
                 className={cn(
                     'panel-rail panel-sidebar fixed inset-y-0 left-0 z-40 flex w-50 flex-col bg-rail transition-transform',
+                    panel?.rail && 'panel-rail-tinted',
                     mobileOpen ? 'translate-x-0' : '-translate-x-full',
                     !closed && 'md:translate-x-0',
                 )}

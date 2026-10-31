@@ -40,6 +40,11 @@ class Panel
 
     private ?string $rail = null;
 
+    /**
+     * @var array<string, mixed>
+     */
+    private array $layout = [];
+
     private ?string $brandColor = null;
 
     /**
@@ -157,6 +162,19 @@ class Panel
     public function rail(string $rail): self
     {
         $this->rail = $rail;
+
+        return $this;
+    }
+
+    /**
+     * Panel-wide AppLayout defaults (`sheet`, `flush`, `sidebar`, `topbar`, `className`, `mainClassName`); a route's
+     * `->layout([...])` overrides them key by key, and a page's JSX props override both.
+     *
+     * @param  array<string, mixed>  $layout
+     */
+    public function layout(array $layout): self
+    {
+        $this->layout = $layout;
 
         return $this;
     }
@@ -343,6 +361,14 @@ class Panel
     public function getRail(): ?string
     {
         return $this->rail;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getLayout(): array
+    {
+        return $this->layout;
     }
 
     public function getBrandColor(): ?string

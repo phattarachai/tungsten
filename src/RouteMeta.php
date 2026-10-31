@@ -55,7 +55,7 @@ class RouteMeta
             return RouteMeta::put($this, 'help', $url);
         });
 
-        /** Defaults for AppLayout (`flush`, `sidebar`, `topbar`, `className`, `mainClassName`), shared as `layout`. */
+        /** Defaults for AppLayout (`sheet`, `flush`, `sidebar`, `topbar`, `className`, `mainClassName`), shared as `layout`. */
         Route::macro('layout', function (array $layout): Route {
             /** @var Route $this */
             return RouteMeta::put($this, 'layout', $layout);

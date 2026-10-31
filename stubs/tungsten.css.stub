@@ -2,6 +2,7 @@
 
 /* The kit's theme: steel greys, the graphite rail, motion, IBM Plex Sans Thai. It also @source-s the kit's JSX. */
 @import '../../vendor/phattarachai/tungsten/resources/css/tungsten.css';
+/* With your own --font-sans, import .../resources/css/kit.css instead: the same theme without the IBM Plex files. */
 
 @source '../js/pages/panel';
 

@@ -42,7 +42,7 @@ function Breadcrumbs({ items }) {
 function UserMenu({ user }) {
     return (
         <details className="group relative">
-            <summary className="flex cursor-pointer list-none items-center gap-1.5 rounded-md px-1.5 py-0.5 hover:bg-zinc-100">
+            <summary className="flex cursor-pointer list-none items-center gap-1.5 rounded-md px-1.5 py-0.5 hover:bg-topbar-hover">
                 <span className="flex size-6 items-center justify-center rounded-full bg-zinc-200 text-xs font-semibold text-zinc-600">{user.name?.charAt(0)?.toUpperCase()}</span>
                 <ChevronDown className="size-3.5 text-zinc-400" />
             </summary>
@@ -82,7 +82,7 @@ function HelpButton({ url }) {
             rel="noopener"
             onClick={onClick}
             aria-label={strings.helpForPage}
-            className={cn('rounded p-1 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800', help?.isOpen && 'bg-zinc-100 text-zinc-900')}
+            className={cn('rounded p-1 text-zinc-500 hover:bg-topbar-hover hover:text-zinc-800', help?.isOpen && 'bg-topbar-hover text-zinc-900')}
         >
             <CircleHelp className="size-4" />
         </a>
@@ -101,10 +101,10 @@ export function Topbar({ sidebarClosed, onToggleSidebar, toolbar, search }) {
 
 
     return (
-        <header className="panel-topbar sticky top-0 z-20 flex h-10 items-center justify-between gap-3 border-b border-zinc-200 bg-white px-3">
+        <header className="panel-topbar sticky top-0 z-20 flex h-10 items-center justify-between gap-3 border-b border-topbar-line bg-topbar px-3">
             <div className="flex min-w-0 items-center gap-2">
                 {onToggleSidebar && (
-                    <button type="button" onClick={onToggleSidebar} className="rounded p-1 text-zinc-500 hover:bg-zinc-100" aria-label={strings.toggleSidebar}>
+                    <button type="button" onClick={onToggleSidebar} className="rounded p-1 text-zinc-500 hover:bg-topbar-hover" aria-label={strings.toggleSidebar}>
                         <PanelLeft className="size-4" />
                     </button>
                 )}
