@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { LastEdited } from '../components/panel/LastEdited'
 import {
     ActionMenu,
+    AvatarStack,
     Badge,
     branchIds,
     Button,
@@ -22,6 +23,8 @@ import {
     DateTimePicker,
     DetailList,
     Dialog,
+    FilterBar,
+    FilterField,
     FormDialog,
     FormField,
     GroupedNav,
@@ -42,6 +45,7 @@ import {
     SyncButton,
     TabSection,
     Textarea,
+    Thumb,
     Timeline,
     TimelineEvent,
     TreeTable,
@@ -384,6 +388,102 @@ function GroupedTable() {
     )
 }
 
+const ORDERS = [
+    {
+        id: 'SO-10241',
+        customer: 'ภัทรา ใจดี',
+        items: [
+            { name: 'วิตามินซี 1000 มก.', qty: 2, image: null },
+            { name: 'คอลลาเจน ผง 200 ก.', qty: 1, image: null },
+        ],
+        staff: [{ name: 'กมล' }, { name: 'ศิริพร' }, { name: 'อนันต์' }, { name: 'มณี' }, { name: 'ธนา' }],
+    },
+    { id: 'SO-10240', customer: 'สมชาย มั่นคง', items: [{ name: 'น้ำมันปลา 60 แคปซูล', qty: 3, image: null }], staff: [{ name: 'กมล' }] },
+]
+
+const ORDER_COLUMNS = [
+    { key: 'id', label: 'เลขที่', primary: true },
+    { key: 'customer', label: 'ลูกค้า' },
+    {
+        key: 'items',
+        label: 'สินค้า',
+        valign: 'top',
+        className: 'py-1',
+        render: (row) => (
+            <div className="space-y-1">
+                {row.items.map((item) => (
+                    <div key={item.name} className="flex items-center gap-2">
+                        <Thumb src={item.image} className="size-6" />
+                        <span>{item.name}</span>
+                        <span className="text-zinc-400">×{item.qty}</span>
+                    </div>
+                ))}
+            </div>
+        ),
+    },
+    { key: 'staff', label: 'พนักงาน', render: (row) => <AvatarStack people={row.staff} max={3} /> },
+]
+
+const SHIPPING = [
+    { value: 'pending', label: 'รอจัดส่ง', count: 12 },
+    { value: 'shipped', label: 'ส่งแล้ว', count: 340 },
+    { value: 'returned', label: 'ตีกลับ', count: 2 },
+]
+
+function Filters() {
+    const [preset, setPreset] = useState('today')
+    const [channels, setChannels] = useState(['line'])
+    const [shipping, setShipping] = useState('pending')
+    const [perPage, setPerPage] = useState(25)
+
+    return (
+        <Section id="filters" title="FilterBar · AvatarStack · Thumb" hint="ตัวกรองหลักแสดงเหนือตาราง ไม่ต้องกดเปิด" flush>
+            <div className="px-2.5">
+                <FilterBar
+                    flush
+                    end={<SearchInput placeholder="ค้นหาเลขที่ ชื่อ เบอร์โทร" />}
+                    below={<Pills options={SHIPPING} value={shipping} onChange={setShipping} />}
+                >
+                    <ButtonGroup
+                        size="sm"
+                        options={[
+                            { value: 'today', label: 'วันนี้' },
+                            { value: 'week', label: '7 วัน' },
+                            { value: 'month', label: '30 วัน' },
+                            { value: 'all', label: 'ทั้งหมด' },
+                        ]}
+                        value={preset}
+                        onChange={setPreset}
+                    />
+                    <Combobox
+                        size="sm"
+                        multiple
+                        clearable
+                        label="ช่องทาง"
+                        options={[
+                            { value: 'line', label: 'LINE' },
+                            { value: 'web', label: 'เว็บไซต์' },
+                            { value: 'shopee', label: 'Shopee' },
+                            { value: 'lazada', label: 'Lazada' },
+                        ]}
+                        value={channels}
+                        onChange={setChannels}
+                    />
+                    <FilterField label="ชำระเงิน">
+                        <Select size="sm" defaultValue="">
+                            <option value="">ทั้งหมด</option>
+                            <option value="paid">ชำระแล้ว</option>
+                            <option value="unpaid">ยังไม่ชำระ</option>
+                        </Select>
+                    </FilterField>
+                </FilterBar>
+                <DataTable flush columns={ORDER_COLUMNS} rows={ORDERS} rowHref={() => '#filters'} plainLinks />
+                <Pagination flush paginator={{ current_page: 1, last_page: 4, per_page: perPage, total: 96, from: 1, to: Math.min(perPage, 96) }} onPage={() => {}} onPerPage={setPerPage} />
+            </div>
+        </Section>
+    )
+}
+
 function Lists() {
     const [page, setPage] = useState(1)
 
@@ -629,6 +729,7 @@ export default function UiKit({ toastUrl }) {
                 </SectionGrid>
                 <SectionGrid min="36rem">
                     <GroupedTable />
+                    <Filters />
                     <Lists />
                     <Containers />
                     <Navs />

@@ -7,6 +7,18 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.2 — 2026-10-31
+
+List parts for Filament-like lists, filters shown above the table (non-breaking):
+
+- `FilterBar` (+ `FilterField`): the filter row above a table, with `end` (search) and an optional `below` row.
+- `AvatarStack`, `Thumb`.
+- `DataTable`: column `valign: 'top'` (or table `valign`), `plainLinks` for a plain `<a>` row link.
+- `Combobox size="sm"` with `label` (and a capped width) for a filter bar; `ButtonGroup size="sm"`.
+- `Pills` scrolls sideways instead of overflowing.
+- `Pagination onPerPage` / `perPageOptions`; `useTableQuery().setPerPage`.
+- README: exclude `./pages/panel/**` from another Inertia entry's eager glob.
+
 ## v0.2.1 — 2026-10-31
 
 Theme hooks for a light chrome; non-breaking, the defaults keep the steel look:

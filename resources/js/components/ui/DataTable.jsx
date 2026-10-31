@@ -7,9 +7,11 @@ import { nextSort, sortRows } from '../../lib/sortRows'
 
 import { firstAction, KeyAction, RowActions } from './RowActions'
 import { strings } from '../../lib/strings'
-import { linkProps, methodOf } from '../../lib/href'
+import { linkProps, methodOf, urlOf } from '../../lib/href'
 
 const ALIGN = { left: 'text-left', right: 'text-right', center: 'text-center' }
+
+const VALIGN = { top: 'align-top', middle: 'align-middle', bottom: 'align-bottom' }
 
 const STICKY = 'sticky left-0'
 
@@ -21,7 +23,7 @@ function keyOf(row, rowKey, index) {
     return row[rowKey] ?? index
 }
 
-function Cell({ column, row, href, action }) {
+function Cell({ column, row, href, action, valign, plainLinks }) {
     const value = column.render ? column.render(row) : row[column.key]
     const title = column.truncate && typeof row[column.key] === 'string' ? row[column.key] : undefined
 
@@ -30,6 +32,7 @@ function Cell({ column, row, href, action }) {
             className={cn(
                 'h-7 px-2 py-0.5',
                 ALIGN[column.align ?? 'left'],
+                VALIGN[column.valign ?? valign],
                 column.truncate ? 'max-w-96 truncate' : 'whitespace-nowrap',
                 column.className,
                 column.primary && 'font-medium text-brand tabular-nums',
@@ -37,7 +40,11 @@ function Cell({ column, row, href, action }) {
             )}
             title={title}
         >
-            {href ? (
+            {href && plainLinks ? (
+                <a href={urlOf(href)} className="hover:text-brand-600 hover:underline">
+                    {value}
+                </a>
+            ) : href ? (
                 <Link {...linkProps(href)} prefetch={methodOf(href) === 'get' ? 'click' : false} className="hover:text-brand-600 hover:underline">
                     {value}
                 </Link>
@@ -48,7 +55,7 @@ function Cell({ column, row, href, action }) {
     )
 }
 
-function Row({ row, columns, rowHref, rowActions, rowClassName }) {
+function Row({ row, columns, rowHref, rowActions, rowClassName, valign, plainLinks }) {
     const href = rowHref?.(row)
     const action = href ? null : firstAction(rowActions?.(row))
     const primaryIndex = columns.findIndex((column) => column.primary)
@@ -57,7 +64,7 @@ function Row({ row, columns, rowHref, rowActions, rowClassName }) {
     return (
         <tr className={cn('group/row border-b border-zinc-100 last:border-0 hover:bg-zinc-50', rowClassName?.(row))}>
             {columns.map((column, columnIndex) => (
-                <Cell key={column.key} column={column} row={row} href={columnIndex === linkIndex ? href : undefined} action={columnIndex === linkIndex ? action : undefined} />
+                <Cell key={column.key} column={column} row={row} valign={valign} plainLinks={plainLinks} href={columnIndex === linkIndex ? href : undefined} action={columnIndex === linkIndex ? action : undefined} />
             ))}
         </tr>
     )
@@ -166,6 +173,11 @@ function withSelect(columns, column, actionsPosition) {
     return actionsPosition === 'start' && columns[0]?.key === '__actions' ? [columns[0], column, ...columns.slice(1)] : [column, ...columns]
 }
 
+/**
+ * A column is `{ key, label, render?, align?, valign?, sortable?, primary?, truncate?, sticky?, className? }`;
+ * `valign: 'top'` (or the table's `valign`) top-aligns a column of multi-line cells. `rowHref(row)` links the primary
+ * cell with an Inertia `<Link>`, or a plain `<a>` with `plainLinks` (rows that open non-Inertia pages).
+ */
 export function DataTable({
     columns: baseColumns,
     rows = [],
@@ -178,6 +190,8 @@ export function DataTable({
     rowClassName: baseRowClassName,
     empty = strings.noData,
     flush = false,
+    valign,
+    plainLinks = false,
     className,
     sort,
     onSort,
@@ -196,7 +210,7 @@ export function DataTable({
     const activeSort = controlled ? sort : localSort
     const sortColumn = controlled ? null : columns.find((column) => column.sortable && column.key === activeSort?.key)
     const ordered = (list) => (sortColumn ? sortRows(list, sortColumn, activeSort.dir) : list)
-    const rowProps = { columns, rowKey, rowHref, rowActions, rowClassName }
+    const rowProps = { columns, rowKey, rowHref, rowActions, rowClassName, valign, plainLinks }
     const isEmpty = groups ? groups.every((group) => group.rows.length === 0) : rows.length === 0
 
     function changeSort(column) {

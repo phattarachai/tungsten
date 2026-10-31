@@ -8,7 +8,7 @@ import { strings } from '../../lib/strings'
 
 const TRIGGER_SIZES = {
     md: 'min-h-8 w-full rounded-md py-1 pr-8 pl-3 text-[0.8125rem]',
-    sm: 'h-6 min-w-20 rounded py-0 pr-7 pl-2 text-[0.6875rem]',
+    sm: 'h-6 min-w-20 max-w-64 rounded py-0 pr-7 pl-2 text-[0.6875rem]',
 }
 
 const POPOVER_GAP = 4
@@ -61,7 +61,16 @@ function usePopoverPosition(open, trigger) {
     return position
 }
 
-function TriggerLabel({ chosen, placeholder, multiple }) {
+function TriggerLabel({ chosen, placeholder, multiple, label }) {
+    if (label) {
+        return (
+            <span className="flex min-w-0 items-center gap-1">
+                <span className="shrink-0 text-zinc-500">{label}</span>
+                <TriggerLabel chosen={chosen} placeholder={placeholder} multiple={multiple} />
+            </span>
+        )
+    }
+
     if (chosen.length === 0) {
         return <span className="truncate text-zinc-400">{placeholder}</span>
     }
@@ -78,12 +87,17 @@ function TriggerLabel({ chosen, placeholder, multiple }) {
     )
 }
 
+/**
+ * A searchable select; `multiple` takes and gives an array. In a `FilterBar` use `size="sm"` with a `label`: the
+ * trigger reads "สถานะ ทั้งหมด" until something is chosen, then the first choice and +N.
+ */
 export function Combobox({
     options,
     value,
     onChange,
     multiple = false,
-    placeholder = strings.choose,
+    label,
+    placeholder = label ? strings.all : strings.choose,
     searchPlaceholder = strings.search,
     empty = strings.noOptions,
     size = 'md',
@@ -183,7 +197,7 @@ export function Combobox({
                 onKeyDown={(event) => ['ArrowDown', 'Enter', ' '].includes(event.key) && !open && (event.preventDefault(), show())}
                 aria-haspopup="listbox"
                 aria-expanded={open}
-                aria-label={ariaLabel}
+                aria-label={ariaLabel ?? (typeof label === 'string' ? label : undefined)}
                 className={cn(
                     'flex w-full items-center border bg-white text-left text-zinc-900 tabular-nums transition focus:outline-none disabled:opacity-50',
                     invalid ? 'border-red-400 ring-1 ring-red-200 focus:border-red-500' : 'border-zinc-300 focus:border-brand',
@@ -191,7 +205,7 @@ export function Combobox({
                     TRIGGER_SIZES[size],
                 )}
             >
-                <TriggerLabel chosen={chosen} placeholder={placeholder} multiple={multiple} />
+                <TriggerLabel chosen={chosen} placeholder={placeholder} multiple={multiple} label={label} />
             </button>
             {clearable && chosen.length > 0 && !disabled ? (
                 <button

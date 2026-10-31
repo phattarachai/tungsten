@@ -333,8 +333,29 @@ Forms post to plain controllers + FormRequests that redirect back `with('flash',
 | `->perPage(25, [25, 50, 100])` | `?per_page=`, `?page=` | `pagination: {current_page, last_page, per_page, total, from, to}` |
 
 Blank values sort last in both directions, the model key breaks ties, and `->query()` gives the filtered, sorted
-builder for an export. In JSX, `useTableQuery()` gives `setSearch`, `setSort`, `setPage`, `setFilter`, `setFilters`
-and `clear`, each a `preserveState` visit that resets to page 1 (except `setPage`).
+builder for an export. In JSX, `useTableQuery()` gives `setSearch`, `setSort`, `setPage`, `setPerPage`, `setFilter`,
+`setFilters` and `clear`, each a `preserveState` visit that resets to page 1 (except `setPage`).
+
+A list with its main filters shown above the table, Filament-style, with no filter menu to open:
+
+```jsx
+<FilterBar
+    flush
+    end={<SearchInput value={orders.search} onSearch={query.setSearch} />}
+    below={tab === 'shipping' && <Pills options={shippingTabs} value={filters.shipping} onChange={(value) => query.setFilter('shipping', value)} />}
+>
+    <ButtonGroup size="sm" options={presets} value={filters.period} onChange={(value) => query.setFilter('period', value)} />
+    <Combobox size="sm" multiple clearable label="ช่องทาง" options={channels} value={filters.channel ?? []} onChange={(value) => query.setFilter('channel', value)} />
+    <FilterField label="ชำระเงิน">
+        <Select size="sm" value={filters.paid ?? ''} onChange={(event) => query.setFilter('paid', event.target.value)}>…</Select>
+    </FilterField>
+</FilterBar>
+<DataTable flush columns={columns} rows={orders.rows} sort={orders.sort} onSort={query.setSort} />
+<Pagination flush paginator={orders.pagination} onPage={query.setPage} onPerPage={query.setPerPage} />
+```
+
+`onPerPage` adds a 25 / 50 / 100 picker (`perPageOptions` to change it); the server allows the same values with
+`->perPage(25, [25, 50, 100])`.
 
 ## The kit
 
@@ -349,11 +370,14 @@ Route::post('ui-kit/toast', UiKitToastController::class)->name('ui-kit.toast');
 - **Shell**: `AppLayout` (`toolbar`, `sheet`, `flush`, `sidebar={false}`, `topbar={false}`, `className`, `mainClassName`), and
   its parts for a layout of your own: `Sidebar`, `Topbar`, `PanelSwitcher`, `FlashToast`, `TooltipLayer`, `Aside`.
 - **Lists**: `DataTable` (sortable, selection, row actions, groups with subtotals, sticky columns), `DataList`,
-  `TreeTable`, `TableToolbar`, `Pagination`, `Pills`, `SearchInput`, `Dropdown`, `ColumnsMenu`, `SelectionBar`.
-  `DataTable`, `TableToolbar` and `Pagination` take `flush` to drop their frame and side padding, for a table on a
-  sheet or a bare page.
+  `TreeTable`, `FilterBar` / `FilterField`, `TableToolbar`, `Pagination` (optional per-page picker), `Pills` (scrolls
+  sideways when narrow), `SearchInput`, `Dropdown`, `ColumnsMenu`, `SelectionBar`, `AvatarStack` (the first `max`,
+  then +N with the rest in its tooltip), `Thumb` (a 2rem rounded image, grey placeholder without one).
+  `DataTable`, `FilterBar`, `TableToolbar` and `Pagination` take `flush` to drop their frame and side padding, for a
+  table on a sheet or a bare page. A `DataTable` column takes `valign: 'top'` for multi-line cells (or the table its
+  own `valign`), and `plainLinks` makes `rowHref` render a plain `<a>` for rows that open non-Inertia pages.
 - **Forms**: `FormField` (inline label, `hint`, `info`, `error`), `Input`, `Select`, `Textarea`, `Combobox`
-  (searchable, multiple), `Switch`, `DatePicker` / `DateTimePicker` / `DateRangePicker` (values stay ISO
+  (searchable, multiple; `size="sm"` + `label` for a filter bar), `ButtonGroup` (`size="sm"` for toolbar presets), `Switch`, `DatePicker` / `DateTimePicker` / `DateRangePicker` (values stay ISO
   Gregorian; display is พ.ศ.), `FormDialog`, `ConfirmDialog`, `Dialog`.
 - **Records**: `RecordLayout`, `PageHeader`, `GroupedNav`, `NavList`, `RecordPager`, `Section`, `SectionGrid`,
   `TabSection`, `DetailList`, `Timeline`, `Stepper`, `AuditPanel`, `LastEdited`.
@@ -474,6 +498,10 @@ only. Sizes are rem only — the shell scales the rem base to 125%, so write `te
 - **Bigint route parameters need `->whereNumber()`.**
 - **Non-GET visits flush the prefetch cache** (`createTungstenApp` does it), so a list prefetched before a save is
   never shown stale.
+- **Another Inertia entry must not glob the panel pages.** If the app has its own Inertia root whose resolver eagerly
+  globs `./pages/**`, exclude the panel: `import.meta.glob(['./pages/**/*.jsx', '!./pages/panel/**'], { eager: true })`.
+  Otherwise Rollup bundles the panel pages into that entry's chunk, and the panel's `@vite(page)` throws "Unable to
+  locate file in Vite manifest".
 - **Inertia DevTools is off** unless `INERTIA_DEVTOOLS_ENABLED` is set: in `local` it records every request with
   full props to disk (~100 ms a request, hundreds of MB in days). Set `tungsten.disable_inertia_devtools` to
   `false` to leave Inertia's default alone.
