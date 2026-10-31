@@ -64,7 +64,7 @@ it('renders a page controller with its component, props and the shared panel pro
             ->where('panel.help', '/help/orders')
             ->where('panel.home', url('/admin'))
             ->where('breadcrumbs', [['label' => 'การขาย'], ['label' => 'คำสั่งซื้อ']])
-            ->where('flash', ['message' => null, 'status' => null])
+            ->where('flash', ['message' => null, 'status' => null, 'id' => null])
             ->where('layout', null)
             ->has('nav')
             ->has('panels'));
@@ -126,6 +126,30 @@ it('links a favicon pair and an apple touch icon', function (): void {
             'rel="icon" href="'.asset('images/brand-mark.svg').'"', 'type="image/svg+xml"',
             'rel="apple-touch-icon" href="'.asset('apple-touch-icon.png').'"',
         ], false);
+});
+
+it('gives each response that carries a flash a new id, so the same message twice shows twice', function (): void {
+    $ids = collect(range(1, 2))->map(function (): string {
+        $id = null;
+
+        session()->flash('flash', ['message' => 'แต้มคงเหลือไม่เพียงพอ', 'tone' => 'error']);
+
+        $this->actingAs($this->admin())
+            ->get('/admin/orders')
+            ->assertInertia(function (Assert $page) use (&$id): Assert {
+                $id = $page->toArray()['props']['flash']['id'];
+
+                return $page->where('flash.message.message', 'แต้มคงเหลือไม่เพียงพอ');
+            });
+
+        return (string) $id;
+    });
+
+    expect($ids->filter()->unique())->toHaveCount(2);
+
+    session()->forget('flash');
+
+    $this->actingAs($this->admin())->get('/admin/orders')->assertInertia(fn (Assert $page): Assert => $page->where('flash.id', null));
 });
 
 it('puts the panel brand colour on the root element', function (): void {

@@ -5,6 +5,7 @@ import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 
 import { SearchInput, Thumb, Zoomable } from '@tungsten'
+import { FlashToastFor } from '@tungsten/components/panel/FlashToast'
 
 function mount(element) {
     const host = document.createElement('div')
@@ -117,6 +118,34 @@ Object.assign(checks, {
         const box = mount(<Thumb src={null} alt="ไม่มีรูป" zoom />)
 
         assert.equal(document.querySelector('button[aria-label^="ดูรูป"]'), null)
+        box.unmount()
+    },
+})
+
+const zIndex = (element) => Number(/(?:^|\s)z-\[?(\d+)\]?(?:\s|$)/.exec(element.className)?.[1] ?? 0)
+
+Object.assign(checks, {
+    'the flash toast sits above every overlay: portaled to body, over the dialog (z-50) and the lightbox (z-[60])': () => {
+        const box = mount(<FlashToastFor flash={{ message: { message: 'บันทึกไม่สำเร็จ', tone: 'error' }, id: 'a' }} />)
+        const toast = document.querySelector('[role="status"]')
+
+        assert.equal(toast.parentElement, document.body)
+        assert.ok(zIndex(toast) > 60, `toast z-index ${zIndex(toast)}`)
+        box.unmount()
+    },
+
+    'the same flash message on the next response is a new toast; the same response re-rendered is not': () => {
+        const flash = (id) => ({ message: { message: 'แต้มคงเหลือไม่เพียงพอ', tone: 'error' }, id })
+        const box = mount(<FlashToastFor flash={flash('1')} />)
+        const first = document.querySelector('[role="status"]')
+
+        box.render(<FlashToastFor flash={flash('1')} />)
+        assert.equal(document.querySelector('[role="status"]'), first, 'same id keeps the toast')
+
+        box.render(<FlashToastFor flash={flash('2')} />)
+        const second = document.querySelector('[role="status"]')
+        assert.ok(second && second !== first, 'a new id starts a new toast')
+        assert.equal(document.querySelectorAll('[role="status"]').length, 1)
         box.unmount()
     },
 })

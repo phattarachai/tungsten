@@ -8,6 +8,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Str;
 use Inertia\Middleware;
 use Override;
 use Phattarachai\Tungsten\Panel;
@@ -64,10 +65,24 @@ class HandleTungstenRequests extends Middleware
             'nav' => fn (): array => $panel->navigation($request),
             'breadcrumbs' => fn (): array => $panel->breadcrumbs($route),
             'layout' => fn (): ?array => $this->layout($panel, $route),
-            'flash' => fn (): array => [
-                'message' => $request->hasSession() ? $request->session()->get('flash') : null,
-                'status' => $request->hasSession() ? $request->session()->get('status') : null,
-            ],
+            'flash' => fn (): array => $this->flash($request),
+        ];
+    }
+
+    /**
+     * The session's flash, with an `id` new on every response that carries one, so the same message flashed twice in
+     * a row still shows as a new toast.
+     *
+     * @return array{message: mixed, status: mixed, id: ?string}
+     */
+    private function flash(Request $request): array
+    {
+        $message = $request->hasSession() ? $request->session()->get('flash') : null;
+
+        return [
+            'message' => $message,
+            'status' => $request->hasSession() ? $request->session()->get('status') : null,
+            'id' => $message === null ? null : (string) Str::ulid(),
         ];
     }
 

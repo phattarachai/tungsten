@@ -7,6 +7,13 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.11 — 2026-11-01
+
+- Fix: the flash toast sat behind a dialog's overlay (both `z-50`). It now portals to `body` at `z-[70]`, above
+  dialogs, the Aside and the Lightbox.
+- Fix: the same flash message on two responses in a row didn't show again. The shared `flash` gains an `id`, new on
+  every response that carries a message, and the toast keys on it.
+
 ## v0.2.10 — 2026-11-01
 
 - **Environment indicator**: `tungsten.environments` (env → `{label, tone}` or null, over the kit defaults: production
