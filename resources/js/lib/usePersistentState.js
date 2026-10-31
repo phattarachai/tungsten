@@ -1,26 +1,31 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
-function read(key, fallback) {
-    try {
-        const stored = localStorage.getItem(key)
+import { readStorage, writeStorage } from './browser'
 
-        return stored === null ? fallback : JSON.parse(stored)
-    } catch {
-        return fallback
-    }
-}
-
+/**
+ * `useState` kept in localStorage for per-viewer view preferences. Renders `fallback` first (also on the server),
+ * then the stored value once mounted, so SSR and hydration agree.
+ */
 export function usePersistentState(key, fallback) {
-    const [value, setValue] = useState(() => read(key, fallback))
+    const [value, setValue] = useState(fallback)
+
+    useEffect(() => {
+        const stored = readStorage(key)
+
+        if (stored === null) {
+            return
+        }
+
+        try {
+            setValue(JSON.parse(stored))
+        } catch {
+            // a stored value from an older shape — keep the fallback
+        }
+    }, [key])
 
     function update(next) {
         setValue(next)
-
-        try {
-            localStorage.setItem(key, JSON.stringify(next))
-        } catch {
-            // storage unavailable — the value still applies for this page
-        }
+        writeStorage(key, JSON.stringify(next))
     }
 
     return [value, update]

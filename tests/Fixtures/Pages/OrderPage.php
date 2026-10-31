@@ -8,31 +8,19 @@ use Illuminate\Http\Request;
 use Override;
 use Phattarachai\Tungsten\Page;
 use Phattarachai\Tungsten\Tests\Fixtures\Models\Order;
+use Phattarachai\Tungsten\Tungsten;
 
 class OrderPage extends Page
 {
-    public function path(): string
-    {
-        return 'orders/{order}';
-    }
-
     public function component(): string
     {
         return 'panel/orders/Show';
     }
 
-    public function navLabel(): string
-    {
-        return 'คำสั่งซื้อ';
-    }
-
     #[Override]
     public function breadcrumbs(Request $request): array
     {
-        return [
-            ['label' => 'คำสั่งซื้อ', 'url' => route('admin.orders')],
-            ['label' => Order::query()->find($request->route('order'))?->number ?? '—'],
-        ];
+        return Tungsten::breadcrumbs(Order::query()->find($request->route('order'))?->number ?? '—');
     }
 
     public function props(Request $request): array

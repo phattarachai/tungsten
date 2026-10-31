@@ -6,37 +6,20 @@ namespace {{ namespace }};
 
 use {{ modelClass }};
 use Illuminate\Http\Request;
-use Override;
 use Phattarachai\Tungsten\Page;
 use Phattarachai\Tungsten\Table\TableQuery;
 
 class {{ class }} extends Page
 {
-    public function path(): string
-    {
-        return '{{ path }}';
-    }
-
     public function component(): string
     {
         return '{{ component }}';
     }
 
-    public function navLabel(): string
-    {
-        return '{{ label }}';
-    }
-
-    #[Override]
-    public function navIcon(): ?string
-    {
-        return 'layout-grid';
-    }
-
     public function props(Request $request): array
     {
         return [
-            'title' => $this->title(),
+            'title' => '{{ label }}',
             'table' => TableQuery::for({{ model }}::query(), $request)
                 ->search(['id'])
                 ->sorts(['id', 'created_at'])

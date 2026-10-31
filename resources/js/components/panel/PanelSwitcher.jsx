@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'react'
 import { cn } from '../../lib/cn'
 
 import { PanelChip } from './PanelChip'
+import { urlOf } from '../../lib/href'
 
 function useCloseOnOutside(details) {
     useEffect(() => {
@@ -29,7 +30,7 @@ function useCloseOnOutside(details) {
 function ReplacementButton({ entry }) {
     return (
         <a
-            href={entry.url}
+            href={urlOf(entry.url)}
             title={`${entry.label} — ${entry.description}`}
             className={cn('mr-1 shrink-0 self-center rounded-md p-0.5 hover:bg-zinc-100', entry.current && 'ring-2 ring-brand-600 ring-offset-1')}
         >
@@ -41,7 +42,7 @@ function ReplacementButton({ entry }) {
 function PanelRow({ entry, replacements }) {
     return (
         <div className={cn('flex items-stretch rounded hover:bg-zinc-50', entry.current && 'bg-brand-50 hover:bg-brand-50')}>
-            <a href={entry.url} className="flex min-w-0 flex-1 items-start gap-2.5 px-2 py-1.5">
+            <a href={urlOf(entry.url)} className="flex min-w-0 flex-1 items-start gap-2.5 px-2 py-1.5">
                 <PanelChip entry={entry} className="mt-0.5" />
                 <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-1 text-[0.8125rem] font-medium text-zinc-900">
@@ -59,7 +60,7 @@ function PanelRow({ entry, replacements }) {
 }
 
 export function PanelSwitcher({ compact = false }) {
-    const { panels, panel } = usePage().props
+    const { panels = [], panel } = usePage().props
     const details = useRef(null)
     const current = panels.find((entry) => entry.current)
     const brand = panel?.brand

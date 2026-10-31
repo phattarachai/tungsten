@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Route;
+use Phattarachai\Tungsten\Pages\HomePage;
 use Phattarachai\Tungsten\Panel;
 use Phattarachai\Tungsten\PanelProvider;
 
@@ -14,6 +16,9 @@ class TungstenPanelProvider extends PanelProvider
         return $panel
             ->path('admin')
             ->label(config('app.name'))
-            ->discoverSets(app_path('Panel/Sets'), 'App\\Panel\\Sets');
+            ->discoverSets(app_path('Panel/Sets'), 'App\\Panel\\Sets')
+            ->routes(function (): void {
+                Route::get('/', HomePage::class)->name('dashboard')->nav('หน้าหลัก', icon: 'layout-grid', sort: -1);
+            });
     }
 }

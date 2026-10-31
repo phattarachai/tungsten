@@ -11,8 +11,9 @@ return [
     'middleware' => ['web', 'auth'],
 
     /*
-    | The accent colour of every panel (primary buttons, key cells, active marks). A panel overrides it with
-    | `->brandColor()`. The rest of the theme is the kit's steel greys.
+    | The accent colour of every panel (primary buttons, key cells, active marks), set inline on the panel's <html>.
+    | A panel overrides it with `->brandColor()`. Null leaves `--color-brand` to your stylesheet's @theme, like every
+    | other token (greys, font, radius) — see the README's "Theme".
     */
     'brand_color' => env('TUNGSTEN_BRAND_COLOR', '#ba1a1a'),
 

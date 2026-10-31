@@ -1,22 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
+import { readStorage, writeStorage } from '../../lib/browser'
 import { cn } from '../../lib/cn'
 
-function readStored(storageKey) {
-    try {
-        return storageKey ? localStorage.getItem(storageKey) : null
-    } catch {
-        return null
-    }
-}
-
 function store(storageKey, value) {
-    try {
-        if (storageKey) {
-            localStorage.setItem(storageKey, value)
-        }
-    } catch {
-        return undefined
+    if (storageKey) {
+        writeStorage(storageKey, value)
     }
 }
 
@@ -41,7 +30,15 @@ function Tab({ tab, active, onSelect }) {
 }
 
 export function TabSection({ tabs, defaultTab, storageKey, value, onChange, flush = false, className, bodyClassName }) {
-    const [stored, setStored] = useState(() => readStored(storageKey) ?? defaultTab ?? tabs[0]?.key)
+    const [stored, setStored] = useState(defaultTab ?? tabs[0]?.key)
+
+    useEffect(() => {
+        const remembered = storageKey ? readStorage(storageKey) : null
+
+        if (remembered !== null) {
+            setStored(remembered)
+        }
+    }, [storageKey])
     const selected = value ?? stored
     const active = tabs.find((tab) => tab.key === selected) ?? tabs[0]
 

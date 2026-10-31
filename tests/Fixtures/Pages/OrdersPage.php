@@ -5,38 +5,15 @@ declare(strict_types=1);
 namespace Phattarachai\Tungsten\Tests\Fixtures\Pages;
 
 use Illuminate\Http\Request;
-use Override;
 use Phattarachai\Tungsten\Page;
 use Phattarachai\Tungsten\Table\TableQuery;
 use Phattarachai\Tungsten\Tests\Fixtures\Models\Order;
 
 class OrdersPage extends Page
 {
-    public function path(): string
-    {
-        return 'orders';
-    }
-
     public function component(): string
     {
         return 'panel/orders/Index';
-    }
-
-    public function navLabel(): string
-    {
-        return 'คำสั่งซื้อ';
-    }
-
-    #[Override]
-    public function navGroup(): ?string
-    {
-        return 'การขาย';
-    }
-
-    #[Override]
-    public function navIcon(): ?string
-    {
-        return 'shopping-cart';
     }
 
     public function props(Request $request): array

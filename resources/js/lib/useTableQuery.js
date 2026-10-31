@@ -1,5 +1,7 @@
 import { router, usePage } from '@inertiajs/react'
 
+import { parseUrl, pathOf } from './browser'
+
 /**
  * Drives a TableQuery list from the page: each setter rewrites the query string and reloads the page props with
  * state and scroll kept. Changing search, sort or a filter goes back to page 1.
@@ -12,7 +14,7 @@ export function useTableQuery(options = {}) {
     const { url } = usePage()
 
     function visit(changes, { keepPage = false } = {}) {
-        const target = new URL(url, window.location.origin)
+        const target = parseUrl(url)
 
         for (const [key, value] of Object.entries(changes)) {
             target.searchParams.delete(key)
@@ -29,7 +31,7 @@ export function useTableQuery(options = {}) {
             target.searchParams.delete('page')
         }
 
-        router.get(target.pathname + target.search, {}, { preserveState: true, preserveScroll: true, replace: true, ...options })
+        router.get(pathOf(target), {}, { preserveState: true, preserveScroll: true, replace: true, ...options })
     }
 
     return {

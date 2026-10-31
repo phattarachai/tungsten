@@ -6,17 +6,19 @@ namespace Phattarachai\Tungsten;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Route;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Phattarachai\Tungsten\Exceptions\MissingPageClass;
 use Phattarachai\Tungsten\Http\Middleware\HandleTungstenRequests;
-use Phattarachai\Tungsten\Pages\HomePage;
 use Symfony\Component\Finder\Finder;
+use WeakMap;
 
 /**
- * One admin panel: its path, chrome, gate, pages and sets. Declared in a {@see PanelProvider} and held by the
- * {@see PanelRegistry}; it resolves its routes, sidebar nav, breadcrumbs and help.
+ * One admin panel: its path, chrome, gate and sets. Declared in a {@see PanelProvider} and held by the
+ * {@see PanelRegistry}. Its routes are plain Laravel routes; it reads their `->nav()` / `->breadcrumb()` metadata
+ * to build the sidebar, breadcrumbs and help.
  *
  * @see docs/kernel.md
  */
@@ -69,11 +71,6 @@ class Panel
     /**
      * @var list<string>
      */
-    private array $pages = [];
-
-    /**
-     * @var list<string>
-     */
     private array $sets = [];
 
     /**
@@ -85,17 +82,15 @@ class Panel
 
     private string|Closure|false|null $logoutUrl = null;
 
-    private bool $home = true;
-
-    /**
-     * @var Collection<int, Page>|null
-     */
-    private ?Collection $resolved = null;
-
     /**
      * @var list<string>|null
      */
     private ?array $resolvedSets = null;
+
+    /**
+     * @var WeakMap<object, array<int, Route>>|null
+     */
+    private ?WeakMap $navRoutes = null;
 
     public static function make(string $id): self
     {
@@ -167,7 +162,8 @@ class Panel
     }
 
     /**
-     * The accent colour (primary buttons, key cells, active marks); `tungsten.brand_color` when unset.
+     * The accent colour, set inline on the panel's <html>; `tungsten.brand_color` when unset. With neither, the
+     * stylesheet's `--color-brand` token applies, so a host can theme it in CSS alone.
      */
     public function brandColor(string $color): self
     {
@@ -246,24 +242,12 @@ class Panel
     }
 
     /**
-     * @param  list<class-string<Page>>  $pages
-     */
-    public function pages(array $pages): self
-    {
-        $this->pages = [...$this->pages, ...$pages];
-        $this->resolved = null;
-
-        return $this;
-    }
-
-    /**
      * @param  list<class-string<PanelSet>>  $sets
      */
     public function sets(array $sets): self
     {
         $this->sets = [...$this->sets, ...$sets];
         $this->resolvedSets = null;
-        $this->resolved = null;
 
         return $this;
     }
@@ -287,9 +271,8 @@ class Panel
     }
 
     /**
-     * Sidebar links to screens that are not pages of this panel. A link with `route` is an in-app screen (same
-     * tab, marked active like a page); with `url` it opens in a new tab; `legacy` marks a page still on the old
-     * admin (same tab, a ↗ and a dot instead of the icon).
+     * Sidebar links to screens that aren't routes of this panel. With `route` it is an in-app screen (same tab,
+     * marked active); with `url` it opens in a new tab; `legacy` marks a page still on the old admin.
      *
      * @param  list<array{label: string, url?: string, route?: string, icon?: ?string, group?: ?string, sort?: int, ability?: ?string, legacy?: bool}>  $links
      */
@@ -301,8 +284,9 @@ class Panel
     }
 
     /**
-     * Extra (non-page) routes registered inside the panel's prefix, middleware and `{id}.` name prefix.
-     * Point them at controllers, not closures, so `route:cache` keeps working.
+     * Routes declared with the panel, inside its prefix, middleware and `{id}.` name prefix. Point them at
+     * controllers, not closures, so `route:cache` keeps working. Route files can do the same with
+     * `Tungsten::routes('{id}', fn () => ...)`, sets with their `routes()`.
      */
     public function routes(Closure $routes): self
     {
@@ -317,16 +301,6 @@ class Panel
     public function logoutUrl(string|Closure|false $url): self
     {
         $this->logoutUrl = $url;
-
-        return $this;
-    }
-
-    /**
-     * Without a page at the panel root, Tungsten mounts a card index of the panel's nav there; false turns it off.
-     */
-    public function home(bool $home = true): self
-    {
-        $this->home = $home;
 
         return $this;
     }
@@ -371,9 +345,11 @@ class Panel
         return $this->rail;
     }
 
-    public function getBrandColor(): string
+    public function getBrandColor(): ?string
     {
-        return $this->brandColor ?? (string) config('tungsten.brand_color', '#ba1a1a');
+        $color = $this->brandColor ?? config('tungsten.brand_color');
+
+        return is_string($color) && $color !== '' ? $color : null;
     }
 
     /**
@@ -400,11 +376,21 @@ class Panel
     }
 
     /**
+     * Sets whose class exists; a missing one is skipped and reported, never fatal.
+     *
      * @return list<string>
      */
     public function getSets(): array
     {
-        return $this->resolvedSets ??= array_values(array_filter($this->sets, $this->classExists(...)));
+        return $this->resolvedSets ??= array_values(array_filter($this->sets, $this->setExists(...)));
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function missingSets(): array
+    {
+        return array_values(array_filter($this->sets, fn (string $set): bool => ! class_exists($set)));
     }
 
     /**
@@ -420,6 +406,9 @@ class Panel
         ]));
     }
 
+    /**
+     * The panel's own routes: every set's `routes()`, then `->routes()`. Called inside the panel's route group.
+     */
     public function registerRoutes(): void
     {
         foreach ($this->getSets() as $set) {
@@ -438,11 +427,8 @@ class Panel
     {
         $url = $this->logoutUrl ?? config('tungsten.logout_route');
 
-        if ($url === false) {
-            return null;
-        }
-
         return match (true) {
+            $url === false => null,
             $url instanceof Closure => $url(),
             ! is_string($url) || $url === '' => null,
             app('router')->has($url) => route($url),
@@ -451,8 +437,15 @@ class Panel
         };
     }
 
-    public function helpUrl(?string $routeName): ?string
+    public function helpUrl(?Route $route): ?string
     {
+        $routeName = $route?->getName();
+        $meta = RouteMeta::of($route);
+
+        if (isset($meta['help'])) {
+            return $meta['help'];
+        }
+
         if ($this->help instanceof Closure) {
             return ($this->help)($routeName);
         }
@@ -462,103 +455,148 @@ class Panel
             ->first(fn (string $url, string $pattern): bool => Str::is($pattern, (string) $routeName));
     }
 
-    public function routeName(Page $page): string
+    public function owns(?Route $route): bool
     {
-        return "{$this->id}.{$page->routeKey()}";
+        return $route !== null && str_starts_with((string) $route->getName(), "{$this->id}.");
     }
 
     /**
-     * Registered page classes that don't exist are skipped and reported, never fatal: one session listing a page
-     * it hasn't committed yet must not break every request of the app.
-     *
-     * @return Collection<int, Page>
-     */
-    public function resolvePages(): Collection
-    {
-        if ($this->resolved instanceof Collection) {
-            return $this->resolved;
-        }
-
-        $classes = collect([...$this->pages, ...collect($this->getSets())->flatMap(fn (string $set): array => $set::pages())])
-            ->unique()
-            ->filter($this->classExists(...));
-
-        $pages = $classes->map(fn (string $page): Page => app($page))->values();
-
-        return $this->resolved = $this->home && ! $pages->contains(fn (Page $page): bool => trim($page->path(), '/') === '')
-            ? $pages->prepend(app(HomePage::class))
-            : $pages;
-    }
-
-    public function pageForRoute(?string $routeName): ?Page
-    {
-        return $this->resolvePages()->first(fn (Page $page): bool => $this->routeName($page) === $routeName);
-    }
-
-    /**
-     * The sidebar tree — pages and links grouped in the declared group order, gate-filtered for the current user,
-     * each flagged active against the current request.
+     * The sidebar tree — routes with `->nav()` and the panel's links, grouped in the declared group order, filtered
+     * by each route's `can:` middleware and nav ability, each flagged active against the current request.
      *
      * @return list<array{group: ?string, items: list<array<string, mixed>>}>
      */
     public function navigation(Request $request): array
     {
-        $visible = $this->resolvePages()
-            ->filter(fn (Page $page): bool => $this->isVisible($page) && $page->showInNavigation())
-            ->sortBy(fn (Page $page): int => $page->navSort());
+        $items = collect($this->navRoutes())
+            ->filter($this->allows(...))
+            ->map(fn (Route $route): array => $this->navItem($route, $request))
+            ->concat($this->linkItems($request));
 
         $groups = collect($this->navigationGroups)
-            ->merge($visible->map(fn (Page $page): ?string => $page->navGroup()))
-            ->merge(array_column($this->allLinks(), 'group'))
+            ->merge($items->pluck('group'))
             ->filter()
             ->unique()
             ->all();
 
         return collect([null, ...$groups])
-            ->map(fn (?string $group): array => ['group' => $group, 'items' => $this->itemsForGroup($visible, $group, $request)])
+            ->map(fn (?string $group): array => [
+                'group' => $group,
+                'items' => $items->where('group', $group)
+                    ->sortBy('sort')
+                    ->map(fn (array $item): array => collect($item)->except(['sort', 'group'])->all())
+                    ->values()
+                    ->all(),
+            ])
             ->filter(fn (array $section): bool => $section['items'] !== [])
             ->values()
             ->all();
     }
 
-    public function isVisible(Page $page): bool
+    /**
+     * The trail for the current route: its `->breadcrumbs([...])` if set; for a nav route, its group and label; else
+     * the parent nav route (`->breadcrumb(parent:)`, or the longest nav route name that prefixes this one) as a link,
+     * then the route's own `->breadcrumb('…')` label or `$leaf`.
+     *
+     * @return list<array{label: string, url?: string}>
+     */
+    public function breadcrumbs(?Route $route, ?string $leaf = null): array
     {
-        return $page->visible() && ($page->ability() === null || Gate::allows($page->ability()));
+        $meta = RouteMeta::of($route);
+
+        if (isset($meta['breadcrumbs']) && $leaf === null) {
+            return array_map(self::crumb(...), $meta['breadcrumbs']);
+        }
+
+        if (isset($meta['nav']) && $leaf === null) {
+            return array_values(array_filter([
+                $meta['nav']['group'] === null ? null : ['label' => $meta['nav']['group']],
+                ['label' => $meta['nav']['label']],
+            ]));
+        }
+
+        $parent = $this->parentRoute($route, $meta['breadcrumb']['parent'] ?? null);
+        $parentNav = RouteMeta::of($parent)['nav'] ?? null;
+        $label = $leaf ?? $meta['breadcrumb']['label'] ?? null;
+
+        return array_values(array_filter([
+            $parentNav === null || $parentNav['group'] === null ? null : ['label' => $parentNav['group']],
+            $parentNav === null || $parent === null ? null : ['label' => $parentNav['label'], 'url' => $this->urlFor($parent, $route)],
+            $label === null ? null : ['label' => $label],
+        ]));
     }
 
     /**
-     * @return list<string>
+     * @return array<int, Route>
      */
-    public function missingClasses(): array
+    public function navRoutes(): array
     {
-        return collect([...$this->sets, ...$this->pages, ...collect($this->getSets())->flatMap(fn (string $set): array => $set::pages())])
-            ->reject(fn (string $class): bool => class_exists($class))
-            ->unique()
+        $routes = app('router')->getRoutes();
+        $this->navRoutes ??= new WeakMap;
+
+        return $this->navRoutes[$routes] ??= collect($routes->getRoutes())
+            ->filter(fn (Route $route): bool => $this->owns($route) && isset(RouteMeta::of($route)['nav']) && in_array('GET', $route->methods(), true))
+            ->reject(fn (Route $route): bool => preg_match('/\{\w+\}/', $route->uri()) === 1)
             ->values()
             ->all();
     }
 
-    /**
-     * @param  Collection<int, Page>  $visible
-     * @return list<array<string, mixed>>
-     */
-    private function itemsForGroup(Collection $visible, ?string $group, Request $request): array
+    private function allows(Route $route): bool
     {
-        $pages = $visible
-            ->filter(fn (Page $page): bool => $page->navGroup() === $group)
-            ->map(fn (Page $page): array => [
-                'label' => $page->navLabel(),
-                'icon' => $page->navIcon(),
-                'url' => route($this->routeName($page)),
-                'active' => $request->routeIs($this->routeName($page), "{$this->routeName($page)}.*"),
-                'badge' => $page->navBadge(),
-                'external' => false,
-                'legacy' => false,
-                'sort' => $page->navSort(),
-            ]);
+        $abilities = collect($route->middleware())
+            ->filter(fn (string $middleware): bool => str_starts_with($middleware, 'can:') && ! str_contains($middleware, ','))
+            ->map(fn (string $middleware): string => Str::after($middleware, 'can:'))
+            ->reject(fn (string $ability): bool => $ability === $this->ability)
+            ->push(RouteMeta::of($route)['nav']['ability'] ?? null)
+            ->filter();
 
-        $links = collect($this->allLinks())
-            ->filter(fn (array $link): bool => $link['group'] === $group)
+        return $abilities->every(fn (string $ability): bool => Gate::allows($ability));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function navItem(Route $route, Request $request): array
+    {
+        $nav = RouteMeta::of($route)['nav'];
+        $name = (string) $route->getName();
+
+        return [
+            'label' => $nav['label'],
+            'icon' => $nav['icon'],
+            'url' => $this->urlFor($route),
+            'active' => $request->routeIs($name, "{$name}.*"),
+            'badge' => $this->badge($nav['badge']),
+            'external' => false,
+            'legacy' => false,
+            'group' => $nav['group'],
+            'sort' => $nav['sort'],
+        ];
+    }
+
+    /**
+     * A badge is a fixed string, or the class name of an invokable that returns one (counts, states).
+     */
+    private function badge(?string $badge): ?string
+    {
+        if ($badge === null || ! class_exists($badge)) {
+            return $badge;
+        }
+
+        $value = app($badge)();
+
+        return $value === null ? null : (string) $value;
+    }
+
+    /**
+     * @return Collection<int, array{label: string, icon: ?string, url: string, active: bool, badge: null, external: bool, legacy: bool, group: ?string, sort: int}>
+     */
+    private function linkItems(Request $request): Collection
+    {
+        $fromSets = collect($this->getSets())->flatMap(fn (string $set): array => $set::links())->map(self::link(...));
+
+        return collect($this->links)
+            ->concat($fromSets)
             ->filter(fn (array $link): bool => $link['ability'] === null || Gate::allows($link['ability']))
             ->map(fn (array $link): array => [
                 'label' => $link['label'],
@@ -568,24 +606,58 @@ class Panel
                 'badge' => null,
                 'external' => $link['route'] === null && ! $link['legacy'],
                 'legacy' => $link['legacy'],
+                'group' => $link['group'],
                 'sort' => $link['sort'],
             ]);
+    }
 
-        return $pages->concat($links)
-            ->sortBy('sort')
-            ->map(fn (array $item): array => collect($item)->except('sort')->all())
-            ->values()
-            ->all();
+    private function parentRoute(?Route $route, ?string $parent): ?Route
+    {
+        if ($parent !== null) {
+            return app('router')->getRoutes()->getByName($parent);
+        }
+
+        $name = (string) $route?->getName();
+
+        return collect($this->navRoutes())
+            ->filter(fn (Route $candidate): bool => $candidate->getName() !== $name && str_starts_with($name, "{$candidate->getName()}."))
+            ->sortByDesc(fn (Route $candidate): int => strlen((string) $candidate->getName()))
+            ->first();
     }
 
     /**
-     * @return list<array{label: string, url: string, route: ?string, icon: ?string, group: ?string, sort: int, ability: ?string, legacy: bool}>
+     * A route's URL, filling its parameters from the current route's (a parent of `orders.items.show` is
+     * `orders.show`, which needs the same `{order}`).
      */
-    private function allLinks(): array
+    private function urlFor(Route $route, ?Route $current = null): string
     {
-        $fromSets = collect($this->getSets())->flatMap(fn (string $set): array => $set::links())->map(self::link(...))->all();
+        $parameters = array_intersect_key($current?->parameters() ?? [], array_flip($route->parameterNames()));
 
-        return [...$this->links, ...$fromSets];
+        return route((string) $route->getName(), $parameters);
+    }
+
+    private function setExists(string $class): bool
+    {
+        if (class_exists($class)) {
+            return true;
+        }
+
+        report(new MissingPageClass("Tungsten panel [{$this->id}] lists set [{$class}], which does not exist; it was skipped."));
+
+        return false;
+    }
+
+    /**
+     * @param  array{label: string, url?: string, route?: string}  $crumb
+     * @return array{label: string, url?: string}
+     */
+    private static function crumb(array $crumb): array
+    {
+        return match (true) {
+            isset($crumb['route']) => ['label' => $crumb['label'], 'url' => route($crumb['route'])],
+            isset($crumb['url']) => ['label' => $crumb['label'], 'url' => url($crumb['url'])],
+            default => ['label' => $crumb['label']],
+        };
     }
 
     /**
@@ -604,16 +676,5 @@ class Panel
             'ability' => $link['ability'] ?? null,
             'legacy' => $link['legacy'] ?? false,
         ];
-    }
-
-    private function classExists(string $class): bool
-    {
-        if (class_exists($class)) {
-            return true;
-        }
-
-        report(new MissingPageClass("Tungsten panel [{$this->id}] lists [{$class}], which does not exist; it was skipped."));
-
-        return false;
     }
 }

@@ -7,20 +7,26 @@ use Phattarachai\Tungsten\Http\Middleware\HandleTungstenRequests;
 use Phattarachai\Tungsten\PanelRegistry;
 use Phattarachai\Tungsten\Tests\Fixtures\Models\Order;
 
-it('mounts every page under its panel path with the {id}. route name', function (): void {
+it('mounts set routes and route-file routes under the panel path with the {id}. route name', function (): void {
     expect(route('admin.dashboard'))->toEndWith('/admin')
         ->and(route('admin.orders'))->toEndWith('/admin/orders')
         ->and(route('admin.orders.show', 5))->toEndWith('/admin/orders/5')
+        ->and(route('admin.orders.edit', 5))->toEndWith('/admin/orders/5/edit')
         ->and(route('admin.reports.sales'))->toEndWith('/admin/reports/sales')
         ->and(route('admin.ui-kit'))->toEndWith('/admin/ui-kit')
         ->and(route('admin.orders.ship', 5))->toEndWith('/admin/orders/5/ship')
         ->and(route('tools.dashboard'))->toEndWith('/tools');
 });
 
-it('runs every panel route behind the configured middleware, the gate and the panel middleware', function (): void {
-    $middleware = app('router')->getRoutes()->getByName('admin.orders')->gatherMiddleware();
+it('generates no route from a page class: only declared routes exist', function (): void {
+    $names = collect(app('router')->getRoutes()->getRoutes())->map->getName()->filter(fn (?string $name): bool => str_starts_with((string) $name, 'admin.'))->sort()->values()->all();
 
-    expect($middleware)->toBe(['web', 'auth', 'can:accessAdmin', HandleTungstenRequests::class]);
+    expect($names)->toBe(['admin.dashboard', 'admin.orders', 'admin.orders.edit', 'admin.orders.ship', 'admin.orders.show', 'admin.reports.sales', 'admin.ui-kit', 'admin.ui-kit.toast']);
+});
+
+it('runs every panel route behind the configured middleware, the gate and the panel middleware', function (): void {
+    expect(app('router')->getRoutes()->getByName('admin.orders')->gatherMiddleware())
+        ->toBe(['web', 'auth', 'can:accessAdmin', HandleTungstenRequests::class]);
 });
 
 it('sends a guest to the login route', function (): void {
@@ -31,12 +37,12 @@ it('refuses a user who fails the panel ability', function (): void {
     $this->actingAs($this->admin(500))->get('/admin/orders')->assertForbidden();
 });
 
-it('refuses a page whose own ability the user fails', function (): void {
+it('honours a route\'s own can: middleware', function (): void {
     $this->actingAs($this->admin(2))->get('/admin/reports/sales')->assertForbidden();
     $this->actingAs($this->admin(1))->get('/admin/reports/sales')->assertOk();
 });
 
-it('renders a page with its component, props and the shared panel props', function (): void {
+it('renders a page controller with its component, props and the shared panel props', function (): void {
     Order::query()->create(['number' => 'SO-1', 'status' => 'new']);
 
     $this->actingAs($this->admin())
@@ -54,35 +60,74 @@ it('renders a page with its component, props and the shared panel props', functi
             ->where('panel.home', url('/admin'))
             ->where('breadcrumbs', [['label' => 'การขาย'], ['label' => 'คำสั่งซื้อ']])
             ->where('flash', ['message' => null, 'status' => null])
+            ->where('layout', null)
             ->has('nav')
             ->has('panels'));
+});
+
+it('treats a plain controller route the same, with its breadcrumb and layout metadata', function (): void {
+    $order = Order::query()->create(['number' => 'SO-3', 'status' => 'new']);
+
+    $this->actingAs($this->admin())
+        ->get("/admin/orders/{$order->id}/edit")
+        ->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page
+            ->component('panel/orders/Edit')
+            ->where('breadcrumbs', [['label' => 'การขาย'], ['label' => 'คำสั่งซื้อ', 'url' => url('/admin/orders')], ['label' => 'แก้ไข']])
+            ->where('layout', ['flush' => true])
+            ->where('nav.1.items.0.active', true));
+});
+
+it('lets a page replace the breadcrumbs, ending the parent trail in a record name', function (): void {
+    $order = Order::query()->create(['number' => 'SO-9', 'status' => 'paid']);
+
+    $this->actingAs($this->admin())
+        ->get("/admin/orders/{$order->id}")
+        ->assertInertia(fn (Assert $page): Assert => $page
+            ->component('panel/orders/Show')
+            ->where('breadcrumbs', [['label' => 'การขาย'], ['label' => 'คำสั่งซื้อ', 'url' => url('/admin/orders')], ['label' => 'SO-9']]));
 });
 
 it('puts the panel brand colour on the root element', function (): void {
     $this->actingAs($this->admin())
         ->get('/admin/orders')
-        ->assertSee('class="tungsten" style="--color-brand: #0d9488"', false);
+        ->assertSee('style="--color-brand: #0d9488"', false);
 });
 
-it('builds the nav in group order, hides gated pages, marks the active page and its detail pages', function (): void {
-    $order = Order::query()->create(['number' => 'SO-9', 'status' => 'new']);
+it('leaves the brand colour to the stylesheet when none is configured', function (): void {
+    config(['tungsten.brand_color' => null]);
+
+    $this->actingAs($this->admin(1))->get('/tools')->assertOk()->assertDontSee('--color-brand', false);
+});
+
+it('builds the nav from route metadata in group order, filtered by can: middleware, with badges and links', function (): void {
+    Order::query()->create(['number' => 'SO-5', 'status' => 'new']);
+    Order::query()->create(['number' => 'SO-6', 'status' => 'new']);
 
     $this->actingAs($this->admin(2))
-        ->get("/admin/orders/{$order->id}")
-        ->assertOk()
+        ->get('/admin/orders')
         ->assertInertia(fn (Assert $page): Assert => $page
-            ->component('panel/orders/Show')
             ->where('nav.0.group', null)
             ->where('nav.0.items.0.label', 'หน้าหลัก')
             ->where('nav.0.items.1.label', 'UI Kit')
             ->where('nav.1.group', 'การขาย')
-            ->where('nav.1.items.0.label', 'คำสั่งซื้อ')
-            ->where('nav.1.items.0.active', true)
+            ->where('nav.1.items.0', [
+                'label' => 'คำสั่งซื้อ', 'icon' => 'shopping-cart', 'url' => url('/admin/orders'), 'active' => true,
+                'badge' => '2', 'external' => false, 'legacy' => false,
+            ])
             ->where('nav.1.items.1.label', 'นำเข้าคำสั่งซื้อ')
             ->where('nav.1.items.1.legacy', true)
-            ->where('nav.1.items.1.external', false)
-            ->missing('nav.2')
-            ->where('breadcrumbs.1.label', 'SO-9'));
+            ->missing('nav.2'));
+
+    $this->actingAs($this->admin(1))
+        ->get('/admin/orders')
+        ->assertInertia(fn (Assert $page): Assert => $page->where('nav.2.group', 'รายงาน')->where('nav.2.items.0.label', 'ยอดขาย'));
+});
+
+it('takes the help URL from the route, else the set topics', function (): void {
+    $this->actingAs($this->admin(1))
+        ->get('/admin/reports/sales')
+        ->assertInertia(fn (Assert $page): Assert => $page->where('panel.help', '/help/reports'));
 });
 
 it('lists the switcher: business entries and panels, a divider, then tool panels the user may open', function (): void {
@@ -98,11 +143,6 @@ it('lists the switcher: business entries and panels, a divider, then tool panels
     $this->actingAs($this->admin(2))
         ->get('/admin/orders')
         ->assertInertia(fn (Assert $page): Assert => $page->has('panels', 2));
-});
-
-it('404s a non-numeric or oversized route parameter instead of reaching the database', function (): void {
-    $this->actingAs($this->admin())->get('/admin/orders/abc')->assertNotFound();
-    $this->actingAs($this->admin())->get('/admin/orders/99999999999999999999')->assertNotFound();
 });
 
 it('runs a set endpoint inside the panel prefix, middleware and name prefix, and shares its flash', function (): void {
@@ -121,7 +161,7 @@ it('runs a set endpoint inside the panel prefix, middleware and name prefix, and
         ->assertInertia(fn (Assert $page): Assert => $page->where('flash.message', 'ส่งของแล้ว'));
 });
 
-it('mounts a card index at the panel root when the panel has no root page', function (): void {
+it('serves the card index from a declared route', function (): void {
     $this->actingAs($this->admin())
         ->get('/admin')
         ->assertOk()
@@ -132,9 +172,9 @@ it('mounts a card index at the panel root when the panel has no root page', func
             ->where('breadcrumbs', []));
 });
 
-it('skips a registered page class that does not exist instead of breaking every request', function (): void {
+it('skips a registered set class that does not exist instead of breaking every request', function (): void {
     expect(app(PanelRegistry::class)->missingClasses())
-        ->toBe(['admin' => ['Phattarachai\\Tungsten\\Tests\\Fixtures\\Pages\\NotWrittenYetPage']]);
+        ->toBe(['admin' => ['Phattarachai\\Tungsten\\Tests\\Fixtures\\Sets\\NotWrittenYetSet']]);
 
     $this->actingAs($this->admin())->get('/admin/orders')->assertOk();
 });

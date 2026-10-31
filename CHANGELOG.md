@@ -7,6 +7,24 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.0 — 2026-10-31
+
+Owner decisions folded in the same day as v0.1.0 (breaking — v0.1.0 had no consumers):
+
+- **Routes are plain Laravel.** Nothing is generated from page classes. Declare `Route::get(…)` in a set's
+  `routes()`, the panel's `->routes()`, or a route file inside `Tungsten::routes('admin', fn)`, and chain metadata:
+  `->nav()`, `->breadcrumb()`, `->breadcrumbs()`, `->help()`, `->layout()`. Removed: `Page::path()` and the nav
+  methods, `Panel::pages()` / `->home()`, `PanelSet::pages()`, `PageController`.
+- `Page` is an invokable page controller (`component()`, `props()`, `breadcrumbs()`); `Tungsten::breadcrumbs($leaf)`.
+- `make:tungsten-page` prints the route line to declare instead of relying on registration.
+- Every kit `href` prop accepts a string or a Wayfinder-style `{url, method}`; `ActionMenu` / `RowActions` items take
+  `href`.
+- SSR-safe kit: no DOM or storage access at module scope or during render; `createTungstenApp` works as an SSR entry;
+  CI renders every kit page under Node.
+- Theme tokens (greys, blue, brand, rail, font, `--radius`, motion) live in `@theme` / `:root` and are overridable in
+  the host's CSS; `tungsten.brand_color` may be null to theme the accent in CSS only.
+- `AppLayout` takes `sidebar={false}`, `topbar={false}`, `className`, `mainClassName`; its parts are exported.
+
 ## v0.1.0 — 2026-10-31
 
 First release: the panel kernel and UI kit, extracted from an in-house Inertia + React admin.

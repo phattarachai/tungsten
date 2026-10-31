@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 
 import { cn } from '../../lib/cn'
 import { strings } from '../../lib/strings'
+import { inBrowser } from '../../lib/browser'
 
 const FOCUSABLE = 'input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])'
 
@@ -38,7 +39,7 @@ export function Dialog({ open, onClose, title, footer, dismissible = true, class
 
     useDialogKeys(open, onClose, body)
 
-    if (!open) {
+    if (!open || !inBrowser) {
         return null
     }
 

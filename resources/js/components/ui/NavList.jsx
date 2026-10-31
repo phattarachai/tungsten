@@ -4,6 +4,7 @@ import { cn } from '../../lib/cn'
 
 import { Badge } from './Badge'
 import { strings } from '../../lib/strings'
+import { linkProps as hrefProps, methodOf } from '../../lib/href'
 
 function ItemContent({ item }) {
     return (
@@ -40,7 +41,7 @@ export function NavList({ items, linkProps, empty = strings.noItems }) {
                         {content}
                     </button>
                 ) : (
-                    <Link key={item.key} href={item.href} prefetch={item.prefetch ?? true} {...linkProps} className={className}>
+                    <Link key={item.key} {...hrefProps(item.href)} prefetch={methodOf(item.href) === 'get' && (item.prefetch ?? true)} {...linkProps} className={className}>
                         {content}
                     </Link>
                 )

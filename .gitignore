@@ -7,3 +7,4 @@ node_modules
 /tests/js-host/node_modules
 /tests/js-host/public
 /tests/js-host/package-lock.json
+/tests/js-host/ssr-dist

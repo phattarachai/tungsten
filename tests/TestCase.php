@@ -11,8 +11,12 @@ use Illuminate\Support\Facades\Schema;
 use Inertia\ServiceProvider as InertiaServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Override;
+use Phattarachai\Tungsten\Http\Controllers\UiKitToastController;
+use Phattarachai\Tungsten\Pages\HomePage;
+use Phattarachai\Tungsten\Pages\UiKitPage;
 use Phattarachai\Tungsten\Tests\Fixtures\AdminPanelProvider;
 use Phattarachai\Tungsten\Tests\Fixtures\ToolsPanelProvider;
+use Phattarachai\Tungsten\Tungsten;
 use Phattarachai\Tungsten\TungstenServiceProvider;
 
 abstract class TestCase extends Orchestra
@@ -54,6 +58,16 @@ abstract class TestCase extends Orchestra
     {
         $router->get('login', fn (): string => 'login')->name('login');
         $router->post('logout', fn (): string => 'bye')->name('logout');
+
+        Tungsten::routes('admin', function () use ($router): void {
+            $router->get('/', HomePage::class)->name('dashboard')->nav('หน้าหลัก', icon: 'layout-grid', sort: -1);
+            $router->get('ui-kit', UiKitPage::class)->name('ui-kit')->nav('UI Kit', icon: 'palette', sort: 1000);
+            $router->post('ui-kit/toast', UiKitToastController::class)->name('ui-kit.toast');
+        });
+
+        Tungsten::routes('tools', function () use ($router): void {
+            $router->get('/', HomePage::class)->name('dashboard');
+        });
     }
 
     #[Override]

@@ -7,6 +7,7 @@ import { nextSort, sortRows } from '../../lib/sortRows'
 
 import { firstAction, KeyAction, RowActions } from './RowActions'
 import { strings } from '../../lib/strings'
+import { linkProps, methodOf } from '../../lib/href'
 
 const ALIGN = { left: 'text-left', right: 'text-right', center: 'text-center' }
 
@@ -37,7 +38,7 @@ function Cell({ column, row, href, action }) {
             title={title}
         >
             {href ? (
-                <Link href={href} prefetch="click" className="hover:text-brand-600 hover:underline">
+                <Link {...linkProps(href)} prefetch={methodOf(href) === 'get' ? 'click' : false} className="hover:text-brand-600 hover:underline">
                     {value}
                 </Link>
             ) : (

@@ -12,12 +12,12 @@ class MakePageCommand extends Command
 {
     protected $signature = 'make:tungsten-page
         {name : Area/Name, e.g. Orders/Index, Orders/Show, Settings/General}
-        {--path= : The URL path under the panel (derived from the name when left out)}
+        {--path= : The URL path under the panel for the printed route line (derived from the name when left out)}
         {--model= : For a list page: the model TableQuery lists (e.g. Order or App\\Models\\Order)}
         {--label= : The sidebar label}
         {--force : Overwrite files that already exist}';
 
-    protected $description = 'Create a Tungsten page: the PHP page class and its JSX component';
+    protected $description = 'Create a Tungsten page (an invokable page controller and its JSX) and print the route line to declare it';
 
     public function handle(Filesystem $files): int
     {
@@ -38,7 +38,6 @@ class MakePageCommand extends Command
             '{{ path }}' => trim((string) $path, '/'),
             '{{ component }}' => $component,
             '{{ label }}' => $this->option('label') ?? Str::headline($area !== '' ? Str::afterLast($area, '/') : $name),
-            '{{ inNavigation }}' => str_contains((string) $path, '{') || in_array(Str::beforeLast($class, 'Page'), ['Create', 'Edit'], true) ? 'false' : 'true',
             '{{ modelClass }}' => $model ?? '',
             '{{ model }}' => $model === null ? '' : class_basename($model),
             '{{ function }}' => Str::studly(str_replace('/', ' ', $component)),
@@ -50,9 +49,29 @@ class MakePageCommand extends Command
         $wrote = $this->write($files, $list ? 'page.list.php.stub' : 'page.php.stub', $phpTarget, $replacements)
             & $this->write($files, $list ? 'page.list.jsx.stub' : 'page.jsx.stub', $jsxTarget, $replacements);
 
-        $this->components->info("List {$replacements['{{ namespace }}']}\\{$class}::class in a PanelSet's pages() (or the panel's ->pages()) to route it.");
+        $this->printRoute(trim((string) $path, '/'), $class, $replacements['{{ label }}']);
 
         return $wrote ? self::SUCCESS : self::FAILURE;
+    }
+
+    /**
+     * Routes stay plain Laravel: the generator prints the line to paste into a set's routes() (or a route file
+     * inside `Tungsten::routes()`), it never registers one.
+     */
+    private function printRoute(string $path, string $class, string $label): void
+    {
+        $parameters = [];
+        preg_match_all('/\{(\w+)\}/', $path, $parameters);
+        $segments = collect(explode('/', $path))->reject(fn (string $segment): bool => str_starts_with($segment, '{'));
+        $name = $segments->implode('.') ?: 'dashboard';
+        $name = str_ends_with($path, '}') ? "{$name}.show" : $name;
+        $wheres = collect($parameters[1])->map(fn (string $parameter): string => "->whereNumber('{$parameter}')")->implode('');
+        $meta = $parameters[1] === [] && ! str_ends_with($path, '/create') ? "->nav('{$label}')" : "->breadcrumb('{$label}')";
+
+        $this->newLine();
+        $this->line('  Declare its route in a PanelSet::routes() (or inside Tungsten::routes() in a route file):');
+        $this->line("  <fg=cyan>Route::get('{$path}', {$class}::class)->name('{$name}'){$wheres}{$meta};</>");
+        $this->newLine();
     }
 
     private function component(string $area, string $name): string

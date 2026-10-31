@@ -11,10 +11,11 @@ export function opensInPanel(event) {
 }
 
 export function embedUrl(url) {
-    const target = new URL(url, window.location.href)
+    const absolute = /^https?:\/\//.test(url)
+    const target = new URL(url, 'http://tungsten.local')
 
     target.searchParams.set('embed', '1')
     target.searchParams.set('scheme', 'light')
 
-    return target.pathname + target.search + target.hash
+    return absolute ? target.href : target.pathname + target.search + target.hash
 }

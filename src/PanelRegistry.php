@@ -59,11 +59,6 @@ class PanelRegistry
         return $this->find(str($routeName ?? '')->before('.')->value());
     }
 
-    public function pageForRoute(?string $routeName): ?Page
-    {
-        return $this->forRoute($routeName)?->pageForRoute($routeName);
-    }
-
     /**
      * The panel menu: business panels and entries first, then (after a divider) tool panels, each only if the user
      * passes its ability.
@@ -99,14 +94,14 @@ class PanelRegistry
     }
 
     /**
-     * Registered page or set classes that don't exist, per panel — assert this is empty in a host test.
+     * Registered set classes that don't exist, per panel — assert this is empty in a host test.
      *
      * @return array<string, list<string>>
      */
     public function missingClasses(): array
     {
         return collect($this->panels)
-            ->map(fn (Panel $panel): array => $panel->missingClasses())
+            ->map(fn (Panel $panel): array => $panel->missingSets())
             ->filter()
             ->all();
     }

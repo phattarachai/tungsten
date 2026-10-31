@@ -7,6 +7,7 @@ import { useCollapsedGroups } from '../../lib/useCollapsedGroups'
 
 import { PanelSwitcher } from './PanelSwitcher'
 import { strings } from '../../lib/strings'
+import { linkProps, urlOf } from '../../lib/href'
 
 function NavItem({ item }) {
     const className = cn(
@@ -31,7 +32,7 @@ function NavItem({ item }) {
 
     if (item.legacy) {
         return (
-            <a href={item.url} title={strings.legacyLink(item.label)} className={className}>
+            <a href={urlOf(item.url)} title={strings.legacyLink(item.label)} className={className}>
                 {body}
             </a>
         )
@@ -39,14 +40,14 @@ function NavItem({ item }) {
 
     if (item.external) {
         return (
-            <a href={item.url} target="_blank" rel="noopener" className={className}>
+            <a href={urlOf(item.url)} target="_blank" rel="noopener" className={className}>
                 {body}
             </a>
         )
     }
 
     return (
-        <Link href={item.url} prefetch className={className}>
+        <Link {...linkProps(item.url)} prefetch className={className}>
             {body}
         </Link>
     )
@@ -69,14 +70,14 @@ function NavGroup({ section, collapsed, onToggle }) {
                     <ChevronDown className={cn('ml-auto size-3 transition-transform', collapsed && '-rotate-90')} />
                 </button>
             )}
-            {!collapsed && section.items.map((item) => <NavItem key={item.url} item={item} />)}
+            {!collapsed && section.items.map((item) => <NavItem key={urlOf(item.url)} item={item} />)}
         </div>
     )
 }
 
 export function Sidebar({ closed, mobileOpen, onClose }) {
-    const { nav, panel } = usePage().props
-    const groups = useCollapsedGroups(panel.id)
+    const { nav = [], panel } = usePage().props
+    const groups = useCollapsedGroups(panel?.id ?? 'panel')
 
     return (
         <>
@@ -87,7 +88,7 @@ export function Sidebar({ closed, mobileOpen, onClose }) {
                     mobileOpen ? 'translate-x-0' : '-translate-x-full',
                     !closed && 'md:translate-x-0',
                 )}
-                style={panel.rail ? { '--color-rail': panel.rail } : undefined}
+                style={panel?.rail ? { '--color-rail': panel.rail } : undefined}
             >
                 <div className="flex h-10 items-center border-b border-rail-line px-1.5">
                     <PanelSwitcher />

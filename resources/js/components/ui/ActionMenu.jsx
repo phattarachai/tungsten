@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react'
 import { ChevronDown, MoreHorizontal } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -5,6 +6,8 @@ import { createPortal } from 'react-dom'
 import { cn } from '../../lib/cn'
 import { popoverMotion } from '../../lib/motion'
 import { strings } from '../../lib/strings'
+import { linkProps } from '../../lib/href'
+import { inBrowser } from '../../lib/browser'
 
 const MENU_HEIGHT_GUESS = 160
 
@@ -67,6 +70,25 @@ function MenuPanel({ items, position, panel, close }) {
                 }
 
                 const Icon = item.icon
+                const className = cn(
+                    'flex w-full items-center gap-2 px-2.5 py-1.5 text-xs whitespace-nowrap',
+                    item.tone === 'danger' ? 'text-red-600 hover:bg-red-50' : 'text-zinc-700 hover:bg-zinc-50',
+                )
+                const content = (
+                    <>
+                        {Icon && <Icon className="size-3.5 shrink-0" />}
+                        {item.label}
+                        {item.hint !== undefined && <span className="ml-auto pl-4 text-[0.6875rem] text-zinc-400 tabular-nums">{item.hint}</span>}
+                    </>
+                )
+
+                if (item.href) {
+                    return (
+                        <Link key={item.key ?? item.label} {...linkProps(item.href)} as="button" role="menuitem" onClick={close} className={className}>
+                            {content}
+                        </Link>
+                    )
+                }
 
                 return (
                     <button
@@ -77,14 +99,9 @@ function MenuPanel({ items, position, panel, close }) {
                             close()
                             item.onSelect()
                         }}
-                        className={cn(
-                            'flex w-full items-center gap-2 px-2.5 py-1.5 text-xs whitespace-nowrap',
-                            item.tone === 'danger' ? 'text-red-600 hover:bg-red-50' : 'text-zinc-700 hover:bg-zinc-50',
-                        )}
+                        className={className}
                     >
-                        {Icon && <Icon className="size-3.5 shrink-0" />}
-                        {item.label}
-                        {item.hint !== undefined && <span className="ml-auto pl-4 text-[0.6875rem] text-zinc-400 tabular-nums">{item.hint}</span>}
+                        {content}
                     </button>
                 )
             })}
@@ -100,7 +117,7 @@ function MenuPanel({ items, position, panel, close }) {
 export function ContextMenu({ at, items, onClose }) {
     const panel = useRef(null)
     const none = useRef(null)
-    const position = at && { left: Math.min(at.x, window.innerWidth - 240), ...(at.y + MENU_HEIGHT_GUESS > window.innerHeight ? { bottom: window.innerHeight - at.y } : { top: at.y }) }
+    const position = at && inBrowser && { left: Math.min(at.x, window.innerWidth - 240), ...(at.y + MENU_HEIGHT_GUESS > window.innerHeight ? { bottom: window.innerHeight - at.y } : { top: at.y }) }
 
     useDismiss(Boolean(at), none, panel, onClose)
 
