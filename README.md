@@ -170,6 +170,19 @@ is kept — then `brand(icon:)`, then the panel's `short` letters. The switcher'
 icon is `config('tungsten.favicon')`: one path, or several for the browser to choose from
 (`['favicon.png', 'images/brand-mark.svg']`, SVG last), plus `tungsten.apple_touch_icon`.
 
+**The environment** shows as a small "• UAT" line under the brand name (sidebar head and login page), as a tone
+`Badge` in the compact topbar switcher when the rail is closed, and as a "UAT · " prefix on the tab title. Production
+shows nothing. The kit's defaults are production → nothing, `local` → Local / `active`, `staging` → Staging / `done`,
+`uat` → UAT / `todo`; any other environment shows its own name in `draft`. Relabel, retone or hide one in
+`config('tungsten.environments')`, which goes over the defaults:
+
+```php
+'environments' => ['staging' => ['label' => 'Dev', 'tone' => 'done'], 'qa' => null],
+```
+
+It's shared as `panel.env` (`{label, tone}` or null) next to `panel.environment`, the raw name. Keep `APP_NAME` free of
+the environment: the title is `"{env} · {page} — {APP_NAME}"`.
+
 **The switcher** lists every panel the user may open. Add a row for something that isn't a Tungsten panel — the
 Filament admin you are migrating from — and `->replaces('filament')` on the new panel draws it as a chip on that row:
 

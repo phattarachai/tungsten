@@ -45,6 +45,14 @@ return [
     ],
 
     /*
+    | How each environment shows in the panel (a line under the brand, a Badge in the compact switcher, the login page,
+    | and a "Label · " tab-title prefix): env name => ['label' => …, 'tone' => a status tone], or null to show nothing.
+    | These entries go over the kit's defaults: production null, local Local/active, staging Staging/done, uat
+    | UAT/todo. Any other environment shows its own name in the `draft` tone.
+    */
+    'environments' => [],
+
+    /*
     | The panel's tab icon: one path, or several for browsers to pick from (e.g. ['favicon.png', 'images/mark.svg'] —
     | SVG last, so browsers that can draw it use it). `apple_touch_icon` is the home-screen icon (a 180px PNG).
     */

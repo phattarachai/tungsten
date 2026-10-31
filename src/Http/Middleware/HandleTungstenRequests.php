@@ -13,6 +13,7 @@ use Override;
 use Phattarachai\Tungsten\Panel;
 use Phattarachai\Tungsten\PanelRegistry;
 use Phattarachai\Tungsten\RouteMeta;
+use Phattarachai\Tungsten\Tungsten;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -113,6 +114,7 @@ class HandleTungstenRequests extends Middleware
             'help' => $panel->helpUrl($route),
             'home' => $panel->homeUrl(),
             'environment' => app()->environment(),
+            'env' => Tungsten::environment(),
             'filterLayout' => $panel->getFilterLayout(),
         ];
     }
