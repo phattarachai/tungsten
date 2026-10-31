@@ -1,8 +1,11 @@
 import { cn } from '../../lib/cn'
 
+/**
+ * A row of count tabs. On a narrow toolbar it scrolls sideways (thin scrollbar on hover) instead of overflowing.
+ */
 export function Pills({ options, value, onChange, className }) {
     return (
-        <div className={cn('inline-flex w-fit overflow-hidden rounded border border-zinc-300 bg-white', className)} role="group">
+        <div className={cn('panel-scroll inline-flex w-fit max-w-full min-w-0 overflow-x-auto overflow-y-hidden rounded border border-zinc-300 bg-white', className)} role="group">
             {options.map((option) => (
                 <button
                     key={option.value}
@@ -10,7 +13,7 @@ export function Pills({ options, value, onChange, className }) {
                     onClick={() => onChange(option.value)}
                     aria-pressed={option.value === value}
                     className={cn(
-                        'border-r border-zinc-200 px-2 py-0.5 text-[0.6875rem] whitespace-nowrap last:border-r-0',
+                        'shrink-0 border-r border-zinc-200 px-2 py-0.5 text-[0.6875rem] whitespace-nowrap last:border-r-0',
                         option.value === value ? 'bg-zinc-800 text-white' : 'text-zinc-600 hover:bg-zinc-100',
                     )}
                 >

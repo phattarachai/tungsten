@@ -108,6 +108,7 @@ class HandleTungstenRequests extends Middleware
             'help' => $panel->helpUrl($route),
             'home' => $panel->homeUrl(),
             'environment' => app()->environment(),
+            'filterLayout' => $panel->getFilterLayout(),
         ];
     }
 }

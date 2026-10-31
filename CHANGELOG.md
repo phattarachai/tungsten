@@ -7,6 +7,21 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.2 — 2026-10-31
+
+List parts for Filament-like lists (non-breaking):
+
+- `Filters`: one filter definition drawn as a bar above the table (`bar`) or a dropdown with active-filter chips
+  (`menu`). Default from `tungsten.filter_layout` (`bar`), per panel `->filterLayout()`, per page `layout`; shared as
+  `panel.filterLayout`.
+- `FilterBar` (+ `FilterField`), `FilterMenu`, `FilterChip`: the parts, for a layout of your own.
+- `AvatarStack`, `Thumb`.
+- `DataTable`: column `valign: 'top'` (or table `valign`), `plainLinks` for a plain `<a>` row link.
+- `Combobox size="sm"` with `label` (and a capped width) for a filter bar; `ButtonGroup size="sm"`.
+- `Pills` scrolls sideways instead of overflowing.
+- `Pagination onPerPage` / `perPageOptions`; `useTableQuery().setPerPage`.
+- README: exclude `./pages/panel/**` from another Inertia entry's eager glob.
+
 ## v0.2.1 — 2026-10-31
 
 Theme hooks for a light chrome; non-breaking, the defaults keep the steel look:

@@ -10,6 +10,7 @@ use Illuminate\Routing\Route;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 use Phattarachai\Tungsten\Exceptions\MissingPageClass;
 use Phattarachai\Tungsten\Http\Middleware\HandleTungstenRequests;
 use Symfony\Component\Finder\Finder;
@@ -44,6 +45,8 @@ class Panel
      * @var array<string, mixed>
      */
     private array $layout = [];
+
+    private ?string $filterLayout = null;
 
     private ?string $brandColor = null;
 
@@ -175,6 +178,18 @@ class Panel
     public function layout(array $layout): self
     {
         $this->layout = $layout;
+
+        return $this;
+    }
+
+    /**
+     * How `<Filters>` lays out this panel's list filters, `bar` or `menu`; `tungsten.filter_layout` when unset.
+     */
+    public function filterLayout(string $layout): self
+    {
+        throw_unless(in_array($layout, ['bar', 'menu'], true), InvalidArgumentException::class, "Filter layout must be 'bar' or 'menu', got '{$layout}'.");
+
+        $this->filterLayout = $layout;
 
         return $this;
     }
@@ -369,6 +384,13 @@ class Panel
     public function getLayout(): array
     {
         return $this->layout;
+    }
+
+    public function getFilterLayout(): string
+    {
+        $layout = $this->filterLayout ?? config('tungsten.filter_layout');
+
+        return $layout === 'menu' ? 'menu' : 'bar';
     }
 
     public function getBrandColor(): ?string

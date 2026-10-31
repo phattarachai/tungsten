@@ -8,7 +8,7 @@ import { parseUrl, pathOf } from './browser'
  *
  *     const query = useTableQuery()
  *     <DataTable sort={table.sort} onSort={query.setSort} … />
- *     <Pagination paginator={table.pagination} onPage={query.setPage} />
+ *     <Pagination paginator={table.pagination} onPage={query.setPage} onPerPage={query.setPerPage} />
  */
 export function useTableQuery(options = {}) {
     const { url } = usePage()
@@ -38,6 +38,7 @@ export function useTableQuery(options = {}) {
         setSearch: (search) => visit({ search }),
         setSort: (key, dir) => visit({ sort: key, dir }),
         setPage: (page) => visit({ page: page > 1 ? page : null }, { keepPage: true }),
+        setPerPage: (perPage) => visit({ per_page: perPage }),
         setFilter: (key, value) => visit({ [key]: value }),
         setFilters: (filters) => visit(filters),
         clear: (keys) => visit(Object.fromEntries(keys.map((key) => [key, null]))),

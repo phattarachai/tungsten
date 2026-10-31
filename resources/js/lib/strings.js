@@ -26,6 +26,10 @@ export const strings = {
     collapse: 'ย่อ',
     search: 'ค้นหา…',
     choose: 'เลือก…',
+    all: 'ทั้งหมด',
+    filters: 'ตัวกรอง',
+    clearFilter: 'ล้างตัวกรองนี้',
+    clearFilters: 'ล้างตัวกรองทั้งหมด',
     actions: 'การทำงาน',
     actionsFor: (title) => `การทำงาน ${title}`,
     columns: 'คอลัมน์',
@@ -34,6 +38,8 @@ export const strings = {
     paginationRange: (from, to, total) => `${from}–${to} จาก ${total}`,
     previousPage: 'หน้าก่อน',
     nextPage: 'หน้าถัดไป',
+    perPage: (count) => `${count} / หน้า`,
+    rowsPerPage: 'จำนวนต่อหน้า',
 
     // Date pickers (the calendar's month and weekday names live in lib/thaiDate.js)
     pick: 'เลือก',
