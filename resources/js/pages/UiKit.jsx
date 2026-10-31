@@ -60,6 +60,15 @@ import { useColumnVisibility } from '../lib/useColumnVisibility'
 
 const RAMP = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950]
 const BADGE_TONES = ['zinc', 'brand', 'green', 'amber', 'red', 'blue']
+const STATUS_TONES_DEMO = [
+    ['draft', 'ร่าง'],
+    ['waiting', 'รอลูกค้าชำระ'],
+    ['todo', 'ที่ต้องจัดส่ง'],
+    ['active', 'กำลังจัดส่ง'],
+    ['done', 'สำเร็จ'],
+    ['canceled', 'ยกเลิก'],
+    ['failed', 'ส่งไม่สำเร็จ'],
+]
 const BUTTON_TONES = ['neutral', 'brand', 'amber', 'blue', 'danger']
 
 const CUSTOMERS = [
@@ -259,6 +268,13 @@ function Chips() {
                     </Badge>
                 ))}
             </Row>
+            <Row label="status tones">
+                {STATUS_TONES_DEMO.map(([tone, label]) => (
+                    <Badge key={tone} tone={tone}>
+                        {label}
+                    </Badge>
+                ))}
+            </Row>
             <Row label="สถานะจริง">
                 <Badge tone="green">กำลังใช้</Badge>
                 <Badge tone="amber">รอเริ่ม</Badge>
@@ -424,7 +440,7 @@ const ORDER_COLUMNS = [
 ]
 
 const SHIPPING = [
-    { value: 'pending', label: 'รอจัดส่ง', count: 12 },
+    { value: 'pending', label: 'รอจัดส่ง', count: 12, tone: 'todo' },
     { value: 'shipped', label: 'ส่งแล้ว', count: 340 },
     { value: 'returned', label: 'ตีกลับ', count: 2 },
 ]

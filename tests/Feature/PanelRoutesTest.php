@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Inertia\Testing\AssertableInertia as Assert;
+use Phattarachai\Tungsten\Http\Middleware\AuthenticatePanel;
 use Phattarachai\Tungsten\Http\Middleware\HandleTungstenRequests;
 use Phattarachai\Tungsten\Panel;
 use Phattarachai\Tungsten\PanelRegistry;
@@ -19,19 +20,22 @@ it('mounts set routes and route-file routes under the panel path with the {id}. 
         ->and(route('tools.dashboard'))->toEndWith('/tools');
 });
 
-it('generates no route from a page class: only declared routes exist', function (): void {
+it('generates no route from a page class: only declared routes (and ->login()\'s) exist', function (): void {
     $names = collect(app('router')->getRoutes()->getRoutes())->map->getName()->filter(fn (?string $name): bool => str_starts_with((string) $name, 'admin.'))->sort()->values()->all();
 
-    expect($names)->toBe(['admin.dashboard', 'admin.orders', 'admin.orders.edit', 'admin.orders.ship', 'admin.orders.show', 'admin.reports.sales', 'admin.ui-kit', 'admin.ui-kit.toast']);
+    expect($names)->toBe(['admin.dashboard', 'admin.login', 'admin.login.attempt', 'admin.logout', 'admin.orders', 'admin.orders.edit', 'admin.orders.ship', 'admin.orders.show', 'admin.reports.sales', 'admin.ui-kit', 'admin.ui-kit.toast']);
 });
 
 it('runs every panel route behind the configured middleware, the gate and the panel middleware', function (): void {
     expect(app('router')->getRoutes()->getByName('admin.orders')->gatherMiddleware())
-        ->toBe(['web', 'auth', 'can:accessAdmin', HandleTungstenRequests::class]);
+        ->toBe(['web', AuthenticatePanel::class, 'can:accessAdmin', HandleTungstenRequests::class]);
+
+    expect(app('router')->getRoutes()->getByName('tools.dashboard')->gatherMiddleware())
+        ->toBe(['web', 'auth', 'can:accessTools', HandleTungstenRequests::class]);
 });
 
-it('sends a guest to the login route', function (): void {
-    $this->get('/admin/orders')->assertRedirect('/login');
+it('sends a guest to the app\'s login route when the panel has no login of its own', function (): void {
+    $this->get('/tools')->assertRedirect('/login');
 });
 
 it('refuses a user who fails the panel ability', function (): void {
@@ -54,7 +58,7 @@ it('renders a page controller with its component, props and the shared panel pro
             ->component('panel/orders/Index')
             ->where('orders.rows.0.number', 'SO-1')
             ->where('auth.user.name', 'Admin 1')
-            ->where('auth.logoutUrl', url('/logout'))
+            ->where('auth.logoutUrl', url('/admin/logout'))
             ->where('panel.id', 'admin')
             ->where('panel.label', 'ร้านค้า')
             ->where('panel.help', '/help/orders')

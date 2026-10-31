@@ -173,6 +173,26 @@ html[data-page-transition] {
     --color-rail-active: color-mix(in oklab, var(--color-rail), var(--color-rail-ink) 15%);
     --color-rail-line: color-mix(in oklab, var(--color-rail), var(--color-rail-ink) 11%);
 
+    /*
+     | Status tones (Badge tone="todo" …, Pills option tone), named by meaning: a fill and an ink that reads on it (AA).
+     | draft: not started · waiting: on someone outside · todo: our turn · active: in progress · done: finished ·
+     | canceled: canceled or expired · failed: an error to fix.
+     */
+    --color-tone-draft: var(--color-zinc-100);
+    --color-tone-draft-ink: var(--color-zinc-600);
+    --color-tone-waiting: #f6f0e6;
+    --color-tone-waiting-ink: #7d5a24;
+    --color-tone-todo: #ffe9d6;
+    --color-tone-todo-ink: #a84a00;
+    --color-tone-active: #e9f0fc;
+    --color-tone-active-ink: #1f57b0;
+    --color-tone-done: #e3f4f1;
+    --color-tone-done-ink: #0b6f65;
+    --color-tone-canceled: #fcecec;
+    --color-tone-canceled-ink: #b2262b;
+    --color-tone-failed: #fcecec;
+    --color-tone-failed-ink: #b2262b;
+
     /* The topbar, and the sheet AppLayout draws content on when `sheet` is set. */
     --color-topbar: #ffffff;
     --color-topbar-line: var(--color-zinc-200);

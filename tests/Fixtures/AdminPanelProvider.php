@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phattarachai\Tungsten\Tests\Fixtures;
 
+use Illuminate\Contracts\Auth\Authenticatable;
 use Phattarachai\Tungsten\Panel;
 use Phattarachai\Tungsten\PanelProvider;
 
@@ -20,6 +21,11 @@ class AdminPanelProvider extends PanelProvider
             ->business()
             ->navigationGroups(['การขาย', 'รายงาน'])
             ->discoverSets(__DIR__.'/Sets', 'Phattarachai\\Tungsten\\Tests\\Fixtures\\Sets')
-            ->sets(['Phattarachai\\Tungsten\\Tests\\Fixtures\\Sets\\NotWrittenYetSet']);
+            ->sets(['Phattarachai\\Tungsten\\Tests\\Fixtures\\Sets\\NotWrittenYetSet'])
+            ->login(
+                labels: ['intro' => 'สำหรับพนักงานร้าน'],
+                forgotPasswordUrl: '/forgot-password',
+                authorize: fn (Authenticatable $user): bool|string => ($user->role ?? null) === 'system' ? 'บัญชีระบบใช้หน้านี้ไม่ได้' : true,
+            );
     }
 }

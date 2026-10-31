@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phattarachai\Tungsten;
 
 use Closure;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Collection;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Phattarachai\Tungsten\Exceptions\MissingPageClass;
+use Phattarachai\Tungsten\Http\Middleware\AuthenticatePanel;
 use Phattarachai\Tungsten\Http\Middleware\HandleTungstenRequests;
 use Symfony\Component\Finder\Finder;
 use WeakMap;
@@ -47,6 +49,8 @@ class Panel
     private array $layout = [];
 
     private ?string $filterLayout = null;
+
+    private ?PanelLogin $login = null;
 
     private ?string $brandColor = null;
 
@@ -178,6 +182,21 @@ class Panel
     public function layout(array $layout): self
     {
         $this->layout = $layout;
+
+        return $this;
+    }
+
+    /**
+     * The panel's own sign-in page at `{path}/login` (and sign-out at `{path}/logout`), against `$guard` (the default
+     * guard when null) and its user provider. Guests on the panel's routes are sent there instead of the app's login.
+     * A user must also pass the panel's ability and `$authorize` (false or a message string refuses them).
+     *
+     * @param  array<string, string>  $labels  overrides for `tungsten.login.labels`
+     * @param  (Closure(Authenticatable, Panel): (bool|string|null))|null  $authorize
+     */
+    public function login(?string $guard = null, array $labels = [], string|Closure|null $forgotPasswordUrl = null, ?Closure $authorize = null): self
+    {
+        $this->login = new PanelLogin($guard, $labels, $forgotPasswordUrl, $authorize);
 
         return $this;
     }
@@ -418,6 +437,16 @@ class Panel
         return $this->replaces;
     }
 
+    public function getLogin(): ?PanelLogin
+    {
+        return $this->login;
+    }
+
+    public function loginUrl(): ?string
+    {
+        return $this->login === null ? null : route("{$this->id}.login");
+    }
+
     public function getAbility(): ?string
     {
         return $this->ability;
@@ -447,11 +476,34 @@ class Panel
     public function routeMiddleware(): array
     {
         return array_values(array_filter([
-            ...(array) config('tungsten.middleware', ['web', 'auth']),
+            ...$this->withPanelLogin((array) config('tungsten.middleware', ['web', 'auth'])),
             ...$this->middleware,
             $this->ability === null ? null : "can:{$this->ability}",
             HandleTungstenRequests::class,
         ]));
+    }
+
+    /**
+     * With a panel login, `auth` becomes {@see AuthenticatePanel} (same check, but guests go to the panel's login), on
+     * the login's guard when `auth` names none; it is added when the stack has no `auth`.
+     *
+     * @param  array<int, mixed>  $middleware
+     * @return array<int, mixed>
+     */
+    private function withPanelLogin(array $middleware): array
+    {
+        if ($this->login === null) {
+            return $middleware;
+        }
+
+        $guarded = $this->login->guard === null ? AuthenticatePanel::class : AuthenticatePanel::class.":{$this->login->guard}";
+        $swapped = array_map(fn (mixed $entry): mixed => match (true) {
+            $entry === 'auth' => $guarded,
+            is_string($entry) && str_starts_with($entry, 'auth:') => AuthenticatePanel::class.':'.Str::after($entry, 'auth:'),
+            default => $entry,
+        }, $middleware);
+
+        return $swapped === $middleware ? [...$middleware, $guarded] : $swapped;
     }
 
     /**
@@ -473,7 +525,7 @@ class Panel
 
     public function logoutUrlFor(): ?string
     {
-        $url = $this->logoutUrl ?? config('tungsten.logout_route');
+        $url = $this->logoutUrl ?? ($this->login === null ? config('tungsten.logout_route') : "{$this->id}.logout");
 
         return match (true) {
             $url === false => null,
