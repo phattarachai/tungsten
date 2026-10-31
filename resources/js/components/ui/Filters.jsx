@@ -1,6 +1,6 @@
 import { usePage } from '@inertiajs/react'
 import { FilterX, SlidersHorizontal, X } from 'lucide-react'
-import { isValidElement, useState } from 'react'
+import { isValidElement, useEffect, useState } from 'react'
 
 import { ButtonGroup } from './ButtonGroup'
 import { Combobox } from './Combobox'
@@ -267,7 +267,7 @@ export function FilterMenu({ filters, values = {}, onChange, title = strings.fil
  * `search` is either a node, drawn as given, or `{ value, onSearch?, placeholder?, key? }`, drawn as a `SearchInput`
  * that clear-all also empties (its query key, `search` by default, goes to `onChange`).
  */
-function Search({ search, onChange, resets }) {
+function Search({ search, onChange, cleared }) {
     if (!search || isValidElement(search)) {
         return search ?? null
     }
@@ -276,8 +276,7 @@ function Search({ search, onChange, resets }) {
 
     return (
         <SearchInput
-            key={resets}
-            value={search.value ?? ''}
+            value={cleared ? '' : (search.value ?? '')}
             onSearch={search.onSearch ?? ((value) => onChange({ [key]: value || null }))}
             placeholder={search.placeholder}
             inputClassName={search.className ?? 'w-64'}
@@ -313,10 +312,14 @@ function rowOf(filter) {
  */
 export function Filters({ filters, values = {}, onChange, layout, start, search, flush = false, className }) {
     const { panel } = usePage().props
-    const [resets, setResets] = useState(0)
+    const [searchCleared, setSearchCleared] = useState(false)
+    const searchValue = search && !isValidElement(search) ? search.value : undefined
     const mode = layout ?? panel?.filterLayout ?? 'bar'
     const defined = filters.filter(Boolean)
     const ranges = useOpenRanges(defined, values)
+
+    // Clear-all empties the box at once; the server's next `search` value takes over from there.
+    useEffect(() => setSearchCleared(false), [searchValue])
 
     if (mode === 'menu') {
         const chips = chipsOf(defined, values)
@@ -336,7 +339,7 @@ export function Filters({ filters, values = {}, onChange, layout, start, search,
                     )
                 }
             >
-                <Search search={search} onChange={onChange} resets={resets} />
+                <Search search={search} onChange={onChange} cleared={searchCleared} />
                 <FilterMenu filters={defined} values={values} onChange={onChange} />
             </TableToolbar>
         )
@@ -349,7 +352,7 @@ export function Filters({ filters, values = {}, onChange, layout, start, search,
     const below = row('below')
 
     function clearAll() {
-        setResets((count) => count + 1)
+        setSearchCleared(true)
         ranges.clear()
         onChange({ ...clearAllChanges(defined), ...searchChanges(search) })
     }
@@ -366,7 +369,7 @@ export function Filters({ filters, values = {}, onChange, layout, start, search,
             )}
             below={below.length > 0 && controls(below)}
         >
-            <Search search={search} onChange={onChange} resets={resets} />
+            <Search search={search} onChange={onChange} cleared={searchCleared} />
             {controls(row('main'))}
             {active && <IconButton icon={FilterX} label={strings.clearFilters} onClick={clearAll} />}
         </FilterBar>

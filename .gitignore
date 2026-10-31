@@ -9,3 +9,4 @@ node_modules
 /tests/js-host/package-lock.json
 /tests/js-host/ssr-dist
 /tests/js-host/unit-dist
+/tests/js-host/dom-dist

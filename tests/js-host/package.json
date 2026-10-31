@@ -5,11 +5,12 @@
   "scripts": {
     "build": "vite build",
     "ssr": "vite build --ssr ssr-check.jsx --outDir ssr-dist && node ssr-dist/ssr-check.js",
-    "unit": "vite build --ssr unit-check.js --outDir unit-dist && node unit-dist/unit-check.js"
+    "unit": "vite build --ssr unit-check.js --outDir unit-dist && node unit-dist/unit-check.js && vite build --ssr dom-check.jsx --outDir dom-dist && node --import ./dom-setup.js dom-dist/dom-check.js"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "jsdom": "^30.1.2",
     "laravel-vite-plugin": "^2.0.0",
     "tailwindcss": "^4.0.0",
     "vite": "^7.0.7"
