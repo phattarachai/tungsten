@@ -474,6 +474,47 @@ Route::post('ui-kit/toast', UiKitToastController::class)->name('ui-kit.toast');
 
 Components take `className` where it makes sense; nothing stops a page from using plain elements beside them.
 
+### Record pages
+
+A record (detail) page is one sheet: no Section inside a Section, plain-text headings, one hairline between blocks,
+label–value facts with no boxes, and widths by container (`@container`, `@2xl:`), never the viewport, so an open
+Aside doesn't squeeze it.
+
+```jsx
+<StatsStrip stats={[
+    { label: 'คำสั่งซื้อทั้งหมด', value: '128', hint: 'ตั้งแต่ ม.ค. 68' },
+    { label: 'ค้างชำระ', value: '2', tone: 'todo', href: route('admin.orders', { customer: id }) },
+]} />
+<div className="@container">
+    <Heading actions={<IconButton icon={FilePen} label="แก้ไขข้อมูลลูกค้า" onClick={edit} />}>ข้อมูลลูกค้า</Heading>
+    <div className="grid gap-4 @2xl:grid-cols-2">
+        <Facts rows={[{ label: 'ชื่อ', value: name }, phone && { label: 'เบอร์โทร', value: phone }]} />
+        <Facts rows={[{ label: 'อีเมล', value: email }]} labelWidth="6rem" />
+    </div>
+    <Rule />
+    …
+</div>
+```
+
+- `StatsStrip`: a row of figures with hairlines between them, 2 / 3 (`@2xl`) / 6 (`@5xl`) columns. A stat is
+  `{ label, value, hint?, tone?, href? }`, where `tone` is a status tone for the value and `href` makes the cell a link.
+- `Heading` takes `actions` at its right (icon buttons, a ⋯ ActionMenu). `Rule` is the hairline.
+- `Facts` skips falsy rows and shows a grey dash for an empty value. (`DetailList` is the boxed version, for inside a
+  Section.)
+
+### JSON calls
+
+For what isn't an Inertia visit (a dialog's lookup, a quick save), call the app with Laravel's XSRF cookie:
+
+```js
+const { ok, status, body, errors, message } = await sendJson(url, 'PATCH', { phone })   // never rejects on HTTP errors
+const customers = await getJson(searchUrl, { q })                                        // body, or throws
+const created = await postJson(storeUrl, data)                                          // body, or throws
+```
+
+`errors` holds a 422's first message per field, ready for `FormField error`; the thrown error carries `message`,
+`status` and `errors`. A GET's data goes in the query string.
+
 ### Lightbox
 
 Every image can open full screen. AppLayout provides one shared viewer; outside it, `Zoomable` brings its own.
@@ -486,7 +527,8 @@ Every image can open full screen. AppLayout provides one shared viewer; outside 
 const open = useLightbox(); open(images, index)                                        // from code
 ```
 
-Images are `{ src, full?, alt? }` (`full` is the large file when `src` is a thumbnail). The viewer shows the image with
+`Avatar` (and a `Combobox` option's avatar) falls back to the initial when the photo fails to load (a dead CDN or
+LINE link). Images are `{ src, full?, alt? }` (`full` is the large file when `src` is a thumbnail). The viewer shows the image with
 its caption and "n / N"; ← / → and the side buttons step through the group; Escape, the × or a click outside the
 image closes it. It traps focus (focus starts on ×, goes back to the thumbnail on close) and locks the page scroll.
 Nothing renders on the server.

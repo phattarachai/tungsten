@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 
-import { Combobox, SearchInput, Thumb, Zoomable } from '@tungsten'
+import { Avatar, Combobox, Facts, getJson, postJson, SearchInput, sendJson, StatsStrip, Thumb, Zoomable } from '@tungsten'
 import { FlashToastFor } from '@tungsten/components/panel/FlashToast'
 
 function mount(element) {
@@ -141,6 +141,60 @@ Object.assign(checks, {
         assert.match(rows[1].textContent, /^สสมชาย/, 'initial before the label')
         assert.equal(rows[2].querySelector('.rounded-full'), null, 'no avatar key, no avatar')
         box.unmount()
+    },
+})
+
+Object.assign(checks, {
+    'Avatar falls back to the initial when the photo fails to load, in Combobox options too': () => {
+        const box = mount(<Avatar person={{ avatar: '/dead.jpg', name: 'เกศินี' }} />)
+
+        act(() => document.querySelector('img[src="/dead.jpg"]').dispatchEvent(new window.Event('error')))
+        assert.equal(document.querySelector('img[src="/dead.jpg"]'), null)
+        assert.equal(document.body.textContent.trim(), 'ก')
+        box.unmount()
+
+        const combo = mount(<Combobox options={[{ value: 1, label: 'สมชาย', avatar: '/gone.jpg' }]} value={1} onChange={() => {}} aria-label="ลูกค้า" />)
+        act(() => document.querySelector('img[src="/gone.jpg"]').dispatchEvent(new window.Event('error')))
+        assert.match(document.querySelector('button[aria-label="ลูกค้า"]').textContent, /^สสมชาย/)
+        combo.unmount()
+    },
+
+    'StatsStrip and Facts: falsy entries skipped, tone colours the value, an empty value is a dash': () => {
+        const box = mount(
+            <>
+                <StatsStrip stats={[{ label: 'คำสั่งซื้อ', value: '12', hint: '30 วัน' }, null, { label: 'ค้างชำระ', value: '3', tone: 'todo' }]} />
+                <Facts rows={[{ label: 'เบอร์โทร', value: '081' }, false, { label: 'อีเมล', value: null }]} />
+            </>,
+        )
+
+        assert.equal(document.querySelectorAll('.\\@container .bg-sheet').length, 2)
+        assert.ok([...document.querySelectorAll('.text-tone-todo-ink')].some((element) => element.textContent === '3'))
+        assert.deepEqual([...document.querySelectorAll('dt')].map((element) => element.textContent), ['เบอร์โทร', 'อีเมล'])
+        assert.equal(document.querySelectorAll('dd')[1].textContent, '—')
+        box.unmount()
+    },
+
+    'sendJson sends the XSRF cookie and maps a 422 to field errors; getJson / postJson reject with the message': async () => {
+        const calls = []
+        document.cookie = 'XSRF-TOKEN=abc%3D'
+        globalThis.fetch = async (url, init) => {
+            calls.push({ url: String(url), init })
+
+            return { ok: false, status: 422, json: async () => ({ message: 'ข้อมูลไม่ถูกต้อง', errors: { phone: ['เบอร์ไม่ถูกต้อง', 'x'] } }) }
+        }
+
+        const result = await sendJson('/admin/customers/1', 'PATCH', { phone: '1' })
+        assert.equal(calls[0].init.headers['X-XSRF-TOKEN'], 'abc=')
+        assert.equal(calls[0].init.body, '{"phone":"1"}')
+        assert.deepEqual([result.ok, result.status, result.errors, result.message], [false, 422, { phone: 'เบอร์ไม่ถูกต้อง' }, 'ข้อมูลไม่ถูกต้อง'])
+
+        await getJson('/admin/customers/search', { q: 'สม', empty: '' }).catch((error) => calls.push({ error }))
+        assert.equal(calls[1].url, 'http://tungsten.local/admin/customers/search?q=%E0%B8%AA%E0%B8%A1')
+        assert.equal(calls[1].init.body, undefined)
+        assert.deepEqual([calls[2].error.message, calls[2].error.errors], ['ข้อมูลไม่ถูกต้อง', { phone: 'เบอร์ไม่ถูกต้อง' }])
+
+        globalThis.fetch = async () => ({ ok: true, status: 200, json: async () => ({ id: 7 }) })
+        assert.deepEqual(await postJson('/admin/customers', { name: 'ก' }), { id: 7 })
     },
 })
 

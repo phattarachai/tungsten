@@ -5,6 +5,7 @@
  */
 export const strings = {
     close: 'ปิด',
+    requestFailed: 'ทำรายการไม่สำเร็จ',
     image: 'รูปภาพ',
     viewImage: (alt) => (alt ? `ดูรูป ${alt}` : 'ดูรูป'),
     previousImage: 'รูปก่อนหน้า',

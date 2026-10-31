@@ -7,6 +7,17 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.13 — 2026-11-01
+
+- **`StatsStrip`**: a row of figures (`{ label, value, hint?, tone?, href? }`) with hairlines, 2 / 3 / 6 columns by
+  container width.
+- **Record parts**: `Heading` (text, with `actions`), `Rule` (the hairline), `Facts` (label–value rows, no boxes).
+- **`sendJson` / `getJson` / `postJson`**: JSON calls with the XSRF cookie; a 422's field errors as `errors`.
+- **`Avatar`** falls back to the initial when its photo fails to load, and so do `Combobox` option avatars; the
+  initial comes from `person.name` when `person.initial` isn't given.
+- The status tones' ink / dot classes live in one map (`lib/tones.js`), shared by `Pills`, the env line and
+  `StatsStrip`.
+
 ## v0.2.12 — 2026-11-01
 
 - `Combobox` options may carry `avatar` (an image URL, or null for the initial): a small round avatar before the label

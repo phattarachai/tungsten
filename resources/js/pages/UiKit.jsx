@@ -22,6 +22,10 @@ import {
     DateRangePicker,
     DateTimePicker,
     DetailList,
+    Facts,
+    Heading,
+    Rule,
+    StatsStrip,
     Dialog,
     Filters,
     FormDialog,
@@ -543,6 +547,31 @@ function Filtering() {
     )
 }
 
+function RecordParts() {
+    return (
+        <Section id="record" title="StatsStrip · Heading · Facts · Rule" hint="หน้าข้อมูล: แผ่นเดียว เส้นบางคั่น ไม่มี Section ซ้อน" flush>
+            <StatsStrip
+                stats={[
+                    { label: 'คำสั่งซื้อทั้งหมด', value: '128', hint: 'ตั้งแต่ ม.ค. 68' },
+                    { label: 'ยอดซื้อสะสม', value: '฿84,250' },
+                    { label: 'แต้มคงเหลือ', value: '1,240' },
+                    { label: 'ค้างชำระ', value: '2', tone: 'todo', href: '#record' },
+                ]}
+            />
+            <div className="@container p-3">
+                <Heading actions={<IconButton icon={SquarePen} label="แก้ไขข้อมูลลูกค้า" />}>ข้อมูลลูกค้า</Heading>
+                <div className="grid gap-4 @2xl:grid-cols-2">
+                    <Facts rows={[{ label: 'ชื่อ', value: 'เกศินี วงศ์ใหญ่' }, { label: 'เบอร์โทร', value: '081-234-5678' }, { label: 'อีเมล', value: null }]} />
+                    <Facts rows={[{ label: 'กลุ่ม', value: 'สมาชิก Gold' }, { label: 'สมัครเมื่อ', value: '12 ม.ค. 68' }]} />
+                </div>
+                <Rule />
+                <Heading>ที่อยู่จัดส่ง</Heading>
+                <Facts rows={[{ label: 'ที่อยู่', value: '99/1 ถ.สุขุมวิท แขวงคลองเตย เขตคลองเตย กรุงเทพฯ 10110' }]} />
+            </div>
+        </Section>
+    )
+}
+
 function Lists() {
     const [page, setPage] = useState(1)
 
@@ -789,6 +818,7 @@ export default function UiKit({ toastUrl }) {
                 <SectionGrid min="36rem">
                     <GroupedTable />
                     <Filtering />
+                    <RecordParts />
                     <Lists />
                     <Containers />
                     <Navs />
