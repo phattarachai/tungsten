@@ -5,6 +5,7 @@ import { AsideTarget } from '../components/panel/asideTarget'
 import { FlashToast } from '../components/panel/FlashToast'
 import { HelpPanel } from '../components/panel/HelpPanel'
 import { HelpPanelContext } from '../components/panel/helpContext'
+import { LightboxProvider } from '../components/ui/Lightbox'
 import { Sidebar } from '../components/panel/Sidebar'
 import { TooltipLayer } from '../components/panel/TooltipLayer'
 import { Topbar } from '../components/panel/Topbar'
@@ -82,21 +83,23 @@ export function AppLayout({ children, toolbar, ...options }) {
 
     return (
         <HelpPanelContext value={help}>
-            <div className={cn('panel-shell min-h-screen bg-zinc-100 text-xs text-zinc-800', className)}>
-                {sidebar && <Sidebar closed={closed} mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />}
-                <div className={cn('transition-all', railOpen && 'md:ml-50', sheet && 'flex min-h-screen flex-col')}>
-                    {topbar && <Topbar sidebarClosed={!railOpen} onToggleSidebar={sidebar ? toggle : undefined} toolbar={toolbar} />}
-                    <div className={cn('flex', sheet ? 'flex-1 items-stretch' : 'items-start')}>
-                        <Main sheet={sheet} gutter={!railOpen} top={!topbar} flush={flush} className={mainClassName}>
-                            <AsideTarget value={asideTarget}>{children}</AsideTarget>
-                        </Main>
-                        <div ref={setAsideTarget} className="contents" />
-                        {help.url && <HelpPanel url={help.url} onClose={help.close} />}
+            <LightboxProvider>
+                <div className={cn('panel-shell min-h-screen bg-zinc-100 text-xs text-zinc-800', className)}>
+                    {sidebar && <Sidebar closed={closed} mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />}
+                    <div className={cn('transition-all', railOpen && 'md:ml-50', sheet && 'flex min-h-screen flex-col')}>
+                        {topbar && <Topbar sidebarClosed={!railOpen} onToggleSidebar={sidebar ? toggle : undefined} toolbar={toolbar} />}
+                        <div className={cn('flex', sheet ? 'flex-1 items-stretch' : 'items-start')}>
+                            <Main sheet={sheet} gutter={!railOpen} top={!topbar} flush={flush} className={mainClassName}>
+                                <AsideTarget value={asideTarget}>{children}</AsideTarget>
+                            </Main>
+                            <div ref={setAsideTarget} className="contents" />
+                            {help.url && <HelpPanel url={help.url} onClose={help.close} />}
+                        </div>
                     </div>
+                    <FlashToast />
+                    <TooltipLayer />
                 </div>
-                <FlashToast />
-                <TooltipLayer />
-            </div>
+            </LightboxProvider>
         </HelpPanelContext>
     )
 }

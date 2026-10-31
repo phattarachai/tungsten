@@ -7,6 +7,14 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.9 — 2026-10-31
+
+- **Lightbox**: `LightboxProvider` (AppLayout provides it), `Zoomable` (`images` + `index`, or `src` / `full` / `alt`;
+  brings its own viewer outside a provider) and `useLightbox()`. Full-screen image with caption and "n / N", ← / →
+  and buttons, Escape / × / click outside to close, focus trapped and restored, page scroll locked, SSR-safe.
+- `Thumb zoom` (`true` or `{ images, index }`, `full` for the large file) and `Avatar zoom`.
+- DOM checks for the viewer in `tests/js-host` (`npm run unit`).
+
 ## v0.2.8 — 2026-10-31
 
 - **Switcher footer links**: `PanelRegistry::link($label, $url, icon:, image:, ability:)` (chains after `entry()`),
