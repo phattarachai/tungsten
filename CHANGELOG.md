@@ -14,6 +14,9 @@ This file records anything released before that automation landed.
   against the guard's user provider with remember-me and a throttle, must pass the panel ability and the `authorize`
   hook, and return to the intended URL. Labels in `tungsten.login.labels`. The user menu signs out through the panel.
 - Panels without `->login()` are unchanged.
+- **Status tones**: `Badge` tones `draft`, `waiting`, `todo`, `active`, `done`, `canceled`, `failed` (bold, with a
+  warning icon), from `--color-tone-<name>` / `-ink` tokens with AA defaults; a `Pills` option's `tone` colours its
+  count. The colour tones and aliases are unchanged.
 
 ## v0.2.3 — 2026-10-31
 

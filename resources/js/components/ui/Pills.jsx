@@ -1,7 +1,26 @@
 import { cn } from '../../lib/cn'
 
+const TONE_COUNTS = {
+    draft: 'font-semibold text-tone-draft-ink',
+    waiting: 'font-semibold text-tone-waiting-ink',
+    todo: 'font-semibold text-tone-todo-ink',
+    active: 'font-semibold text-tone-active-ink',
+    done: 'font-semibold text-tone-done-ink',
+    canceled: 'font-semibold text-tone-canceled-ink',
+    failed: 'font-semibold text-tone-failed-ink',
+}
+
+function countClass(option, active) {
+    if (active) {
+        return 'text-zinc-300'
+    }
+
+    return TONE_COUNTS[option.tone] ?? 'text-zinc-400'
+}
+
 /**
  * A row of count tabs. On a narrow toolbar it scrolls sideways (thin scrollbar on hover) instead of overflowing.
+ * An option's `tone` (a status tone, e.g. `todo`) colours its count while the tab isn't the active one.
  */
 export function Pills({ options, value, onChange, className }) {
     return (
@@ -18,7 +37,7 @@ export function Pills({ options, value, onChange, className }) {
                     )}
                 >
                     {option.label}
-                    {option.count !== undefined && <span className={cn('ml-1 tabular-nums', option.value === value ? 'text-zinc-300' : 'text-zinc-400')}>{option.count}</span>}
+                    {option.count !== undefined && <span className={cn('ml-1 tabular-nums', countClass(option, option.value === value))}>{option.count}</span>}
                 </button>
             ))}
         </div>

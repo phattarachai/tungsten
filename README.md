@@ -429,7 +429,7 @@ Route::post('ui-kit/toast', UiKitToastController::class)->name('ui-kit.toast');
 - **Records**: `RecordLayout`, `PageHeader`, `GroupedNav`, `NavList`, `RecordPager`, `Section`, `SectionGrid`,
   `TabSection`, `DetailList`, `Timeline`, `Stepper`, `AuditPanel`, `LastEdited`.
 - **Buttons**: `Button` (`solid · outline · ghost` × `neutral · brand · amber · blue · danger`), `IconButton`,
-  `ActionMenu`, `RowActions`, `ButtonBar`, `ButtonGroup`, `SyncButton`, `Badge`.
+  `ActionMenu`, `RowActions`, `ButtonBar`, `ButtonGroup`, `SyncButton`, `Badge` (colour tones and status tones, below).
 
 Components take `className` where it makes sense; nothing stops a page from using plain elements beside them.
 
@@ -528,6 +528,24 @@ without the IBM Plex Sans Thai `@font-face` rules, so the build doesn't ship the
 | `--color-rail-hover`, `--color-rail-active`, `--color-rail-line` | mixed from the rail toward its ink | nav hover, the active item, the line under the switcher |
 | `--color-topbar`, `--color-topbar-line`, `--color-topbar-hover` | white, `zinc-200`, `zinc-100` | the topbar, its bottom line, its buttons' hover |
 | `--color-sheet`, `--color-sheet-line` | white, `zinc-200` | `AppLayout sheet`'s surface and border |
+| `--color-tone-<name>`, `--color-tone-<name>-ink` | soft tints, AA ink | the status tones below |
+
+**Status tones.** Name a status by what it means, not by colour: `<Badge tone="todo">ที่ต้องจัดส่ง</Badge>`, and a
+`Pills` option's `tone` colours its count while that tab isn't selected. Each tone is a fill and an ink token; redefine
+them in `@theme` to restyle every status at once.
+
+| Tone | Means |
+|---|---|
+| `draft` | not started |
+| `waiting` | waiting on someone outside (a customer, a supplier) |
+| `todo` | our turn: someone here has to act |
+| `active` | in progress |
+| `done` | finished |
+| `canceled` | canceled or expired |
+| `failed` | an error to fix (bold, with a warning icon) |
+
+The colour tones (`zinc`, `brand`, `green`, `amber`, `red`, `blue`, and `success` / `warning` / `danger` / `gray` /
+`info`) stay for anything that isn't a status.
 | `--font-sans` | IBM Plex Sans Thai (self-hosted) | all text |
 | `--radius`, `--radius-sm/md/lg` | Tailwind's | corners |
 | `--motion-fast/base/page`, `--motion-ease` | 120 / 160 / 180 ms | overlays and page change (0 under reduced motion) |
