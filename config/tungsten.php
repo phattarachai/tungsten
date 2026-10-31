@@ -44,7 +44,13 @@ return [
         ],
     ],
 
+    /*
+    | The panel's tab icon: one path, or several for browsers to pick from (e.g. ['favicon.png', 'images/mark.svg'] —
+    | SVG last, so browsers that can draw it use it). `apple_touch_icon` is the home-screen icon (a 180px PNG).
+    */
     'favicon' => null,
+
+    'apple_touch_icon' => null,
 
     /*
     | How `<Filters>` lays out a list's filters: 'bar' shows them all above the table, 'menu' puts them in a dropdown
