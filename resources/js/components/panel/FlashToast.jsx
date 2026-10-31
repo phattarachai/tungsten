@@ -1,7 +1,9 @@
 import { usePage } from '@inertiajs/react'
 import { CircleAlert, CircleCheck, Info, TriangleAlert, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 
+import { inBrowser } from '../../lib/browser'
 import { cn } from '../../lib/cn'
 import { strings } from '../../lib/strings'
 
@@ -22,8 +24,19 @@ function normalise(flash) {
     return typeof flash === 'string' ? { message: flash, tone: 'success' } : { message: flash.message, tone: TONES[flash.tone] ? flash.tone : 'success' }
 }
 
+/**
+ * The page's flash as a toast, bottom right, above every overlay (dialogs, the Aside, the Lightbox): it portals to
+ * `body` at `z-[70]`. Each response's flash is a new toast, keyed by the server's `flash.id`, so the same message
+ * twice in a row shows twice.
+ */
 export function FlashToast() {
     const { flash } = usePage().props
+
+    return <FlashToastFor flash={flash} />
+}
+
+/** FlashToast for a given `flash` prop (`{ message, id }`), outside an Inertia page. */
+export function FlashToastFor({ flash }) {
     const [toast, setToast] = useState(null)
 
     const patch = (id, changes) => setToast((current) => (current?.id === id ? { ...current, ...changes } : current))
@@ -32,7 +45,7 @@ export function FlashToast() {
         const next = normalise(flash?.message)
 
         if (next?.message) {
-            setToast({ ...next, id: Date.now(), entered: false, leaving: false })
+            setToast((current) => (flash?.id && current?.id === flash.id ? current : { ...next, id: flash?.id ?? `${Date.now()}`, entered: false, leaving: false }))
         }
     }, [flash])
 
@@ -61,7 +74,7 @@ export function FlashToast() {
         return () => clearTimeout(timer)
     }, [toast?.leaving])
 
-    if (!toast) {
+    if (!toast || !inBrowser) {
         return null
     }
 
@@ -69,12 +82,12 @@ export function FlashToast() {
     const Icon = tone.icon
     const visible = toast.entered && !toast.leaving
 
-    return (
+    return createPortal(
         <div
             key={toast.id}
             role="status"
             className={cn(
-                'fixed right-3 bottom-3 z-50 flex max-w-sm items-start gap-2.5 overflow-hidden rounded-lg bg-zinc-900 py-2.5 pr-2 pl-3 text-xs text-zinc-50 shadow-xl ring-1 ring-black/10 transition duration-250 ease-out motion-reduce:transition-none',
+                'fixed right-3 bottom-3 z-[70] flex max-w-sm items-start gap-2.5 overflow-hidden rounded-lg bg-zinc-900 py-2.5 pr-2 pl-3 text-xs text-zinc-50 shadow-xl ring-1 ring-black/10 transition duration-250 ease-out motion-reduce:transition-none',
                 visible ? 'translate-x-0 opacity-100' : 'pointer-events-none translate-x-[calc(100%+1rem)] opacity-0',
             )}
         >
@@ -88,6 +101,7 @@ export function FlashToast() {
                 className={cn('absolute bottom-0 left-0 h-0.5 w-full origin-left transition-transform ease-linear motion-reduce:hidden', tone.barClass, toast.entered ? 'scale-x-0' : 'scale-x-100')}
                 style={{ transitionDuration: `${tone.seconds * 1000}ms` }}
             />
-        </div>
+        </div>,
+        document.body,
     )
 }
