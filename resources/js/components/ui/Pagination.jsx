@@ -10,12 +10,12 @@ function pages(current, last) {
     return shown.flatMap((page, index) => (index > 0 && page - shown[index - 1] > 1 ? ['…', page] : [page]))
 }
 
-export function Pagination({ paginator, onPage }) {
+export function Pagination({ paginator, onPage, flush = false }) {
     const { current_page: current, last_page: last, total, from, to } = paginator
     const button = 'inline-flex h-6 min-w-6 items-center justify-center rounded border px-1.5 tabular-nums'
 
     return (
-        <div className="flex items-center justify-between gap-2 border-t border-zinc-100 px-2.5 py-1.5 text-[0.6875rem] text-zinc-500">
+        <div className={cn('flex items-center justify-between gap-2 border-t border-zinc-100 py-1.5 text-[0.6875rem] text-zinc-500', flush ? 'px-0' : 'px-2.5')}>
             <span className="tabular-nums">{total === 0 ? strings.noItems : strings.paginationRange(number(from), number(to), number(total))}</span>
             {last > 1 && (
                 <span className="flex items-center gap-1">

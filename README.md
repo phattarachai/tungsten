@@ -161,6 +161,7 @@ class AdminPanelProvider extends PanelProvider
 
 Other options: `->ability('…' | null)`, `->sets([...])`, `->routes(fn () => …)`, `->navigationLinks([...])`,
 `->help(fn ($routeName) => $url)`, `->logoutUrl('logout' | url | closure | false)`, `->rail('#14262a')` (sidebar tint),
+`->layout(['sheet' => true])` (panel-wide `AppLayout` defaults; a route's `->layout()` overrides them key by key),
 `->color()` / `->icon()` / `->short()` (switcher chip), `->business()`, `->replaces('filament')`.
 
 **The switcher** lists every panel the user may open. Add a row for something that isn't a Tungsten panel — the
@@ -194,7 +195,7 @@ The metadata a route can carry:
 | `->breadcrumb($label, parent:)` | the trail's last label. The parent nav route — inferred from the name (`admin.orders.edit` → `admin.orders`) or given — links before it. |
 | `->breadcrumbs([...])` | a fixed trail: `[['label' => 'ตั้งค่า'], ['label' => 'SMS', 'route' => 'admin.settings.sms']]`. |
 | `->help($url)` | the topbar `?` for this route. |
-| `->layout([...])` | defaults for `AppLayout` (`flush`, `sidebar`, `topbar`, `className`, `mainClassName`), shared as the `layout` prop. |
+| `->layout([...])` | defaults for `AppLayout` (`sheet`, `flush`, `sidebar`, `topbar`, `className`, `mainClassName`), merged over the panel's `->layout()` and shared as the `layout` prop. |
 
 Without metadata a nav route's trail is its group and label. A controller replaces the trail by passing a
 `breadcrumbs` prop; `Tungsten::breadcrumbs($order->number)` gives the parent trail ending in a record name.
@@ -345,10 +346,12 @@ Route::get('ui-kit', UiKitPage::class)->name('ui-kit')->nav('UI Kit', icon: 'pal
 Route::post('ui-kit/toast', UiKitToastController::class)->name('ui-kit.toast');
 ```
 
-- **Shell**: `AppLayout` (`toolbar`, `flush`, `sidebar={false}`, `topbar={false}`, `className`, `mainClassName`), and
+- **Shell**: `AppLayout` (`toolbar`, `sheet`, `flush`, `sidebar={false}`, `topbar={false}`, `className`, `mainClassName`), and
   its parts for a layout of your own: `Sidebar`, `Topbar`, `PanelSwitcher`, `FlashToast`, `TooltipLayer`, `Aside`.
 - **Lists**: `DataTable` (sortable, selection, row actions, groups with subtotals, sticky columns), `DataList`,
   `TreeTable`, `TableToolbar`, `Pagination`, `Pills`, `SearchInput`, `Dropdown`, `ColumnsMenu`, `SelectionBar`.
+  `DataTable`, `TableToolbar` and `Pagination` take `flush` to drop their frame and side padding, for a table on a
+  sheet or a bare page.
 - **Forms**: `FormField` (inline label, `hint`, `info`, `error`), `Input`, `Select`, `Textarea`, `Combobox`
   (searchable, multiple), `Switch`, `DatePicker` / `DateTimePicker` / `DateRangePicker` (values stay ISO
   Gregorian; display is พ.ศ.), `FormDialog`, `ConfirmDialog`, `Dialog`.
@@ -423,12 +426,37 @@ Redefine any of them in your panel stylesheet after the import:
 }
 ```
 
+A light chrome with the content on one white sheet — grey rail and topbar, no lines, a white chip for the active
+item — is tokens plus `Panel::layout(['sheet' => true])`:
+
+```css
+@theme {
+    --color-rail: #f5f5f4;
+    --color-rail-ink: #3f3e3d;
+    --color-rail-ink-active: #000000;
+    --color-rail-muted: #a4a4a4;
+    --color-rail-hover: #ebeae8;
+    --color-rail-active: #ffffff;
+    --color-rail-line: transparent;
+    --color-topbar: #f5f5f4;
+    --color-topbar-line: transparent;
+    --color-topbar-hover: #ebeae8;
+}
+```
+
+An app whose `--font-sans` is another font imports `resources/css/kit.css` instead of `tungsten.css`: the same theme
+without the IBM Plex Sans Thai `@font-face` rules, so the build doesn't ship the font files.
+
 | Token | Default | Used for |
 |---|---|---|
 | `--color-zinc-50…950` | steel greys | every grey in the kit and in pages written with `zinc-*` |
 | `--color-blue-50…950` | muted steel blue | the info tone |
 | `--color-brand` (+ `-50/100/400/600/700` mixed from it) | `#ba1a1a` | the accent |
 | `--color-rail`, `--color-rail-ink`, `--color-rail-muted` | graphite | the sidebar |
+| `--color-rail-ink-active` | `#ffffff` | the active and hovered nav item's text, the switcher's label |
+| `--color-rail-hover`, `--color-rail-active`, `--color-rail-line` | mixed from the rail toward its ink | nav hover, the active item, the line under the switcher |
+| `--color-topbar`, `--color-topbar-line`, `--color-topbar-hover` | white, `zinc-200`, `zinc-100` | the topbar, its bottom line, its buttons' hover |
+| `--color-sheet`, `--color-sheet-line` | white, `zinc-200` | `AppLayout sheet`'s surface and border |
 | `--font-sans` | IBM Plex Sans Thai (self-hosted) | all text |
 | `--radius`, `--radius-sm/md/lg` | Tailwind's | corners |
 | `--motion-fast/base/page`, `--motion-ease` | 120 / 160 / 180 ms | overlays and page change (0 under reduced motion) |
@@ -464,6 +492,10 @@ composer test          # Pest + Orchestra Testbench
 composer analyse       # Larastan
 cd tests/js-host && npm install && npm run build && npm run ssr   # build the kit through the alias, render it under Node
 ```
+
+In a host app, a route that renders one of the kit's own pages (`HomePage`, `UiKitPage`) has no page file in the
+host's `resources/js/pages`, so assert its component without the existence check:
+`assertInertia(fn ($p) => $p->component('tungsten::Home', shouldExist: false))`.
 
 ## Changelog
 

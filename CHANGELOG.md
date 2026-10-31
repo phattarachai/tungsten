@@ -7,6 +7,19 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.1 — 2026-10-31
+
+Theme hooks for a light chrome; non-breaking, the defaults keep the steel look:
+
+- Tokens: `--color-rail-ink-active` (active and hovered nav text, was hard-coded white), `--color-topbar`,
+  `--color-topbar-line`, `--color-topbar-hover`, `--color-sheet`, `--color-sheet-line`.
+- Rail hover / active / line are `@theme` defaults mixed toward `--color-rail-ink` (light rails work, app values win);
+  a `Panel::rail()` tint re-mixes them on the aside via `.panel-rail-tinted`.
+- `AppLayout sheet`: main as one rounded sheet inset in the chrome, reaching the viewport bottom.
+- `Panel::layout([...])`: panel-wide `AppLayout` defaults, merged under a route's `->layout()`.
+- `TableToolbar flush` and `Pagination flush`, to line up with `DataTable flush`.
+- `resources/css/kit.css`: the theme without the IBM Plex Sans Thai font files.
+
 ## v0.2.0 — 2026-10-31
 
 Owner decisions folded in the same day as v0.1.0 (breaking — v0.1.0 had no consumers):

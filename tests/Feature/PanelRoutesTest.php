@@ -185,6 +185,16 @@ it('hides the sign-out link when the panel has no logout target', function (): v
         ->assertInertia(fn (Assert $page): Assert => $page->where('auth.logoutUrl', null)->where('panel.rail', '#1d1f36'));
 });
 
+it('shares the panel layout defaults, overridden key by key by the route', function (): void {
+    $this->actingAs($this->admin())
+        ->get('/tools')
+        ->assertInertia(fn (Assert $page): Assert => $page->where('layout', ['sheet' => true, 'mainClassName' => 'tools-main']));
+
+    $this->actingAs($this->admin())
+        ->get('/tools/wide')
+        ->assertInertia(fn (Assert $page): Assert => $page->where('layout', ['sheet' => false, 'mainClassName' => 'tools-main', 'flush' => true]));
+});
+
 it('flashes a sample toast from the UI Kit page', function (): void {
     $this->actingAs($this->admin())
         ->get('/admin/ui-kit')
