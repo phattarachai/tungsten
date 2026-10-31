@@ -1,0 +1,50 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ namespace }};
+
+use {{ modelClass }};
+use Illuminate\Http\Request;
+use Override;
+use Phattarachai\Tungsten\Page;
+use Phattarachai\Tungsten\Table\TableQuery;
+
+class {{ class }} extends Page
+{
+    public function path(): string
+    {
+        return '{{ path }}';
+    }
+
+    public function component(): string
+    {
+        return '{{ component }}';
+    }
+
+    public function navLabel(): string
+    {
+        return '{{ label }}';
+    }
+
+    #[Override]
+    public function navIcon(): ?string
+    {
+        return 'layout-grid';
+    }
+
+    public function props(Request $request): array
+    {
+        return [
+            'title' => $this->title(),
+            'table' => TableQuery::for({{ model }}::query(), $request)
+                ->search(['id'])
+                ->sorts(['id', 'created_at'])
+                ->defaultSort('created_at', 'desc')
+                ->paginate(fn ({{ model }} $record): array => [
+                    'id' => $record->getKey(),
+                    'created_at' => $record->created_at?->format('Y-m-d H:i'),
+                ]),
+        ];
+    }
+}

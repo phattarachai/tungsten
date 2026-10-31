@@ -1,0 +1,9 @@
+vendor/
+composer.lock
+.phpunit.cache/
+.phpunit.result.cache
+phpunit.xml
+node_modules
+/tests/js-host/node_modules
+/tests/js-host/public
+/tests/js-host/package-lock.json

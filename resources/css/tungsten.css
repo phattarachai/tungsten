@@ -1,0 +1,204 @@
+/*
+ | Tungsten's theme, imported by the host's panel stylesheet after `@import 'tailwindcss'`:
+ |
+ |     @import 'tailwindcss';
+ |     @import '../../vendor/phattarachai/tungsten/resources/css/tungsten.css';
+ |     @source '../js/pages/panel';
+ |
+ | The "steel" theme: `html.tungsten` (the panel's root view) re-points Tailwind's zinc ramp to cool steel greys and
+ | the blue ramp to a muted steel blue, so every `zinc-*` / `blue-*` utility in the kit and the host's pages turns
+ | steel with no class changes, portalled menus included. The accent is `--color-brand`, set per panel on <html> by
+ | the root view; its tints are mixed from it. Every size in the kit is rem, and the shell scales the rem base to
+ | 125% so its compact 12px design sits at Filament's density. See docs/theme.md.
+ */
+@import './ibm-plex-sans-thai.css';
+
+@source '../js';
+
+html.tungsten {
+    --font-sans: 'IBM Plex Sans Thai', ui-sans-serif, system-ui, sans-serif;
+    --color-zinc-50: #f5f7f9;
+    --color-zinc-100: #edf0f4;
+    --color-zinc-200: #dce2e8;
+    --color-zinc-300: #c6ced7;
+    --color-zinc-400: #98a3af;
+    --color-zinc-500: #687483;
+    --color-zinc-600: #4d5866;
+    --color-zinc-700: #3a4552;
+    --color-zinc-800: #252e39;
+    --color-zinc-900: #161c24;
+    --color-zinc-950: #0d1117;
+    --color-blue-50: #eef3f8;
+    --color-blue-100: #dfe8f1;
+    --color-blue-200: #c5d4e3;
+    --color-blue-300: #a2b9d0;
+    --color-blue-400: #7b98b6;
+    --color-blue-500: #5a7a9c;
+    --color-blue-600: #476685;
+    --color-blue-700: #3a5470;
+    --color-blue-800: #2f4459;
+    --color-blue-900: #253545;
+    --color-blue-950: #18232e;
+
+    --motion-fast: 120ms;
+    --motion-base: 160ms;
+    --motion-page: 180ms;
+    --motion-ease: cubic-bezier(0.2, 0, 0, 1);
+
+    font-family: var(--font-sans);
+}
+
+html:has(.panel-shell) {
+    font-size: 125%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html.tungsten {
+        --motion-fast: 0s;
+        --motion-base: 0s;
+        --motion-page: 0s;
+    }
+}
+
+/* ---- page change (lib/motion.js sets data-page-transition) ---------- */
+@keyframes panel-fade-out {
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes panel-page-in {
+    from {
+        opacity: 0;
+        transform: translateY(0.2rem);
+    }
+}
+
+html[data-page-transition] {
+    .panel-sidebar {
+        view-transition-name: panel-sidebar;
+    }
+
+    .panel-topbar {
+        view-transition-name: panel-topbar;
+    }
+
+    .panel-main {
+        view-transition-name: panel-main;
+    }
+
+    .panel-record-head {
+        view-transition-name: panel-record-head;
+    }
+
+    .panel-record-tabs {
+        view-transition-name: panel-record-tabs;
+    }
+
+    &::view-transition-group(*),
+    &::view-transition-new(*) {
+        animation: none;
+    }
+
+    &::view-transition-old(*) {
+        animation: none;
+        opacity: 0;
+    }
+
+    &::view-transition-old(panel-main),
+    &::view-transition-old(panel-record-head):only-child,
+    &::view-transition-old(panel-record-tabs):only-child {
+        opacity: 1;
+        mix-blend-mode: normal;
+        animation: panel-fade-out var(--motion-fast) var(--motion-ease) both;
+    }
+
+    &::view-transition-new(panel-main),
+    &::view-transition-new(panel-record-head):only-child,
+    &::view-transition-new(panel-record-tabs):only-child {
+        mix-blend-mode: normal;
+        animation: panel-page-in var(--motion-page) var(--motion-ease) both;
+    }
+}
+
+/* ---- rail: a panel may tint it (Panel::rail()); hover, active and line follow ---------- */
+.panel-rail {
+    --color-rail-hover: color-mix(in oklab, var(--color-rail), white 6%);
+    --color-rail-active: color-mix(in oklab, var(--color-rail), white 11%);
+    --color-rail-line: color-mix(in oklab, var(--color-rail), white 8%);
+}
+
+.panel-rail nav {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-rail-active) transparent;
+}
+
+.panel-rail nav:hover {
+    scrollbar-color: var(--color-rail-muted) transparent;
+}
+
+/* A side nav that scrolls inside the page (GroupedNav): thin, its thumb shown only on hover, like the rail. */
+.panel-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+}
+
+.panel-scroll:hover {
+    scrollbar-color: var(--color-zinc-300) transparent;
+}
+
+@theme {
+    --color-brand: #ba1a1a;
+    --color-brand-50: color-mix(in oklab, var(--color-brand) 9%, white);
+    --color-brand-100: color-mix(in oklab, var(--color-brand) 18%, white);
+    --color-brand-400: color-mix(in oklab, var(--color-brand) 72%, white);
+    --color-brand-600: color-mix(in oklab, var(--color-brand) 84%, black);
+    --color-brand-700: color-mix(in oklab, var(--color-brand) 70%, black);
+
+    --color-rail: #1b222b;
+    --color-rail-hover: #252e39;
+    --color-rail-active: #2c3744;
+    --color-rail-line: #2a333e;
+    --color-rail-ink: #b7c1cc;
+    --color-rail-muted: #6b7887;
+
+    --animate-panel-fade: panel-fade var(--motion-base) var(--motion-ease) backwards;
+    --animate-panel-pop: panel-pop var(--motion-base) var(--motion-ease) backwards;
+    --animate-panel-slide: panel-slide var(--motion-base) var(--motion-ease) backwards;
+    --animate-panel-drop: panel-drop var(--motion-fast) var(--motion-ease) backwards;
+    --animate-panel-lift: panel-lift var(--motion-fast) var(--motion-ease) backwards;
+
+    @keyframes panel-fade {
+        from {
+            opacity: 0;
+        }
+    }
+
+    @keyframes panel-pop {
+        from {
+            opacity: 0;
+            transform: scale(0.98);
+        }
+    }
+
+    @keyframes panel-slide {
+        from {
+            opacity: 0;
+            transform: translateX(0.75rem);
+        }
+    }
+
+    @keyframes panel-drop {
+        from {
+            opacity: 0;
+            transform: translateY(-0.1875rem);
+        }
+    }
+
+    @keyframes panel-lift {
+        from {
+            opacity: 0;
+            transform: translateY(0.1875rem);
+        }
+    }
+}

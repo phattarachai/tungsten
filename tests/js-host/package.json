@@ -1,0 +1,19 @@
+{
+  "private": true,
+  "type": "module",
+  "description": "A minimal host app that builds the kit through the @tungsten alias, the way an app does. CI runs `npm run build` here.",
+  "scripts": { "build": "vite build" },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "laravel-vite-plugin": "^2.0.0",
+    "tailwindcss": "^4.0.0",
+    "vite": "^7.0.7"
+  },
+  "dependencies": {
+    "@inertiajs/react": "^3.9.1",
+    "lucide-react": "^1.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  }
+}

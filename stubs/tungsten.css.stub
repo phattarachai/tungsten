@@ -1,0 +1,6 @@
+@import 'tailwindcss';
+
+/* The kit's theme: steel greys, the graphite rail, motion tokens, IBM Plex Sans Thai. It also @source-s the kit's JSX. */
+@import '../../vendor/phattarachai/tungsten/resources/css/tungsten.css';
+
+@source '../js/pages/panel';

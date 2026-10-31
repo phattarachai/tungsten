@@ -1,0 +1,18 @@
+import { Head } from '@inertiajs/react'
+import { AppLayout, PageHeader, Section } from '@tungsten'
+
+export default function {{ function }}({ title }) {
+    return (
+        <>
+            <Head title={title} />
+            <div className="space-y-3">
+                <PageHeader title={title} />
+                <Section title={title}>
+                    <p className="text-zinc-500">…</p>
+                </Section>
+            </div>
+        </>
+    )
+}
+
+{{ function }}.layout = (page) => <AppLayout>{page}</AppLayout>

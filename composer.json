@@ -1,0 +1,67 @@
+{
+    "name": "phattarachai/tungsten",
+    "description": "An Inertia + React admin panel kernel and UI kit for Laravel: panels, pages, a Thai-first component kit and a query-to-table helper. Hand-written JSX pages instead of declarative resources.",
+    "keywords": [
+        "laravel",
+        "inertia",
+        "react",
+        "admin",
+        "panel",
+        "filament-alternative",
+        "thai"
+    ],
+    "homepage": "https://github.com/phattarachai/tungsten",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Phattarachai Chaimongkol",
+            "email": "phatchai28@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.4",
+        "illuminate/contracts": "^12.0|^13.0",
+        "illuminate/database": "^12.0|^13.0",
+        "illuminate/support": "^12.0|^13.0",
+        "inertiajs/inertia-laravel": "^3.0"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.10",
+        "laravel/pint": "^1.24",
+        "orchestra/testbench": "^10.8|^11.0",
+        "pestphp/pest": "^4.0",
+        "pestphp/pest-plugin-laravel": "^4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Phattarachai\\Tungsten\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Phattarachai\\Tungsten\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Phattarachai\\Tungsten\\TungstenServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "scripts": {
+        "test": [
+            "@php vendor/bin/pest"
+        ],
+        "analyse": "vendor/bin/phpstan analyse",
+        "format": "vendor/bin/pint"
+    }
+}

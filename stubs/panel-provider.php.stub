@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Providers;
+
+use Phattarachai\Tungsten\Panel;
+use Phattarachai\Tungsten\PanelProvider;
+
+class TungstenPanelProvider extends PanelProvider
+{
+    public function panel(Panel $panel): Panel
+    {
+        return $panel
+            ->path('admin')
+            ->label(config('app.name'))
+            ->discoverSets(app_path('Panel/Sets'), 'App\\Panel\\Sets');
+    }
+}

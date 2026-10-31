@@ -1,0 +1,40 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ namespace }};
+
+use Illuminate\Http\Request;
+use Override;
+use Phattarachai\Tungsten\Page;
+
+class {{ class }} extends Page
+{
+    public function path(): string
+    {
+        return '{{ path }}';
+    }
+
+    public function component(): string
+    {
+        return '{{ component }}';
+    }
+
+    public function navLabel(): string
+    {
+        return '{{ label }}';
+    }
+
+    #[Override]
+    public function showInNavigation(): bool
+    {
+        return {{ inNavigation }};
+    }
+
+    public function props(Request $request): array
+    {
+        return [
+            'title' => $this->title(),
+        ];
+    }
+}

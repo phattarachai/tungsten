@@ -1,0 +1,29 @@
+import { Head } from '@inertiajs/react'
+import { AppLayout, DataTable, PageHeader, Pagination, SearchInput, TableToolbar, useTableQuery } from '@tungsten'
+
+const COLUMNS = [
+    { key: 'id', label: 'รหัส', primary: true, sortable: true },
+    { key: 'created_at', label: 'สร้างเมื่อ', sortable: true, sortDir: 'desc' },
+]
+
+export default function PanelOrdersIndex({ title, table }) {
+    const query = useTableQuery()
+
+    return (
+        <>
+            <Head title={title} />
+            <div className="space-y-3">
+                <PageHeader title={title} />
+                <div className="overflow-hidden rounded border border-zinc-200 bg-white">
+                    <TableToolbar>
+                        <SearchInput value={table.search} onSearch={query.setSearch} />
+                    </TableToolbar>
+                    <DataTable flush columns={COLUMNS} rows={table.rows} sort={table.sort} onSort={query.setSort} />
+                    <Pagination paginator={table.pagination} onPage={query.setPage} />
+                </div>
+            </div>
+        </>
+    )
+}
+
+PanelOrdersIndex.layout = (page) => <AppLayout>{page}</AppLayout>
