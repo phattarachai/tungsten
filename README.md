@@ -160,7 +160,7 @@ class AdminPanelProvider extends PanelProvider
 ```
 
 Other options: `->ability('…' | null)`, `->sets([...])`, `->routes(fn () => …)`, `->navigationLinks([...])`,
-`->help(fn ($routeName) => $url)`, `->logoutUrl('logout' | url | closure | false)`, `->rail('#14262a')` (sidebar tint),
+`->help(fn ($routeName) => $url)`, `->login(...)` (see Sign-in), `->logoutUrl('logout' | url | closure | false)`, `->rail('#14262a')` (sidebar tint),
 `->filterLayout('bar' | 'menu')` (how `<Filters>` draws), `->layout(['sheet' => true])` (panel-wide `AppLayout` defaults; a route's `->layout()` overrides them key by key),
 `->color()` / `->icon()` / `->short()` (switcher chip), `->business()`, `->replaces('filament')`.
 
@@ -170,6 +170,35 @@ Filament admin you are migrating from — and `->replaces('filament')` on the ne
 ```php
 app(PanelRegistry::class)->entry(id: 'filament', label: 'ระบบเดิม', url: '/', short: 'v1', color: '#7c2d12');
 ```
+
+## Sign-in (optional)
+
+A panel can have its own login page, in the panel's theme, or leave sign-in to the app (Breeze, SSO, Filament's):
+without `->login()` nothing changes and guests go wherever `auth` sends them.
+
+```php
+return $panel
+    ->path('admin')
+    ->login(
+        guard: 'web',                                     // null: the default guard
+        labels: ['title' => 'เข้าสู่ระบบหลังร้าน'],        // over config('tungsten.login.labels')
+        forgotPasswordUrl: 'password.request',            // a route name or URL; null hides the link
+        authorize: fn (User $user, Panel $panel) => $user->role === 'system' ? 'บัญชีระบบเข้าหน้านี้ไม่ได้' : true,
+    );
+```
+
+- Routes: `GET`/`POST {path}/login` (`admin.login`, `admin.login.attempt`) and `POST {path}/logout` (`admin.logout`),
+  behind `config('tungsten.login.middleware')` (`['web']`) only, not the panel's auth or gate.
+- Guests on the panel's routes go to its login: the panel's `auth` becomes `AuthenticatePanel` (the same check,
+  with this redirect), and is added if `tungsten.middleware` has none. After signing in they return to the URL they
+  asked for, or the panel home.
+- It checks email + password against the guard's user provider, with "remember me" and a throttle (5 tries a
+  minute per email and IP). There is no registration.
+- After the password, the user must pass the panel's ability (`accessAdmin`), then `authorize`: `true`/`null` lets
+  them in, `false` shows the `denied` label, a string is shown as the message.
+- The user menu's sign-out points at `{path}/logout` unless `->logoutUrl()` says otherwise.
+- Every word on the page is a label in `config('tungsten.login.labels')` (Thai by default): `title`, `intro`,
+  `email`, `password`, `remember`, `submit`, `forgot`, `failed`, `denied`, `throttled` (`:seconds`, `:minutes`).
 
 ## Declare routes
 
@@ -528,7 +557,7 @@ only. Sizes are rem only — the shell scales the rem base to 125%, so write `te
 
 - Kit changes from the first production pages; a Laravel Boost guideline and a `tungsten-development` skill (list,
   view/edit, modal, policies, each mapped to its Filament equivalent).
-- Global search, a database-notification bell, and optional login and profile pages.
+- Global search, a database-notification bell, and a profile page.
 - Later — CSV/Excel import wizard, table export, a documentation site.
 
 ## Testing

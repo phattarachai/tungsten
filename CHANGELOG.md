@@ -7,6 +7,14 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.4 — 2026-10-31
+
+- **Optional panel login**: `->login(guard:, labels:, forgotPasswordUrl:, authorize:)` adds `{path}/login` and
+  `{path}/logout` in the panel's theme. Guests on the panel go there (its `auth` becomes `AuthenticatePanel`), sign in
+  against the guard's user provider with remember-me and a throttle, must pass the panel ability and the `authorize`
+  hook, and return to the intended URL. Labels in `tungsten.login.labels`. The user menu signs out through the panel.
+- Panels without `->login()` are unchanged.
+
 ## v0.2.3 — 2026-10-31
 
 - Fix: `useTableQuery` now drops a filter's indexed values (`type[0]`, `type[1]`, as Inertia writes them) when it

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phattarachai\Tungsten\Tests;
 
 use Illuminate\Auth\GenericUser;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
@@ -15,6 +16,7 @@ use Phattarachai\Tungsten\Http\Controllers\UiKitToastController;
 use Phattarachai\Tungsten\Pages\HomePage;
 use Phattarachai\Tungsten\Pages\UiKitPage;
 use Phattarachai\Tungsten\Tests\Fixtures\AdminPanelProvider;
+use Phattarachai\Tungsten\Tests\Fixtures\Models\User;
 use Phattarachai\Tungsten\Tests\Fixtures\ToolsPanelProvider;
 use Phattarachai\Tungsten\Tungsten;
 use Phattarachai\Tungsten\TungstenServiceProvider;
@@ -28,9 +30,9 @@ abstract class TestCase extends Orchestra
 
         $this->withoutVite();
 
-        Gate::define('accessAdmin', fn (GenericUser $user): bool => $user->getAuthIdentifier() < 100);
-        Gate::define('accessTools', fn (GenericUser $user): bool => $user->getAuthIdentifier() === 1);
-        Gate::define('viewReports', fn (GenericUser $user): bool => $user->getAuthIdentifier() === 1);
+        Gate::define('accessAdmin', fn (Authenticatable $user): bool => $user->getAuthIdentifier() < 100);
+        Gate::define('accessTools', fn (Authenticatable $user): bool => $user->getAuthIdentifier() === 1);
+        Gate::define('viewReports', fn (Authenticatable $user): bool => $user->getAuthIdentifier() === 1);
     }
 
     #[Override]
@@ -51,6 +53,7 @@ abstract class TestCase extends Orchestra
         $app['config']->set('inertia.testing.ensure_pages_exist', false);
         $app['config']->set('app.debug', false);
         $app['config']->set('app.key', 'base64:'.base64_encode(str_repeat('t', 32)));
+        $app['config']->set('auth.providers.users.model', User::class);
     }
 
     #[Override]
@@ -74,6 +77,16 @@ abstract class TestCase extends Orchestra
     #[Override]
     protected function defineDatabaseMigrations(): void
     {
+        Schema::create('users', function (Blueprint $table): void {
+            $table->id();
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->string('password');
+            $table->string('role')->nullable();
+            $table->rememberToken();
+            $table->timestamps();
+        });
+
         Schema::create('customers', function (Blueprint $table): void {
             $table->id();
             $table->string('name');

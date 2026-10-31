@@ -23,6 +23,27 @@ return [
     */
     'logout_route' => 'logout',
 
+    /*
+    | A panel's own sign-in page, on for panels that call `->login()` (else the app's login, via `auth`). Its routes run
+    | behind `middleware` only — not the panel's auth or gate. `labels` are the page's words and messages; a panel
+    | overrides any of them with `->login(labels: [...])`. `:seconds` / `:minutes` fill in the throttle wait.
+    */
+    'login' => [
+        'middleware' => ['web'],
+        'labels' => [
+            'title' => 'เข้าสู่ระบบ',
+            'intro' => '',
+            'email' => 'อีเมล',
+            'password' => 'รหัสผ่าน',
+            'remember' => 'จดจำการเข้าสู่ระบบ',
+            'submit' => 'เข้าสู่ระบบ',
+            'forgot' => 'ลืมรหัสผ่าน?',
+            'failed' => 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
+            'denied' => 'บัญชีนี้ไม่มีสิทธิ์เข้าใช้ระบบนี้',
+            'throttled' => 'ลองเข้าสู่ระบบหลายครั้งเกินไป ลองใหม่ในอีก :seconds วินาที',
+        ],
+    ],
+
     'favicon' => null,
 
     /*
