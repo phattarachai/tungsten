@@ -2,6 +2,7 @@ import { Check, ChevronDown, Search, X } from 'lucide-react'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
+import { Avatar, initialOf } from '../panel/Avatar'
 import { cn } from '../../lib/cn'
 import { popoverMotion } from '../../lib/motion'
 import { strings } from '../../lib/strings'
@@ -61,6 +62,23 @@ function usePopoverPosition(open, trigger) {
     return position
 }
 
+/**
+ * An option's label, led by a small round avatar when the option has an `avatar` key (an image URL, or null for the
+ * initial).
+ */
+function OptionLabel({ option, className }) {
+    if (!('avatar' in option)) {
+        return <span className={cn('truncate', className)}>{option.label}</span>
+    }
+
+    return (
+        <span className={cn('flex min-w-0 items-center gap-1.5', className)}>
+            <Avatar person={{ avatar: option.avatar, name: option.label, initial: initialOf(option.label) }} className="size-4 text-[0.5rem]" />
+            <span className="truncate">{option.label}</span>
+        </span>
+    )
+}
+
 function TriggerLabel({ chosen, placeholder, multiple, label }) {
     if (label) {
         return (
@@ -76,19 +94,20 @@ function TriggerLabel({ chosen, placeholder, multiple, label }) {
     }
 
     if (!multiple || chosen.length === 1) {
-        return <span className="truncate">{chosen[0].label}</span>
+        return <OptionLabel option={chosen[0]} />
     }
 
     return (
         <span className="flex min-w-0 items-center gap-1">
-            <span className="truncate">{chosen[0].label}</span>
+            <OptionLabel option={chosen[0]} />
             <span className="shrink-0 rounded bg-zinc-100 px-1 text-[0.6875rem] text-zinc-600 tabular-nums">+{chosen.length - 1}</span>
         </span>
     )
 }
 
 /**
- * A searchable select; `multiple` takes and gives an array. In a `FilterBar` use `size="sm"` with a `label`: the
+ * A searchable select; `multiple` takes and gives an array. An option with an `avatar` key (URL or null) shows a small
+ * round photo, or its initial, before its label in the list and in the chosen value. In a `FilterBar` use `size="sm"` with a `label`: the
  * trigger reads "สถานะ ทั้งหมด" until something is chosen, then the first choice and +N.
  */
 export function Combobox({
@@ -258,7 +277,7 @@ export function Combobox({
                                         className={cn('flex cursor-pointer items-center gap-2 px-2.5 py-1 text-xs text-zinc-700', index === active && 'bg-zinc-100')}
                                     >
                                         <Check className={cn('size-3 shrink-0', selected ? 'text-brand' : 'invisible')} />
-                                        <span className="flex-1 truncate">{option.label}</span>
+                                        <OptionLabel option={option} className="flex-1" />
                                         {option.meta && <span className="shrink-0 text-[0.6875rem] text-zinc-400">{option.meta}</span>}
                                     </li>
                                 )

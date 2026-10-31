@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 
-import { SearchInput, Thumb, Zoomable } from '@tungsten'
+import { Combobox, SearchInput, Thumb, Zoomable } from '@tungsten'
 import { FlashToastFor } from '@tungsten/components/panel/FlashToast'
 
 function mount(element) {
@@ -118,6 +118,28 @@ Object.assign(checks, {
         const box = mount(<Thumb src={null} alt="ไม่มีรูป" zoom />)
 
         assert.equal(document.querySelector('button[aria-label^="ดูรูป"]'), null)
+        box.unmount()
+    },
+})
+
+Object.assign(checks, {
+    'Combobox draws an option avatar in the chosen value and the list, the initial when the URL is null': () => {
+        const options = [
+            { value: 1, label: 'เกศินี วงศ์ใหญ่', avatar: '/avatars/1.jpg' },
+            { value: 2, label: 'สมชาย มั่นคง', avatar: null },
+            { value: 3, label: 'ไม่มีรูป' },
+        ]
+        const box = mount(<Combobox options={options} value={1} onChange={() => {}} aria-label="ลูกค้า" />)
+        const trigger = document.querySelector('button[aria-label="ลูกค้า"]')
+
+        assert.equal(trigger.querySelector('img')?.getAttribute('src'), '/avatars/1.jpg')
+
+        act(() => trigger.click())
+        const rows = [...document.querySelectorAll('[role="option"]')]
+        assert.equal(rows[0].querySelector('img')?.getAttribute('src'), '/avatars/1.jpg')
+        assert.equal(rows[1].querySelector('img'), null)
+        assert.match(rows[1].textContent, /^สสมชาย/, 'initial before the label')
+        assert.equal(rows[2].querySelector('.rounded-full'), null, 'no avatar key, no avatar')
         box.unmount()
     },
 })
