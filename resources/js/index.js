@@ -20,6 +20,7 @@ export { useHelpPanel } from './components/panel/helpContext'
 
 export { cn } from './lib/cn'
 export { linkProps, methodOf, urlOf } from './lib/href'
+export { getJson, postJson, sendJson } from './lib/json'
 export { number } from './lib/format'
 export { popoverMotion } from './lib/motion'
 export { relative } from './lib/time'

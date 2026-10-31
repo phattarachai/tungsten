@@ -1,21 +1,12 @@
 import { cn } from '../../lib/cn'
-
-const TONE_COUNTS = {
-    draft: 'font-semibold text-tone-draft-ink',
-    waiting: 'font-semibold text-tone-waiting-ink',
-    todo: 'font-semibold text-tone-todo-ink',
-    active: 'font-semibold text-tone-active-ink',
-    done: 'font-semibold text-tone-done-ink',
-    canceled: 'font-semibold text-tone-canceled-ink',
-    failed: 'font-semibold text-tone-failed-ink',
-}
+import { TONE_INK } from '../../lib/tones'
 
 function countClass(option, active) {
     if (active) {
         return 'text-zinc-300'
     }
 
-    return TONE_COUNTS[option.tone] ?? 'text-zinc-400'
+    return TONE_INK[option.tone] ? cn('font-semibold', TONE_INK[option.tone]) : 'text-zinc-400'
 }
 
 /**

@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import { Zoomable } from '../ui/Lightbox'
 import { cn } from '../../lib/cn'
 
@@ -11,14 +13,21 @@ export function initialOf(name) {
 }
 
 /**
- * A person's photo, else their initial. `zoom` opens the photo full screen.
+ * A person's photo, else their initial (`person.initial`, or from `person.name`); a photo that fails to load (a dead
+ * CDN or LINE link) falls back to the initial. `zoom` opens the photo full screen.
  */
 export function Avatar({ person, zoom = false, className }) {
-    if (person.avatar) {
-        const photo = <img src={person.avatar} alt="" className={cn('size-5 shrink-0 rounded-full object-cover', className)} />
+    const [failed, setFailed] = useState(null)
+
+    if (person.avatar && failed !== person.avatar) {
+        const photo = <img src={person.avatar} alt="" loading="lazy" onError={() => setFailed(person.avatar)} className={cn('size-5 shrink-0 rounded-full object-cover', className)} />
 
         return zoom ? <Zoomable src={person.avatar} alt={person.name} className="rounded-full">{photo}</Zoomable> : photo
     }
 
-    return <span className={cn('inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-[0.625rem] font-semibold text-zinc-700', className)}>{person.initial}</span>
+    return (
+        <span className={cn('inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-[0.625rem] font-semibold text-zinc-700', className)}>
+            {person.initial ?? initialOf(person.name)}
+        </span>
+    )
 }

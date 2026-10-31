@@ -1,25 +1,5 @@
 import { cn } from '../../lib/cn'
-
-// Static so Tailwind sees every class; keys are the status tones (README → "Status tones").
-const ENV_INK = {
-    draft: 'text-tone-draft-ink',
-    waiting: 'text-tone-waiting-ink',
-    todo: 'text-tone-todo-ink',
-    active: 'text-tone-active-ink',
-    done: 'text-tone-done-ink',
-    canceled: 'text-tone-canceled-ink',
-    failed: 'text-tone-failed-ink',
-}
-
-const ENV_DOT = {
-    draft: 'bg-tone-draft-ink',
-    waiting: 'bg-tone-waiting-ink',
-    todo: 'bg-tone-todo-ink',
-    active: 'bg-tone-active-ink',
-    done: 'bg-tone-done-ink',
-    canceled: 'bg-tone-canceled-ink',
-    failed: 'bg-tone-failed-ink',
-}
+import { TONE_DOT, TONE_INK } from '../../lib/tones'
 
 /**
  * The brand label with the environment under it ("• UAT" in its tone's ink), or the label alone in production
@@ -33,8 +13,8 @@ export function BrandLabel({ label, env, className }) {
     return (
         <span className={cn('flex min-w-0 flex-col leading-tight', className)}>
             <span className="truncate">{label}</span>
-            <span className={cn('flex items-center gap-1 text-[0.625rem] font-semibold', ENV_INK[env.tone] ?? ENV_INK.draft)}>
-                <span className={cn('size-1.5 shrink-0 rounded-full', ENV_DOT[env.tone] ?? ENV_DOT.draft)} />
+            <span className={cn('flex items-center gap-1 text-[0.625rem] font-semibold', TONE_INK[env.tone] ?? TONE_INK.draft)}>
+                <span className={cn('size-1.5 shrink-0 rounded-full', TONE_DOT[env.tone] ?? TONE_DOT.draft)} />
                 {env.label}
             </span>
         </span>
