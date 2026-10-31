@@ -3,6 +3,7 @@ import { CircleHelp } from 'lucide-react'
 import { opensInPanel, useHelpPanel } from '../panel/helpContext'
 import { cn } from '../../lib/cn'
 import { strings } from '../../lib/strings'
+import { urlOf } from '../../lib/href'
 
 export function HelpLink({ href, label = strings.readHelp, className }) {
     const help = useHelpPanel()
@@ -11,16 +12,18 @@ export function HelpLink({ href, label = strings.readHelp, className }) {
         return null
     }
 
+    const url = urlOf(href)
+
     function onClick(event) {
         if (help && opensInPanel(event)) {
             event.preventDefault()
-            help.open(href)
+            help.open(url)
         }
     }
 
     return (
         <a
-            href={href}
+            href={url}
             target="_blank"
             rel="noopener"
             title={label}

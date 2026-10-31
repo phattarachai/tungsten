@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 import { cn } from '../../lib/cn'
 import { strings } from '../../lib/strings'
+import { linkProps } from '../../lib/href'
 
 function Step({ href, label, icon: Icon, className }) {
     const base = cn('inline-flex h-[1.4rem] w-6 items-center justify-center', className)
@@ -16,7 +17,7 @@ function Step({ href, label, icon: Icon, className }) {
     }
 
     return (
-        <Link href={href} preserveScroll prefetch title={label} aria-label={label} className={cn(base, 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900')}>
+        <Link {...linkProps(href)} preserveScroll prefetch title={label} aria-label={label} className={cn(base, 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900')}>
             <Icon className="size-4" />
         </Link>
     )

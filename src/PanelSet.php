@@ -5,23 +5,19 @@ declare(strict_types=1);
 namespace Phattarachai\Tungsten;
 
 /**
- * One menu set of a panel — its pages, endpoints, links and help topics in one class, so parallel work adds a
- * file instead of editing the panel provider. A panel picks sets up with `->sets([...])` or `->discoverSets(...)`.
+ * One menu set of a panel — its routes, links and help topics in one class, so parallel work adds a file instead of
+ * editing the panel provider. A panel picks sets up with `->sets([...])` or `->discoverSets(...)`.
  *
  * @see docs/kernel.md
  */
 abstract class PanelSet
 {
     /**
-     * @return list<class-string<Page>>
-     */
-    public static function pages(): array
-    {
-        return [];
-    }
-
-    /**
-     * Extra endpoints (POST / PUT / JSON), registered inside the panel's prefix, middleware and name prefix.
+     * Plain Laravel routes, registered inside the panel's prefix, middleware and `{id}.` name prefix:
+     *
+     *     Route::get('orders', OrdersPage::class)->name('orders')->nav('คำสั่งซื้อ', icon: 'shopping-cart', group: 'การขาย');
+     *     Route::get('orders/{order}', OrderPage::class)->name('orders.show')->whereNumber('order');
+     *     Route::put('orders/{order}', [OrderController::class, 'update'])->name('orders.update')->whereNumber('order');
      */
     public static function routes(): void {}
 

@@ -1,12 +1,17 @@
 // Tungsten's public JS API, reached through the host's `@tungsten` Vite alias.
 
-export { createTungstenApp } from './app'
+export { createTungstenApp, tungstenResolver } from './app'
 
 export * from './components/ui'
 export { Dropdown, DropdownOption, DropdownSection } from './components/ui/Dropdown'
 export { registerIcons } from './components/ui/Icon'
 
 export { AppLayout } from './layouts/AppLayout'
+export { FlashToast } from './components/panel/FlashToast'
+export { PanelSwitcher } from './components/panel/PanelSwitcher'
+export { Sidebar } from './components/panel/Sidebar'
+export { TooltipLayer } from './components/panel/TooltipLayer'
+export { Topbar } from './components/panel/Topbar'
 export { Aside } from './components/panel/Aside'
 export { AuditPanel } from './components/panel/AuditPanel'
 export { Avatar } from './components/panel/Avatar'
@@ -14,6 +19,7 @@ export { LastEdited } from './components/panel/LastEdited'
 export { useHelpPanel } from './components/panel/helpContext'
 
 export { cn } from './lib/cn'
+export { linkProps, methodOf, urlOf } from './lib/href'
 export { number } from './lib/format'
 export { popoverMotion } from './lib/motion'
 export { relative } from './lib/time'

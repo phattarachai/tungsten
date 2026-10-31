@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Phattarachai\Tungsten;
 
+use Closure;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
 use Inertia\Inertia;
+use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -15,6 +18,44 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class Tungsten
 {
+    /**
+     * Declares routes inside a panel — its path prefix, middleware (auth, gate, Tungsten's Inertia middleware) and
+     * `{id}.` name prefix. Use it in a route file the way you would `Route::middleware(...)->group(...)`:
+     *
+     *     Tungsten::routes('admin', function () {
+     *         Route::get('/', HomePage::class)->name('dashboard')->nav('หน้าหลัก', icon: 'layout-grid', sort: -1);
+     *         Route::get('orders', [OrderController::class, 'index'])->name('orders')->nav('คำสั่งซื้อ', group: 'การขาย');
+     *     });
+     */
+    public static function routes(string $panel, Closure $routes): void
+    {
+        $found = app(PanelRegistry::class)->find($panel)
+            ?? throw new InvalidArgumentException("Tungsten has no panel [{$panel}].");
+
+        Route::prefix($found->getPath())
+            ->middleware($found->routeMiddleware())
+            ->name("{$found->getId()}.")
+            ->group($routes);
+    }
+
+    /**
+     * The current route's breadcrumb trail ending in `$leaf` — for a page whose last crumb names a record:
+     * `'breadcrumbs' => Tungsten::breadcrumbs($order->number)`.
+     *
+     * @return list<array{label: string, url?: string}>
+     */
+    public static function breadcrumbs(?string $leaf = null): array
+    {
+        $route = request()->route();
+        $panel = app(PanelRegistry::class)->forRoute($route?->getName());
+
+        if ($panel instanceof Panel) {
+            return $panel->breadcrumbs($route, $leaf);
+        }
+
+        return $leaf === null ? [] : [['label' => $leaf]];
+    }
+
     /**
      * In bootstrap/app.php: `->withExceptions(fn (Exceptions $exceptions) => Tungsten::handleExceptions($exceptions))`.
      */

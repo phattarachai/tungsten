@@ -6,6 +6,7 @@ import { cn } from '../../lib/cn'
 import { opensInPanel, useHelpPanel } from './helpContext'
 import { PanelSwitcher } from './PanelSwitcher'
 import { strings } from '../../lib/strings'
+import { linkProps, urlOf } from '../../lib/href'
 
 function EnvChip({ environment }) {
     if (!environment || environment === 'production') {
@@ -26,7 +27,7 @@ function Breadcrumbs({ items }) {
                 <span key={item.label} className="flex items-center gap-1.5">
                     {index > 0 && <span className="text-zinc-300">/</span>}
                     {item.url ? (
-                        <Link href={item.url} prefetch className="hover:text-zinc-700">
+                        <Link href={urlOf(item.url)} prefetch className="hover:text-zinc-700">
                             {item.label}
                         </Link>
                     ) : (
@@ -51,7 +52,7 @@ function UserMenu({ user }) {
                     <p className="truncate text-xs text-zinc-400">{user.email}</p>
                 </div>
                 {user.logoutUrl && (
-                    <Link href={user.logoutUrl} method="post" as="button" className="block w-full px-3 py-2 text-left text-[0.8125rem] text-zinc-700 hover:bg-zinc-50">
+                    <Link {...linkProps(user.logoutUrl, 'post')} as="button" className="block w-full px-3 py-2 text-left text-[0.8125rem] text-zinc-700 hover:bg-zinc-50">
                         {strings.signOut}
                     </Link>
                 )}
@@ -76,7 +77,7 @@ function HelpButton({ url }) {
 
     return (
         <a
-            href={url}
+            href={urlOf(url)}
             target="_blank"
             rel="noopener"
             onClick={onClick}
@@ -94,12 +95,19 @@ function HelpButton({ url }) {
 export function Topbar({ sidebarClosed, onToggleSidebar, toolbar, search }) {
     const { auth, panel, breadcrumbs } = usePage().props
 
+    if (!panel) {
+        return null
+    }
+
+
     return (
         <header className="panel-topbar sticky top-0 z-20 flex h-10 items-center justify-between gap-3 border-b border-zinc-200 bg-white px-3">
             <div className="flex min-w-0 items-center gap-2">
-                <button type="button" onClick={onToggleSidebar} className="rounded p-1 text-zinc-500 hover:bg-zinc-100" aria-label={strings.toggleSidebar}>
-                    <PanelLeft className="size-4" />
-                </button>
+                {onToggleSidebar && (
+                    <button type="button" onClick={onToggleSidebar} className="rounded p-1 text-zinc-500 hover:bg-zinc-100" aria-label={strings.toggleSidebar}>
+                        <PanelLeft className="size-4" />
+                    </button>
+                )}
                 <EnvChip environment={panel.environment} />
                 <div className={cn(!sidebarClosed && 'md:hidden')}>
                     <PanelSwitcher compact />
@@ -110,7 +118,7 @@ export function Topbar({ sidebarClosed, onToggleSidebar, toolbar, search }) {
                 {search}
                 {toolbar}
                 <HelpButton url={panel.help} />
-                <UserMenu user={{ ...auth.user, logoutUrl: auth.logoutUrl }} />
+                {auth?.user && <UserMenu user={{ ...auth.user, logoutUrl: auth.logoutUrl }} />}
             </div>
         </header>
     )

@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 use Illuminate\Routing\Route;
 use Inertia\Testing\AssertableInertia as Assert;
-use Phattarachai\Tungsten\Http\Controllers\PageController;
 use Phattarachai\Tungsten\Tests\Fixtures\Models\Order;
+use Phattarachai\Tungsten\Tests\Fixtures\Pages\OrdersPage;
 
-it('gives every page route a controller action, never a closure', function (): void {
+it('gives every panel route a controller action, never a closure', function (): void {
     $pages = collect(app('router')->getRoutes()->getRoutes())
         ->filter(fn (Route $route): bool => str_starts_with((string) $route->getName(), 'admin.') || str_starts_with((string) $route->getName(), 'tools.'));
 
     expect($pages)->not->toBeEmpty();
 
     $pages->each(fn (Route $route) => expect($route->getAction('uses'))->toBeString()->not->toContain('Closure'));
-    expect(app('router')->getRoutes()->getByName('admin.orders')->getAction('uses'))->toBe(PageController::class.'@__invoke');
+    expect(app('router')->getRoutes()->getByName('admin.orders')->getAction('uses'))->toBe(OrdersPage::class.'@__invoke');
 });
 
 it('serves pages from a compiled, var_export-ed route cache the way route:cache writes it', function (): void {
@@ -35,4 +35,12 @@ it('serves pages from a compiled, var_export-ed route cache the way route:cache 
         ->assertInertia(fn (Assert $page): Assert => $page->component('panel/orders/Show')->where('order.number', 'SO-7'));
 
     $this->actingAs($this->admin())->get('/admin/orders/abc')->assertNotFound();
+
+    $this->actingAs($this->admin())
+        ->get("/admin/orders/{$order->id}/edit")
+        ->assertInertia(fn (Assert $page): Assert => $page
+            ->where('layout', ['flush' => true])
+            ->where('breadcrumbs.2.label', 'แก้ไข')
+            ->where('nav.1.items.0.label', 'คำสั่งซื้อ')
+            ->where('nav.1.items.0.badge', '1'));
 });

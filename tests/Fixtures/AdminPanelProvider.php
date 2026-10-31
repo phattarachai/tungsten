@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Phattarachai\Tungsten\Tests\Fixtures;
 
-use Phattarachai\Tungsten\Pages\UiKitPage;
 use Phattarachai\Tungsten\Panel;
 use Phattarachai\Tungsten\PanelProvider;
 
@@ -21,6 +20,6 @@ class AdminPanelProvider extends PanelProvider
             ->business()
             ->navigationGroups(['การขาย', 'รายงาน'])
             ->discoverSets(__DIR__.'/Sets', 'Phattarachai\\Tungsten\\Tests\\Fixtures\\Sets')
-            ->pages([UiKitPage::class]);
+            ->sets(['Phattarachai\\Tungsten\\Tests\\Fixtures\\Sets\\NotWrittenYetSet']);
     }
 }

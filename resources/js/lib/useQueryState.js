@@ -1,7 +1,10 @@
 import { router, usePage } from '@inertiajs/react'
 
+import { parseUrl, pathOf } from './browser'
+import { urlOf } from './href'
+
 export function withQuery(url, key, value) {
-    const target = new URL(url, window.location.origin)
+    const target = parseUrl(urlOf(url))
 
     if (value === null || value === undefined) {
         target.searchParams.delete(key)
@@ -9,12 +12,12 @@ export function withQuery(url, key, value) {
         target.searchParams.set(key, value)
     }
 
-    return target.pathname + target.search + target.hash
+    return pathOf(target)
 }
 
 export function useQueryState(key, fallback = null) {
     const { url } = usePage()
-    const value = new URL(url, window.location.origin).searchParams.get(key) ?? fallback
+    const value = parseUrl(url).searchParams.get(key) ?? fallback
 
     function update(next) {
         router.replace({ url: withQuery(url, key, next === fallback ? null : next), preserveScroll: true, preserveState: true })
@@ -23,11 +26,18 @@ export function useQueryState(key, fallback = null) {
     return [value, update]
 }
 
+/** Carries `key` from the current URL onto `href` (a string or `{url, method}`), keeping its shape. */
 export function useCarriedQuery(key) {
     const { url } = usePage()
-    const value = new URL(url, window.location.origin).searchParams.get(key)
+    const value = parseUrl(url).searchParams.get(key)
 
-    return (href) => (href && value !== null ? withQuery(href, key, value) : href)
+    return (href) => {
+        if (!href || value === null) {
+            return href
+        }
+
+        return typeof href === 'string' ? withQuery(href, key, value) : { ...href, url: withQuery(href, key, value) }
+    }
 }
 
 export function useHistoryPanel() {

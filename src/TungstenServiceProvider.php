@@ -9,7 +9,6 @@ use Illuminate\Support\ServiceProvider;
 use Override;
 use Phattarachai\Tungsten\Console\InstallCommand;
 use Phattarachai\Tungsten\Console\MakePageCommand;
-use Phattarachai\Tungsten\Http\Controllers\PageController;
 
 class TungstenServiceProvider extends ServiceProvider
 {
@@ -19,6 +18,8 @@ class TungstenServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../config/tungsten.php', 'tungsten');
 
         $this->app->singleton(PanelRegistry::class);
+
+        RouteMeta::register();
 
         $this->disableInertiaDevtools();
     }
@@ -39,34 +40,18 @@ class TungstenServiceProvider extends ServiceProvider
         });
     }
 
+    /**
+     * Each panel's set and `->routes()` declarations, inside its group. Route files add theirs with
+     * `Tungsten::routes()`; nothing is generated from page classes.
+     */
     private function registerPanelRoutes(): void
     {
         foreach ($this->app->make(PanelRegistry::class)->all() as $panel) {
-            Route::prefix($panel->getPath())
-                ->middleware($panel->routeMiddleware())
-                ->name("{$panel->getId()}.")
-                ->group(function () use ($panel): void {
-                    $panel->resolvePages()->each($this->registerPage(...));
-                    $panel->registerRoutes();
-                });
+            Tungsten::routes($panel->getId(), $panel->registerRoutes(...));
         }
 
         Route::getRoutes()->refreshNameLookups();
         Route::getRoutes()->refreshActionLookups();
-    }
-
-    private function registerPage(Page $page): void
-    {
-        $route = Route::get($page->path(), PageController::class)
-            ->name($page->routeKey())
-            ->setWheres($page->wheres());
-
-        if ($page->ability() !== null) {
-            $route->middleware("can:{$page->ability()}");
-        }
-
-        $page->route($route);
-        $page->endpoints();
     }
 
     private function disableInertiaDevtools(): void

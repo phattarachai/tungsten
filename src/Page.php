@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace Phattarachai\Tungsten;
 
 use Illuminate\Http\Request;
-use Illuminate\Routing\Route;
-use Illuminate\Support\Str;
+use Inertia\Inertia;
+use Inertia\Response;
 
 /**
+ * An invokable page controller: a component and its props. Route it like any controller —
+ * `Route::get('orders', OrdersPage::class)->name('orders')->nav('คำสั่งซื้อ')` — or skip it and render from a plain
+ * controller with `Inertia::render()`; the panel treats both the same.
+ *
  * @see docs/kernel.md
  */
 abstract class Page
 {
-    abstract public function path(): string;
-
     abstract public function component(): string;
-
-    abstract public function navLabel(): string;
 
     /**
      * @return array<string, mixed>
@@ -25,106 +25,24 @@ abstract class Page
     abstract public function props(Request $request): array;
 
     /**
-     * `orders` → `orders`, `orders/{order}` → `orders.show`, `orders/{order}/edit` → `orders.edit`, `` → `dashboard`.
-     */
-    public function routeKey(): string
-    {
-        $path = trim($this->path(), '/');
-
-        if ($path === '') {
-            return 'dashboard';
-        }
-
-        $segments = collect(explode('/', $path));
-        $key = $segments->reject(fn (string $segment): bool => str_starts_with($segment, '{'))->implode('.');
-
-        return Str::startsWith((string) $segments->last(), '{') ? ltrim("{$key}.show", '.') : $key;
-    }
-
-    public function title(): string
-    {
-        return $this->navLabel();
-    }
-
-    public function navGroup(): ?string
-    {
-        return null;
-    }
-
-    public function navIcon(): ?string
-    {
-        return null;
-    }
-
-    public function navSort(): int
-    {
-        return 0;
-    }
-
-    public function navBadge(): ?string
-    {
-        return null;
-    }
-
-    public function ability(): ?string
-    {
-        return null;
-    }
-
-    public function visible(): bool
-    {
-        return true;
-    }
-
-    public function showInNavigation(): bool
-    {
-        return ! str_contains($this->path(), '{');
-    }
-
-    /**
-     * Route parameter patterns. Every parameter is numeric (and short enough for a bigint) unless the page says
-     * otherwise, so `/orders/abc` is a 404 instead of a database error.
+     * Breadcrumbs for this request, replacing the ones derived from the route's metadata; null keeps those.
+     * Look records up with `find()`, never `findOrFail()`. `Tungsten::breadcrumbs('SO-001')` gives the parent trail
+     * plus a leaf.
      *
-     * @return array<string, string>
+     * @return list<array{label: string, url?: string}>|null
      */
-    public function wheres(): array
+    public function breadcrumbs(Request $request): ?array
     {
-        return collect($this->parameters())
-            ->mapWithKeys(fn (string $parameter): array => [$parameter => '[0-9]{1,18}'])
-            ->all();
+        return null;
     }
 
-    /**
-     * Last-mile route tweaks (extra middleware, `withTrashed()`, `scopeBindings()`).
-     */
-    public function route(Route $route): void {}
-
-    /**
-     * Endpoints this page owns (its form POSTs), registered inside the panel's prefix, middleware and name prefix.
-     * Point them at controllers, not closures.
-     */
-    public function endpoints(): void {}
-
-    /**
-     * Look records up with `find()` here, never `findOrFail()`: breadcrumbs also render on the error path.
-     *
-     * @return list<array{label: string, url?: string}>
-     */
-    public function breadcrumbs(Request $request): array
+    public function __invoke(Request $request): Response
     {
-        return array_values(array_filter([
-            $this->navGroup() === null ? null : ['label' => $this->navGroup()],
-            ['label' => $this->navLabel()],
-        ]));
-    }
+        $breadcrumbs = $this->breadcrumbs($request);
 
-    /**
-     * @return list<string>
-     */
-    public function parameters(): array
-    {
-        preg_match_all('/\{(\w+)\??\}/', $this->path(), $matches);
-
-        return $matches[1];
+        return Inertia::render($this->component(), [
+            ...$this->props($request),
+            ...($breadcrumbs === null ? [] : ['breadcrumbs' => $breadcrumbs]),
+        ]);
     }
 }

@@ -6,11 +6,13 @@ namespace Phattarachai\Tungsten\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\View;
 use Inertia\Middleware;
 use Override;
 use Phattarachai\Tungsten\Panel;
 use Phattarachai\Tungsten\PanelRegistry;
+use Phattarachai\Tungsten\RouteMeta;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -43,18 +45,19 @@ class HandleTungstenRequests extends Middleware
     #[Override]
     public function share(Request $request): array
     {
-        $routeName = $request->route()?->getName();
-        $panel = $this->panels->forRoute($routeName);
+        $route = $request->route();
+        $panel = $this->panels->forRoute($route?->getName());
 
         abort_unless($panel instanceof Panel, 404);
 
         return [
             ...parent::share($request),
             'auth' => fn (): array => $this->auth($request, $panel),
-            'panel' => fn (): array => $this->panel($panel, $routeName),
+            'panel' => fn (): array => $this->panel($panel, $route),
             'panels' => fn (): array => $this->panels->switcherFor($request->user(), $panel->getId()),
             'nav' => fn (): array => $panel->navigation($request),
-            'breadcrumbs' => fn (): array => $panel->pageForRoute($routeName)?->breadcrumbs($request) ?? [],
+            'breadcrumbs' => fn (): array => $panel->breadcrumbs($route),
+            'layout' => fn (): ?array => RouteMeta::of($route)['layout'] ?? null,
             'flash' => fn (): array => [
                 'message' => $request->hasSession() ? $request->session()->get('flash') : null,
                 'status' => $request->hasSession() ? $request->session()->get('status') : null,
@@ -82,7 +85,7 @@ class HandleTungstenRequests extends Middleware
     /**
      * @return array<string, mixed>
      */
-    private function panel(Panel $panel, ?string $routeName): array
+    private function panel(Panel $panel, ?Route $route): array
     {
         return [
             'id' => $panel->getId(),
@@ -92,7 +95,7 @@ class HandleTungstenRequests extends Middleware
             'color' => $panel->getColor(),
             'rail' => $panel->getRail(),
             'brand' => $panel->getBrand(),
-            'help' => $panel->helpUrl($routeName),
+            'help' => $panel->helpUrl($route),
             'home' => $panel->homeUrl(),
             'environment' => app()->environment(),
         ];

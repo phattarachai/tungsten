@@ -5,58 +5,34 @@
  |     @import '../../vendor/phattarachai/tungsten/resources/css/tungsten.css';
  |     @source '../js/pages/panel';
  |
- | The "steel" theme: `html.tungsten` (the panel's root view) re-points Tailwind's zinc ramp to cool steel greys and
- | the blue ramp to a muted steel blue, so every `zinc-*` / `blue-*` utility in the kit and the host's pages turns
- | steel with no class changes, portalled menus included. The accent is `--color-brand`, set per panel on <html> by
- | the root view; its tints are mixed from it. Every size in the kit is rem, and the shell scales the rem base to
- | 125% so its compact 12px design sits at Filament's density. See docs/theme.md.
+ | The "steel" theme as Tailwind theme tokens: the zinc ramp is cool steel greys and the blue ramp a muted steel blue,
+ | so every `zinc-*` / `blue-*` utility in the kit and the host's pages turns steel with no class changes. The accent
+ | is `--color-brand` (its tints are mixed from it), the font IBM Plex Sans Thai, the corner `--radius`. All of it is
+ | overridable — see "The tokens" below. Every size in the kit is rem, and the shell scales the rem base to 125% so
+ | its compact 12px design sits at Filament's density. See docs/theme.md.
  */
 @import './ibm-plex-sans-thai.css';
 
 @source '../js';
 
-html.tungsten {
-    --font-sans: 'IBM Plex Sans Thai', ui-sans-serif, system-ui, sans-serif;
-    --color-zinc-50: #f5f7f9;
-    --color-zinc-100: #edf0f4;
-    --color-zinc-200: #dce2e8;
-    --color-zinc-300: #c6ced7;
-    --color-zinc-400: #98a3af;
-    --color-zinc-500: #687483;
-    --color-zinc-600: #4d5866;
-    --color-zinc-700: #3a4552;
-    --color-zinc-800: #252e39;
-    --color-zinc-900: #161c24;
-    --color-zinc-950: #0d1117;
-    --color-blue-50: #eef3f8;
-    --color-blue-100: #dfe8f1;
-    --color-blue-200: #c5d4e3;
-    --color-blue-300: #a2b9d0;
-    --color-blue-400: #7b98b6;
-    --color-blue-500: #5a7a9c;
-    --color-blue-600: #476685;
-    --color-blue-700: #3a5470;
-    --color-blue-800: #2f4459;
-    --color-blue-900: #253545;
-    --color-blue-950: #18232e;
+@layer base {
+    :root {
+        --motion-fast: 120ms;
+        --motion-base: 160ms;
+        --motion-page: 180ms;
+        --motion-ease: cubic-bezier(0.2, 0, 0, 1);
+    }
 
-    --motion-fast: 120ms;
-    --motion-base: 160ms;
-    --motion-page: 180ms;
-    --motion-ease: cubic-bezier(0.2, 0, 0, 1);
+    html:has(.panel-shell) {
+        font-size: 125%;
+    }
 
-    font-family: var(--font-sans);
-}
-
-html:has(.panel-shell) {
-    font-size: 125%;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    html.tungsten {
-        --motion-fast: 0s;
-        --motion-base: 0s;
-        --motion-page: 0s;
+    @media (prefers-reduced-motion: reduce) {
+        :root {
+            --motion-fast: 0s;
+            --motion-base: 0s;
+            --motion-page: 0s;
+        }
     }
 }
 
@@ -147,7 +123,43 @@ html[data-page-transition] {
     scrollbar-color: var(--color-zinc-300) transparent;
 }
 
+/*
+ | The tokens. Everything below is a default: redefine any of it in your own `@theme { … }` after this import (or in
+ | plain CSS on :root), e.g. `@theme { --color-brand: #0d9488; --radius: 0.375rem; --font-sans: 'Sarabun', sans-serif; }`.
+ */
 @theme {
+    --font-sans: 'IBM Plex Sans Thai', ui-sans-serif, system-ui, sans-serif;
+
+    /* `rounded` and `rounded-md` / `-lg` (Tailwind's own --radius-* steps) */
+    --radius: 0.25rem;
+
+    /* Steel greys: every zinc-* utility in the kit and in pages. */
+    --color-zinc-50: #f5f7f9;
+    --color-zinc-100: #edf0f4;
+    --color-zinc-200: #dce2e8;
+    --color-zinc-300: #c6ced7;
+    --color-zinc-400: #98a3af;
+    --color-zinc-500: #687483;
+    --color-zinc-600: #4d5866;
+    --color-zinc-700: #3a4552;
+    --color-zinc-800: #252e39;
+    --color-zinc-900: #161c24;
+    --color-zinc-950: #0d1117;
+
+    /* A muted steel blue: the info tone (Badge blue, Button tone blue). */
+    --color-blue-50: #eef3f8;
+    --color-blue-100: #dfe8f1;
+    --color-blue-200: #c5d4e3;
+    --color-blue-300: #a2b9d0;
+    --color-blue-400: #7b98b6;
+    --color-blue-500: #5a7a9c;
+    --color-blue-600: #476685;
+    --color-blue-700: #3a5470;
+    --color-blue-800: #2f4459;
+    --color-blue-900: #253545;
+    --color-blue-950: #18232e;
+
+    /* The accent. The root view sets --color-brand inline when a brand colour is configured. */
     --color-brand: #ba1a1a;
     --color-brand-50: color-mix(in oklab, var(--color-brand) 9%, white);
     --color-brand-100: color-mix(in oklab, var(--color-brand) 18%, white);
@@ -155,6 +167,7 @@ html[data-page-transition] {
     --color-brand-600: color-mix(in oklab, var(--color-brand) 84%, black);
     --color-brand-700: color-mix(in oklab, var(--color-brand) 70%, black);
 
+    /* The sidebar rail; Panel::rail() tints it per panel. */
     --color-rail: #1b222b;
     --color-rail-hover: #252e39;
     --color-rail-active: #2c3744;

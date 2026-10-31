@@ -4,6 +4,7 @@ import { ArrowUpRight } from 'lucide-react'
 import { Icon, PageHeader } from '../components/ui'
 import { AppLayout } from '../layouts/AppLayout'
 import { strings } from '../lib/strings'
+import { linkProps, urlOf } from '../lib/href'
 
 function Tile({ item }) {
     const body = (
@@ -23,14 +24,14 @@ function Tile({ item }) {
 
     if (item.external || item.legacy) {
         return (
-            <a href={item.url} target={item.external ? '_blank' : undefined} rel="noopener" className={className}>
+            <a href={urlOf(item.url)} target={item.external ? '_blank' : undefined} rel="noopener" className={className}>
                 {body}
             </a>
         )
     }
 
     return (
-        <Link href={item.url} prefetch className={className}>
+        <Link {...linkProps(item.url)} prefetch className={className}>
             {body}
         </Link>
     )
@@ -52,7 +53,7 @@ export default function Home({ title, description }) {
                 ) : (
                     <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-6">
                         {items.map((item) => (
-                            <Tile key={item.url} item={item} />
+                            <Tile key={urlOf(item.url)} item={item} />
                         ))}
                     </div>
                 )}

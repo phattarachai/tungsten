@@ -85,6 +85,9 @@ class InstallCommand extends Command
         $this->line('   <fg=cyan>->withExceptions(fn (Exceptions $exceptions) => Tungsten::handleExceptions($exceptions))</>');
         $this->newLine();
         $this->line('4. Define each panel\'s gate (`access{Id}` by default, e.g. Gate::define(\'accessAdmin\', ...)) or call ->ability(null).');
+        $this->newLine();
+        $this->line('5. Declare routes — plain Laravel, in a PanelSet::routes() or a route file:');
+        $this->line("   <fg=cyan>Tungsten::routes('admin', fn () => Route::get('orders', OrdersPage::class)->name('orders')->nav('คำสั่งซื้อ'));</>");
     }
 
     private function relative(string $path): string

@@ -2,9 +2,11 @@
 
 ## Steel
 
-- `html.tungsten` (the panel root view) re-points `--color-zinc-50…950` to a cool steel ramp and `--color-blue-*`
-  to a muted steel blue. Every `zinc-*` / `blue-*` utility — in the kit, in host pages, in portalled menus — turns
-  steel with no class changes. Pages use `zinc-*` for every grey, never `slate` / `gray` / hex greys.
+- The panel stylesheet's `@theme` sets `--color-zinc-50…950` to a cool steel ramp and `--color-blue-*` to a muted
+  steel blue. Every `zinc-*` / `blue-*` utility — in the kit, in host pages, in portalled menus — turns steel with no
+  class changes. Pages use `zinc-*` for every grey, never `slate` / `gray` / hex greys.
+- Every token is a default the host can redefine in its own `@theme` after the import (owner decision 2026-10-31:
+  the theme is overridable beyond the brand colour): greys, blue, brand, rail, `--font-sans`, `--radius`, motion.
 - The sidebar is a graphite rail (`--color-rail`, with `rail-hover/active/line/ink/muted`); `Panel::rail()` tints it
   and `.panel-rail` mixes hover, active and line from the tint.
 - The accent is `--color-brand`, set on `<html>` by the root view from `->brandColor()` / `tungsten.brand_color`;
@@ -21,7 +23,7 @@
 
 ## Motion
 
-- Tokens on `html.tungsten`: `--motion-fast` 120ms (popovers), `--motion-base` 160ms (dialogs, slide-overs),
+- Tokens on `:root` (in `@layer base`, so plain host CSS overrides them): `--motion-fast` 120ms (popovers), `--motion-base` 160ms (dialogs, slide-overs),
   `--motion-page` 180ms, `--motion-ease`. `prefers-reduced-motion` sets them to `0s`.
 - Overlays enter, never exit: `animate-panel-fade` (backdrop), `-pop` (dialog), `-slide` (Aside, HelpPanel),
   `-drop` / `-lift` (popovers, picked by `popoverMotion(position)`). `<details>` menus use `group-open:`.

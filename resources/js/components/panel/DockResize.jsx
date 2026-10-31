@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 
+import { inBrowser } from '../../lib/browser'
 import { cn } from '../../lib/cn'
 import { usePersistentState } from '../../lib/usePersistentState'
 
@@ -7,7 +8,9 @@ const MIN_WIDTH = 320
 const STEP = 24
 
 function clamp(width) {
-    return Math.min(Math.max(width, MIN_WIDTH), Math.max(MIN_WIDTH, Math.round(window.innerWidth * 0.7)))
+    const max = inBrowser ? Math.max(MIN_WIDTH, Math.round(window.innerWidth * 0.7)) : Infinity
+
+    return Math.min(Math.max(width, MIN_WIDTH), max)
 }
 
 /**

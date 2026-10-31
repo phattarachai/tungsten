@@ -11,8 +11,10 @@ afterEach(function (): void {
     $files->delete([resource_path('js/tungsten.jsx'), resource_path('css/tungsten.css'), config_path('tungsten.php'), app_path('Providers/TungstenPanelProvider.php')]);
 });
 
-it('generates a list page class with TableQuery and its JSX with the table kit', function (): void {
-    $this->artisan('make:tungsten-page', ['name' => 'Orders/Index', '--model' => 'Order', '--label' => 'คำสั่งซื้อ'])->assertSuccessful();
+it('generates a list page controller with TableQuery and its JSX, and prints the route to declare', function (): void {
+    $this->artisan('make:tungsten-page', ['name' => 'Orders/Index', '--model' => 'Order', '--label' => 'คำสั่งซื้อ'])
+        ->expectsOutputToContain("Route::get('orders', IndexPage::class)->name('orders')->nav('คำสั่งซื้อ');")
+        ->assertSuccessful();
 
     $php = file_get_contents(app_path('Panel/Pages/Orders/IndexPage.php'));
     $jsx = file_get_contents(resource_path('js/pages/panel/orders/Index.jsx'));
@@ -21,10 +23,10 @@ it('generates a list page class with TableQuery and its JSX with the table kit',
         ->toContain('namespace App\\Panel\\Pages\\Orders;')
         ->toContain('use App\\Models\\Order;')
         ->toContain('class IndexPage extends Page')
-        ->toContain("return 'orders';")
         ->toContain("return 'panel/orders/Index';")
-        ->toContain("return 'คำสั่งซื้อ';")
+        ->toContain("'title' => 'คำสั่งซื้อ'")
         ->toContain('TableQuery::for(Order::query(), $request)')
+        ->not->toContain('function path')
         ->not->toContain('{{')
         ->and($jsx)
         ->toContain("from '@tungsten'")
@@ -34,30 +36,29 @@ it('generates a list page class with TableQuery and its JSX with the table kit',
 
     exec('php -l '.escapeshellarg(app_path('Panel/Pages/Orders/IndexPage.php')), $output, $status);
     expect($status)->toBe(0);
+
+    expect(app('router')->getRoutes()->getByName('orders'))->toBeNull();
 });
 
-it('derives detail, create and edit paths with a numeric-safe parameter and keeps them out of the nav', function (string $name, string $path, string $class, string $component): void {
-    $this->artisan('make:tungsten-page', ['name' => $name])->assertSuccessful();
+it('prints numeric-safe routes with a breadcrumb for record and form pages', function (string $name, string $route, string $class, string $component): void {
+    $this->artisan('make:tungsten-page', ['name' => $name])
+        ->expectsOutputToContain($route)
+        ->assertSuccessful();
 
-    $php = file_get_contents(app_path("Panel/Pages/{$class}.php"));
-
-    expect($php)->toContain("return '{$path}';")
-        ->toContain("return '{$component}';")
-        ->toContain('return false;')
+    expect(file_get_contents(app_path("Panel/Pages/{$class}.php")))->toContain("return '{$component}';")
         ->and(file_exists(resource_path("js/pages/{$component}.jsx")))->toBeTrue();
 })->with([
-    ['Orders/Show', 'orders/{order}', 'Orders/ShowPage', 'panel/orders/Show'],
-    ['Orders/Edit', 'orders/{order}/edit', 'Orders/EditPage', 'panel/orders/Edit'],
-    ['CustomerGroups/Create', 'customer-groups/create', 'CustomerGroups/CreatePage', 'panel/customer-groups/Create'],
+    ['Orders/Show', "Route::get('orders/{order}', ShowPage::class)->name('orders.show')->whereNumber('order')->breadcrumb('Orders');", 'Orders/ShowPage', 'panel/orders/Show'],
+    ['Orders/Edit', "Route::get('orders/{order}/edit', EditPage::class)->name('orders.edit')->whereNumber('order')->breadcrumb('Orders');", 'Orders/EditPage', 'panel/orders/Edit'],
+    ['CustomerGroups/Create', "Route::get('customer-groups/create', CreatePage::class)->name('customer-groups.create')->breadcrumb('Customer Groups');", 'CustomerGroups/CreatePage', 'panel/customer-groups/Create'],
 ]);
 
-it('generates a plain page that shows in the nav, and an explicit --path', function (): void {
-    $this->artisan('make:tungsten-page', ['name' => 'Settings/General', '--path' => 'settings'])->assertSuccessful();
+it('takes an explicit --path for the printed route', function (): void {
+    $this->artisan('make:tungsten-page', ['name' => 'Settings/General', '--path' => 'settings', '--label' => 'ตั้งค่า'])
+        ->expectsOutputToContain("Route::get('settings', GeneralPage::class)->name('settings')->nav('ตั้งค่า');")
+        ->assertSuccessful();
 
-    expect(file_get_contents(app_path('Panel/Pages/Settings/GeneralPage.php')))
-        ->toContain("return 'settings';")
-        ->toContain('return true;')
-        ->toContain("return 'panel/settings/General';");
+    expect(file_get_contents(app_path('Panel/Pages/Settings/GeneralPage.php')))->toContain("return 'panel/settings/General';");
 });
 
 it('refuses to overwrite an existing page without --force', function (): void {

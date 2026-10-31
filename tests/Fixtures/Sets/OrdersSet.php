@@ -6,20 +6,19 @@ namespace Phattarachai\Tungsten\Tests\Fixtures\Sets;
 
 use Illuminate\Support\Facades\Route;
 use Phattarachai\Tungsten\PanelSet;
-use Phattarachai\Tungsten\Tests\Fixtures\Http\ShipOrderController;
+use Phattarachai\Tungsten\Tests\Fixtures\Http\OrderController;
+use Phattarachai\Tungsten\Tests\Fixtures\Http\PendingOrders;
 use Phattarachai\Tungsten\Tests\Fixtures\Pages\OrderPage;
 use Phattarachai\Tungsten\Tests\Fixtures\Pages\OrdersPage;
 
 class OrdersSet extends PanelSet
 {
-    public static function pages(): array
-    {
-        return [OrdersPage::class, OrderPage::class, 'Phattarachai\\Tungsten\\Tests\\Fixtures\\Pages\\NotWrittenYetPage'];
-    }
-
     public static function routes(): void
     {
-        Route::post('orders/{order}/ship', ShipOrderController::class)->name('orders.ship')->whereNumber('order');
+        Route::get('orders', OrdersPage::class)->name('orders')->nav('คำสั่งซื้อ', icon: 'shopping-cart', group: 'การขาย', badge: PendingOrders::class);
+        Route::get('orders/{order}', OrderPage::class)->name('orders.show')->whereNumber('order');
+        Route::get('orders/{order}/edit', [OrderController::class, 'edit'])->name('orders.edit')->whereNumber('order')->breadcrumb('แก้ไข')->layout(['flush' => true]);
+        Route::post('orders/{order}/ship', [OrderController::class, 'ship'])->name('orders.ship')->whereNumber('order');
     }
 
     public static function links(): array

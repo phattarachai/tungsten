@@ -576,20 +576,22 @@ function Overlays({ toastUrl }) {
                     ConfirmDialog
                 </Button>
             </Row>
-            <Row label="Toast">
-                <Button size="sm" variant="outline" tone="neutral" onClick={() => toast('success')}>
-                    success
-                </Button>
-                <Button size="sm" variant="outline" tone="blue" onClick={() => toast('info')}>
-                    info
-                </Button>
-                <Button size="sm" variant="outline" tone="amber" onClick={() => toast('warning')}>
-                    warning
-                </Button>
-                <Button size="sm" variant="outline" tone="danger" onClick={() => toast('error')}>
-                    error
-                </Button>
-            </Row>
+            {toastUrl && (
+                <Row label="Toast">
+                    <Button size="sm" variant="outline" tone="neutral" onClick={() => toast('success')}>
+                        success
+                    </Button>
+                    <Button size="sm" variant="outline" tone="blue" onClick={() => toast('info')}>
+                        info
+                    </Button>
+                    <Button size="sm" variant="outline" tone="amber" onClick={() => toast('warning')}>
+                        warning
+                    </Button>
+                    <Button size="sm" variant="outline" tone="danger" onClick={() => toast('error')}>
+                        error
+                    </Button>
+                </Row>
+            )}
             <Dialog open={open === 'dialog'} onClose={() => setOpen(null)} title="สินค้าในคำสั่งซื้อ (4)">
                 <p className="text-zinc-600">Dialog อ่านอย่างเดียว ปิดได้ด้วยการคลิกนอกกล่อง</p>
             </Dialog>
