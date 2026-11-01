@@ -12,6 +12,7 @@ import {
     ButtonBar,
     ButtonGroup,
     Card,
+    Checkbox,
     CardHeader,
     ColumnsMenu,
     Combobox,
@@ -34,6 +35,7 @@ import {
     IconButton,
     Input,
     PageHeader,
+    RadioGroup,
     Pagination,
     Pills,
     RecordPager,
@@ -70,6 +72,12 @@ const GALLERY = [
     { src: swatch('#0d9488', 'สลิป'), alt: 'สลิปโอนเงิน SO-10241' },
     { src: swatch('#b45309', 'คูปอง'), alt: 'คูปองส่วนลด 10%' },
     { src: swatch('#1f57b0', 'สินค้า'), alt: 'วิตามินซี 1000 มก.' },
+]
+
+const KEEP = [
+    { value: 'a', label: 'เกศินี วงศ์ใหญ่ #1024', description: 'สมัครก่อน · 12 คำสั่งซื้อ · 1,240 แต้ม' },
+    { value: 'b', label: 'เกศินี ว. #2981', description: 'สมัครจาก LINE · 1 คำสั่งซื้อ' },
+    { value: 'c', label: 'บัญชีที่ปิดแล้ว #77', description: 'เลือกไม่ได้', disabled: true },
 ]
 
 const PEOPLE = [
@@ -341,6 +349,9 @@ function Chips() {
 
 function Forms() {
     const [customer, setCustomer] = useState('c-1')
+    const [keep, setKeep] = useState('a')
+    const [delivery, setDelivery] = useState('ship')
+    const [confirmed, setConfirmed] = useState(false)
     const [category, setCategory] = useState('vitamin')
     const [categories, setCategories] = useState(['vitamin', 'beauty'])
 
@@ -364,6 +375,24 @@ function Forms() {
                 </FormField>
                 <FormField label="ลูกค้า" hint="option มี avatar: รูป หรือตัวอักษรแรก">
                     <Combobox options={PEOPLE} value={customer} onChange={setCustomer} clearable />
+                </FormField>
+                <FormField label="เก็บข้อมูลของ" info="RadioGroup layout=list">
+                    <RadioGroup options={KEEP} value={keep} onChange={setKeep} aria-label="เก็บข้อมูลของ" />
+                </FormField>
+                <FormField label="การจัดส่ง" info="RadioGroup layout=cards">
+                    <RadioGroup
+                        layout="cards"
+                        options={[
+                            { value: 'ship', label: 'ส่งพัสดุ', description: 'Kerry · 1–2 วัน' },
+                            { value: 'pickup', label: 'รับที่ร้าน', description: 'สาขาลาดพร้าว' },
+                        ]}
+                        value={delivery}
+                        onChange={setDelivery}
+                        aria-label="การจัดส่ง"
+                    />
+                </FormField>
+                <FormField label="ยืนยัน">
+                    <Checkbox checked={confirmed} onChange={setConfirmed} label="รวมลูกค้าทั้งสองบัญชี" hint="ย้อนกลับไม่ได้" error={confirmed ? null : 'ต้องยืนยันก่อนรวม'} />
                 </FormField>
                 <FormField label="หมวด หลายค่า">
                     <Combobox options={OPTIONS} value={categories} onChange={setCategories} multiple clearable />
