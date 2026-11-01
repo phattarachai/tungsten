@@ -105,7 +105,7 @@ class OrdersSet extends \Phattarachai\Tungsten\PanelSet
 | `->breadcrumb($label, parent:)` | the trail's last crumb; the parent nav route is inferred from the name (`admin.orders.edit` → `admin.orders`) |
 | `->breadcrumbs([...])` | a fixed trail |
 | `->help($url)` | the topbar `?` for this route |
-| `->width('4xl')` | caps the content width inside the sheet (`sm` … `7xl`, `full`) |
+| `->width('4xl')` | caps the content width inside the sheet (`sm` … `7xl`, `full`), or `fit`: as wide as the widest child (a list with few columns) |
 | `->layout([...])` | AppLayout defaults: `sheet`, `flush`, `width`, `sidebar`, `topbar`, `className`, `mainClassName` |
 
 A route's own `can:x` middleware hides its nav entry from users who fail `x`. Point routes at controllers or page

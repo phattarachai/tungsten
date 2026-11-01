@@ -312,7 +312,7 @@ The metadata a route can carry:
 | `->breadcrumb($label, parent:)` | the trail's last label. The parent nav route — inferred from the name (`admin.orders.edit` → `admin.orders`) or given — links before it. |
 | `->breadcrumbs([...])` | a fixed trail: `[['label' => 'ตั้งค่า'], ['label' => 'SMS', 'route' => 'admin.settings.sms']]`. |
 | `->help($url)` | the topbar `?` for this route. |
-| `->width('4xl')` | caps the page's content width inside the sheet: `sm` … `7xl` or `full` (the default). A short form keeps its width, a list uses the room. |
+| `->width('4xl')` | caps the page's content width inside the sheet: `sm` … `7xl` or `full` (the default). A short form keeps its width, a list uses the room. `fit` makes the content as wide as its widest child: a list with few columns hugs them instead of spanning the sheet, and a column's `w-full` (a spacer) is dropped there. |
 | `->layout([...])` | defaults for `AppLayout` (`sheet`, `flush`, `width`, `sidebar`, `topbar`, `className`, `mainClassName`), merged over the panel's `->layout()` (and an earlier `->width()`) and shared as the `layout` prop. |
 
 Without metadata a nav route's trail is its group and label. A controller replaces the trail by passing a
@@ -509,7 +509,7 @@ Route::get('ui-kit', UiKitPage::class)->name('ui-kit')->nav('UI Kit', icon: 'pal
 Route::post('ui-kit/toast', UiKitToastController::class)->name('ui-kit.toast');
 ```
 
-- **Shell**: `AppLayout` (`toolbar`, `sheet`, `flush`, `width` — the content's max width, `'4xl'` … `'full'`, `sidebar={false}`, `topbar={false}`, `className`, `mainClassName`), and
+- **Shell**: `AppLayout` (`toolbar`, `sheet`, `flush`, `width` — the content's max width, `'4xl'` … `'full'`, or `'fit'` to hug the content, `sidebar={false}`, `topbar={false}`, `className`, `mainClassName`), and
   its parts for a layout of your own: `Sidebar`, `Topbar`, `PanelSwitcher`, `FlashToast`, `TooltipLayer`, `Aside`.
 - **Lists**: `DataTable` (sortable, selection, row actions, groups with subtotals, sticky columns), `DataList`,
   `TreeTable`, `Filters` (bar or menu), `FilterBar` / `FilterField`, `FilterMenu`, `FilterChip`, `TableToolbar`, `Pagination` (optional per-page picker), `Pills` (scrolls
@@ -522,7 +522,8 @@ Route::post('ui-kit/toast', UiKitToastController::class)->name('ui-kit.toast');
   lists a row's sub-lines (a product's variants): each is drawn under the row as its own table row where every column
   renders `sub(line, row)`, so title / SKU / price / stock line up; in reorder mode the lines move with their row. A long
   text column takes `wrap` (`true` for `w-72`, or a width such as `'w-96'`): two lines at that width, the rest in its
-  tooltip — cells are `whitespace-nowrap` otherwise.
+  tooltip — cells are `whitespace-nowrap` otherwise. `fit` sizes a table to its columns on a full-width page (on a
+  `fit` page it needs nothing: the box around it is already as wide as its content).
 - **Forms**: `FormField` (inline label, `hint`, `info`, `error`), `Input`, `Select`, `Textarea`, `Combobox`
   (searchable, multiple; `size="sm"` + `label` for a filter bar; an option's `avatar` — a URL, or null for the
   initial — draws a small round photo before its label), `ButtonGroup` (`size="sm"` for toolbar presets), `RadioGroup` (options `{ value, label, description?, disabled? }` as

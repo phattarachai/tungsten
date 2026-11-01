@@ -3,6 +3,7 @@ import { ChevronDown, ChevronsUpDown, ChevronUp } from 'lucide-react'
 import { Fragment, useState } from 'react'
 
 import { cn } from '../../lib/cn'
+import { usePageWidth } from '../../lib/pageWidth'
 import { nextSort, sortRows } from '../../lib/sortRows'
 
 import { firstAction, KeyAction, RowActions } from './RowActions'
@@ -220,6 +221,11 @@ function withReorder(columns, sortable) {
     return [handle, ...columns]
 }
 
+/** A fitted table's columns without `w-full`, the class a spacer column uses to take the spare room. */
+function withoutSpacer(columns) {
+    return columns.map((column) => (/(?:^|\s)w-full(?:\s|$)/.test(column.className ?? '') ? { ...column, className: column.className.split(/\s+/).filter((name) => name !== 'w-full').join(' ') } : column))
+}
+
 function withSelect(columns, column, actionsPosition) {
     return actionsPosition === 'start' && columns[0]?.key === '__actions' ? [columns[0], column, ...columns.slice(1)] : [column, ...columns]
 }
@@ -235,6 +241,9 @@ function withSelect(columns, column, actionsPosition) {
  * `reorderable={{ onReorder, disabled? }}` adds a drag handle to each row (mouse, pen, touch, or ↑ / ↓ on the handle)
  * and calls `onReorder(rows)` with the new order per drop; sorting is off meanwhile. Switch it on behind the page's
  * "จัดลำดับ" toggle, with paging and search off, so every row is there to reorder.
+ * `fit` sizes the table to its columns instead of the full width. Either way, and on a page with `width: 'fit'`, a
+ * column's `w-full` (a trailing spacer that takes the spare room) is dropped, so it can't stretch the table; on such a
+ * page the table still fills its box, which is already as wide as its content.
  */
 export function DataTable({
     columns: baseColumns,
@@ -258,7 +267,10 @@ export function DataTable({
     onSelectionChange,
     reorderable,
     subRows,
+    fit = false,
 }) {
+    const pageWidth = usePageWidth()
+    const fitted = fit || pageWidth === 'fit'
     const selectable = selection !== undefined && onSelectionChange !== undefined
     const allRows = groups ? groups.flatMap((group) => group.rows) : rows
     const keyFor = (row) => keyOf(row, rowKey, allRows.indexOf(row))
@@ -268,7 +280,7 @@ export function DataTable({
         onReorder: (next) => reorderable?.onReorder(next),
         disabled: !reorderable || Boolean(reorderable.disabled),
     })
-    const actionColumns = withActions(baseColumns, rowActions, rowActionsTitle, actionsPosition)
+    const actionColumns = withActions(fitted ? withoutSpacer(baseColumns) : baseColumns, rowActions, rowActionsTitle, actionsPosition)
     const pickedColumns = selectable ? withSelect(actionColumns, selectColumn(allRows, keyFor, selection, onSelectionChange), actionsPosition) : actionColumns
     const columns = reorderable ? withReorder(pickedColumns, sortable) : pickedColumns
     const rowClassName = selectable ? (row) => cn(selection.includes(keyFor(row)) && 'bg-zinc-100', baseRowClassName?.(row)) : baseRowClassName
@@ -293,8 +305,8 @@ export function DataTable({
     }
 
     return (
-        <div className={cn('overflow-x-auto overflow-y-hidden', !flush && 'rounded border border-zinc-200 bg-white', className)}>
-            <table className="w-full border-collapse text-xs tabular-nums">
+        <div className={cn('overflow-x-auto overflow-y-hidden', fit && 'w-fit max-w-full', !flush && 'rounded border border-zinc-200 bg-white', className)}>
+            <table className={cn('border-collapse text-xs tabular-nums', !fit && 'w-full')}>
                 <thead>
                     <tr>
                         {columns.map((column) => (

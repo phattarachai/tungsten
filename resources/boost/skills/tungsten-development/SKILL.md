@@ -53,8 +53,9 @@ renders an Inertia component; the JSX composes kit parts inside `AppLayout`.
 - **Only the key cell links to a record** (`primary: true` column + `rowHref`); a row is not one big link.
 - **Images open full screen**: `Thumb zoom`, `Avatar zoom` or `Zoomable`.
 - **Dates**: the kit pickers (`DatePicker`, `DateRangePicker`), values ISO Gregorian, shown in พ.ศ.
-- **Width follows content**: short forms and small record pages `->width('4xl')` (two columns `'5xl'`); lists and
-  wide record pages stay `full`.
+- **Width follows content**: short forms and small record pages `->width('4xl')` (two columns `'5xl'`); a list with
+  few columns `->width('fit')`, so the table hugs its columns instead of spanning the sheet (no spacer column
+  needed); lists with many columns and wide record pages stay `full`.
 - **Thai-first copy** from the server or `strings`; the kit's own words are overridable with `setStrings()`.
 
 ## References

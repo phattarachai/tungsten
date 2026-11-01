@@ -8,7 +8,7 @@ before relying on a prop not listed here.
 
 | Component | Main props |
 |---|---|
-| `AppLayout` | `toolbar`, `sheet`, `flush`, `width` (`'4xl'` … `'full'`), `sidebar={false}`, `topbar={false}`, `className`, `mainClassName` |
+| `AppLayout` | `toolbar`, `sheet`, `flush`, `width` (`'4xl'` … `'full'`, or `'fit'` for a short list), `sidebar={false}`, `topbar={false}`, `className`, `mainClassName` |
 | `PageHeader` | `title`, `description`, `actions` |
 | `Aside` | `open`, `title`, `actions`, `onClose`, `widthKey` — docked right panel, resizable |
 | `AuditPanel`, `LastEdited` | the audit trail in the Aside, and its quiet "แก้ไข …" trigger |
@@ -20,7 +20,7 @@ before relying on a prop not listed here.
 
 | Component | Main props |
 |---|---|
-| `DataTable` | `columns` (`key`, `label`, `render`, `sub`, `align`, `valign`, `sortable`, `sortDir`, `primary`, `truncate`, `wrap`, `sticky`, `className`), `rows`, `rowKey`, `rowHref`, `plainLinks`, `rowActions`, `sort` + `onSort`, `selection` + `onSelectionChange`, `groups`, `subRows`, `reorderable`, `flush`, `empty` |
+| `DataTable` | `columns` (`key`, `label`, `render`, `sub`, `align`, `valign`, `sortable`, `sortDir`, `primary`, `truncate`, `wrap`, `sticky`, `className`), `rows`, `rowKey`, `rowHref`, `plainLinks`, `rowActions`, `sort` + `onSort`, `selection` + `onSelectionChange`, `groups`, `subRows`, `reorderable`, `flush`, `fit` (columns' width, spacer dropped), `empty` |
 | `Filters` | `filters` (`key`, `label`, `type`: `select`/`buttons`/`pills`/`toggle`/`dates`/`custom`, `options`, `multiple`, `default` (a `dates` default sends `all` for ทั้งหมด), `row`, `chip`), `values`, `onChange`, `search`, `start`, `layout` (`bar`/`menu`), `flush` |
 | `FilterBar`, `FilterField`, `FilterMenu`, `FilterChip` | the parts of `Filters`, for a layout of your own |
 | `Pagination` | `paginator`, `onPage`, `onPerPage`, `perPageOptions`, `flush` |

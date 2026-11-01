@@ -54,6 +54,19 @@ for (const [component, props, expected] of cases) {
     console.log('ssr ok  width 4xl caps the content inside a full sheet')
 }
 
+// `fit` shrinks the content to its widest child (a list with few columns), the sheet still full size.
+{
+    const page = { component: 'panel/orders/Index', props: { ...shared, title: 'คำสั่งซื้อ', table, layout: { sheet: true, width: 'fit' } }, url: '/admin/orders', version: null, clearHistory: false, encryptHistory: false }
+    const { body } = await createTungstenApp({ pages, prefix: './resources/js/pages/', page, render: renderToString })
+    const main = body.slice(body.indexOf('<main'))
+
+    if (!/<main[^>]*class="[^"]*\bbg-sheet\b[^"]*"[^>]*><div class="min-w-0 w-fit max-w-full">/.test(main)) {
+        throw new Error('width fit: expected the sheet <main> to hold a w-fit content box')
+    }
+
+    console.log('ssr ok  width fit fits the content inside a full sheet')
+}
+
 // The environment leads the tab title on the server too (the browser reads the root view's meta instead).
 {
     const page = { component: 'tungsten::auth/Login', props: { ...shared, ...cases.find(([name]) => name === 'tungsten::auth/Login')[1] }, url: '/admin/login', version: null, clearHistory: false, encryptHistory: false }

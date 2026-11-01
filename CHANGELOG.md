@@ -7,6 +7,14 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.27 — 2026-11-01
+
+- **`->width('fit')`** / `<AppLayout width="fit">`: the page's content is as wide as its widest child, so a list with
+  few columns fits them instead of spanning the sheet. On such a page a `DataTable` column's `w-full` (a trailing
+  spacer) is dropped, and the table fills its fitted box.
+- **`DataTable fit`**: one table sized to its columns on a full-width page.
+- The Boost guideline and skill say it: a short list fits its content, only a wide list stays full width.
+
 ## v0.2.26 — 2026-11-01
 
 - **`Chart`**: a small bar or line chart over a date series (`data` as `[{ label, value }]`), in the brand, zinc or a

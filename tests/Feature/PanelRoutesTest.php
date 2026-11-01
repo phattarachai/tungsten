@@ -9,6 +9,7 @@ use Phattarachai\Tungsten\Http\Middleware\HandleTungstenRequests;
 use Phattarachai\Tungsten\Pages\HomePage;
 use Phattarachai\Tungsten\Panel;
 use Phattarachai\Tungsten\PanelRegistry;
+use Phattarachai\Tungsten\RouteMeta;
 use Phattarachai\Tungsten\Tests\Fixtures\Models\Order;
 
 it('mounts set routes and route-file routes under the panel path with the {id}. route name', function (): void {
@@ -287,6 +288,12 @@ it('caps a page\'s content width from the route, merged with the rest of its lay
     $this->actingAs($this->admin())
         ->get('/tools/narrow')
         ->assertInertia(fn (Assert $page): Assert => $page->where('layout', ['sheet' => true, 'mainClassName' => 'tools-main', 'width' => '4xl', 'flush' => false]));
+});
+
+it('lets a page fit its content', function (): void {
+    $route = Route::get('fitted', HomePage::class)->width('fit');
+
+    expect(RouteMeta::of($route)['layout'])->toBe(['width' => 'fit']);
 });
 
 it('refuses an unknown page width', function (): void {
