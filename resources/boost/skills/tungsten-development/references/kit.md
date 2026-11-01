@@ -20,8 +20,8 @@ before relying on a prop not listed here.
 
 | Component | Main props |
 |---|---|
-| `DataTable` | `columns` (`key`, `label`, `render`, `align`, `valign`, `sortable`, `sortDir`, `primary`, `truncate`, `wrap`, `sticky`, `className`), `rows`, `rowKey`, `rowHref`, `plainLinks`, `rowActions`, `sort` + `onSort`, `selection` + `onSelectionChange`, `groups`, `reorderable`, `flush`, `empty` |
-| `Filters` | `filters` (`key`, `label`, `type`: `select`/`buttons`/`pills`/`toggle`/`dates`/`custom`, `options`, `multiple`, `default`, `row`, `chip`), `values`, `onChange`, `search`, `start`, `layout` (`bar`/`menu`), `flush` |
+| `DataTable` | `columns` (`key`, `label`, `render`, `sub`, `align`, `valign`, `sortable`, `sortDir`, `primary`, `truncate`, `wrap`, `sticky`, `className`), `rows`, `rowKey`, `rowHref`, `plainLinks`, `rowActions`, `sort` + `onSort`, `selection` + `onSelectionChange`, `groups`, `subRows`, `reorderable`, `flush`, `empty` |
+| `Filters` | `filters` (`key`, `label`, `type`: `select`/`buttons`/`pills`/`toggle`/`dates`/`custom`, `options`, `multiple`, `default` (a `dates` default sends `all` for ทั้งหมด), `row`, `chip`), `values`, `onChange`, `search`, `start`, `layout` (`bar`/`menu`), `flush` |
 | `FilterBar`, `FilterField`, `FilterMenu`, `FilterChip` | the parts of `Filters`, for a layout of your own |
 | `Pagination` | `paginator`, `onPage`, `onPerPage`, `perPageOptions`, `flush` |
 | `TableToolbar` | `start`, children (right), `flush` |

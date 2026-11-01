@@ -48,7 +48,7 @@ function isActive(filter, values) {
     const value = values[filter.key]
 
     if (filter.type === 'dates') {
-        return hasRange(filter, values) || (!isEmpty(value) && value !== ALL)
+        return hasRange(filter, values) || (!isEmpty(value) && value !== (filter.default ?? ALL))
     }
 
     if (filter.type === 'toggle') {
@@ -92,9 +92,9 @@ function chipsOf(filters, values) {
         }
 
         if (filter.type === 'dates') {
-            const ranged = isEmpty(value) || value === CUSTOM
+            const shown = hasRange(filter, values) ? rangeLabel(filter, values) : value === ALL ? (filter.allLabel ?? strings.all) : labelOf(filter, value)
 
-            return [{ key: filter.key, label: `${filter.label}: ${ranged ? rangeLabel(filter, values) : labelOf(filter, value)}`, clear: cleared(filter) }]
+            return [{ key: filter.key, label: `${filter.label}: ${shown}`, clear: cleared(filter) }]
         }
 
         if (Array.isArray(value)) {
@@ -118,14 +118,16 @@ function DatesControl({ filter, values, onChange, ranges }) {
     const ranged = hasRange(filter, values)
     const custom = ranges.isOpen(filter.key)
     const setCustom = (open) => ranges.set(filter.key, open)
-    const preset = ranged || custom ? CUSTOM : (values[filter.key] ?? ALL)
+    const preset = ranged || custom ? CUSTOM : (values[filter.key] ?? filter.default ?? ALL)
+    // With a server default, ทั้งหมด (and a custom range) must say so: an empty value would bring the default back.
+    const off = filter.default ? ALL : null
     const options = [{ value: ALL, label: filter.allLabel ?? strings.all }, ...(filter.options ?? []), { value: CUSTOM, label: filter.customLabel ?? strings.customDates }]
 
     function pick(value) {
         setCustom(value === CUSTOM)
 
         if (value !== CUSTOM) {
-            onChange({ [filter.key]: value === ALL ? null : value, [from]: null, [to]: null })
+            onChange({ [filter.key]: value === ALL ? off : value, [from]: null, [to]: null })
         }
     }
 
@@ -137,7 +139,7 @@ function DatesControl({ filter, values, onChange, ranges }) {
                     <DateRangePicker
                         start={values[from] ?? ''}
                         end={values[to] ?? ''}
-                        onChange={({ start, end }) => onChange({ [filter.key]: null, [from]: start || null, [to]: end || null })}
+                        onChange={({ start, end }) => onChange({ [filter.key]: off, [from]: start || null, [to]: end || null })}
                         clearable
                         aria-label={filter.label}
                     />

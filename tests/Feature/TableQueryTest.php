@@ -88,3 +88,28 @@ it('accepts a search closure and a plain column filter', function (): void {
 
     expect($table['pagination']['total'])->toBe(2);
 });
+
+it('turns a filter with a default off with "all", and brings the default back without a value', function (): void {
+    $since = fn (array $query): TableQuery => TableQuery::for(Order::query(), Request::create('/admin/orders', 'GET', $query))
+        ->filter('date', fn (Builder $query, string $preset) => $query->where('created_at', '>=', ['recent' => '2026-10-03', 'older' => '2026-10-01'][$preset]), in: ['recent', 'older'], default: 'recent')
+        ->defaultSort('number')
+        ->sorts(['number'])
+        ->perPage(10);
+
+    $default = $since([])->paginate(fn (Order $order): array => ['number' => $order->number]);
+    expect(numbers($default))->toBe(['SO-003', 'SO-100%'])
+        ->and($default['filters']['date'])->toBe('recent');
+
+    $all = $since(['date' => TableQuery::ALL])->paginate(fn (Order $order): array => ['number' => $order->number]);
+    expect(numbers($all))->toBe(['SO-001', 'SO-002', 'SO-003', 'SO-100%'])
+        ->and($all['filters']['date'])->toBe('all');
+
+    expect(numbers($since(['date' => 'older'])->paginate(fn (Order $order): array => ['number' => $order->number])))->toHaveCount(4)
+        ->and(numbers($since(['date' => 'bogus'])->paginate(fn (Order $order): array => ['number' => $order->number])))->toBe(['SO-003', 'SO-100%']);
+});
+
+it('leaves "all" to the filter as a plain value when the filter has no default', function (): void {
+    $table = orders(['status' => 'all'])->paginate(fn (Order $order): array => ['number' => $order->number]);
+
+    expect($table['filters']['status'])->toBeNull()->and($table['pagination']['total'])->toBe(4);
+});

@@ -7,6 +7,14 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.23 — 2026-11-01
+
+- **`dates` filter `default`**: with a server default preset, ทั้งหมด and a custom range send `all`;
+  `TableQuery::ALL` (`'all'`) turns a filter that has a `default:` off (and the state reports `all`). Clear-all goes
+  back to the default.
+- **`DataTable subRows(row)`** + column `sub(line, row)`: per-row sub-lines drawn as aligned table rows under the row;
+  they move with it in reorder mode.
+
 ## v0.2.22 — 2026-11-01
 
 - **Profile page**: `->profile(avatar:, disk:, labels:)` on a panel adds `{path}/profile` (and its update and password
