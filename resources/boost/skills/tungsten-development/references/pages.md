@@ -58,6 +58,9 @@ export default function Index({ orders, options }) {
   `whitespace-nowrap` otherwise, and `cn` is a plain join, so a `whitespace-normal` class on the column loses.
 - **Bulk actions**: `DataTable selection` + `onSelectionChange` and a `SelectionBar` while something is selected.
 - **Stats above a list**: `StatsStrip` (values, an optional hint, a tone, a link).
+- **Width**: a list with few columns (three to five short ones) takes `->width('fit')` on its route, so the sheet's
+  content and the table shrink to the table's natural width; a column's `w-full` (a spacer) is dropped there. A wide
+  list stays `full`. `DataTable fit` does the same for one table on a full-width page.
 - **Many columns** that would scroll sideways: `DataList` (2–3 line rows) is the alternative; the page picks one.
 
 ## Record (detail) page
@@ -114,7 +117,7 @@ const form = useForm({ name: customer.name, phone: customer.phone, keep: 'a', co
 - More than ~10 options: `Combobox` (searchable, `multiple`); otherwise `Select`.
 - A width class on a field (`w-48`) replaces its full width.
 - Confirm destructive actions with `ConfirmDialog tone="danger"`; never `window.confirm`.
-- A short form page: `->width('4xl')` on its route.
+- A short form page: `->width('4xl')` on its route; a short list: `->width('fit')`.
 
 ## Reorder mode
 

@@ -10,6 +10,7 @@ import { Sidebar } from '../components/panel/Sidebar'
 import { TooltipLayer } from '../components/panel/TooltipLayer'
 import { Topbar } from '../components/panel/Topbar'
 import { cn } from '../lib/cn'
+import { PageWidthContext } from '../lib/pageWidth'
 import { usePersistentState } from '../lib/usePersistentState'
 
 /**
@@ -49,9 +50,13 @@ const WIDTHS = {
     '5xl': 'max-w-5xl',
     '6xl': 'max-w-6xl',
     '7xl': 'max-w-7xl',
+    fit: 'w-fit max-w-full',
 }
 
-/** The page's content, capped at `width` and left-aligned; the sheet or canvas around it keeps its full size. */
+/**
+ * The page's content, capped at `width` (or `fit`: as wide as its widest child, so a table with few columns doesn't
+ * stretch) and left-aligned; the sheet or canvas around it keeps its full size.
+ */
 function Content({ width, children }) {
     return WIDTHS[width] ? <div className={cn('min-w-0', WIDTHS[width])}>{children}</div> : children
 }
@@ -81,7 +86,8 @@ function Main({ sheet, gutter, top, flush, width, className, children }) {
  * - `flush` drops main's padding (a full-bleed tool page whose panes meet the chrome);
  * - `sheet` draws main as one rounded sheet (`--color-sheet`) inset in the chrome, down to the viewport bottom;
  * - `width` caps the page's content (`'4xl'`, `'5xl'`, `'7xl'` …, `'full'` by default), left-aligned, inside a
- *   full-size sheet: a short form stays at its width, a list uses the room (route: `->width('4xl')`);
+ *   full-size sheet: a short form stays at its width, a list uses the room (route: `->width('4xl')`); `'fit'`
+ *   shrinks it to its widest child, so a list with few columns stays at its natural width;
  * - `sidebar={false}` / `topbar={false}` leave that part out;
  * - `className` / `mainClassName` restyle the frame.
  *
@@ -117,7 +123,9 @@ export function AppLayout({ children, toolbar, ...options }) {
                         {topbar && <Topbar sidebarClosed={!railOpen} onToggleSidebar={sidebar ? toggle : undefined} toolbar={toolbar} />}
                         <div className={cn('flex', sheet ? 'flex-1 items-stretch' : 'items-start')}>
                             <Main sheet={sheet} gutter={!railOpen} top={!topbar} flush={flush} width={width} className={mainClassName}>
-                                <AsideTarget value={asideTarget}>{children}</AsideTarget>
+                                <AsideTarget value={asideTarget}>
+                                    <PageWidthContext value={width}>{children}</PageWidthContext>
+                                </AsideTarget>
                             </Main>
                             <div ref={setAsideTarget} className="contents" />
                             {help.url && <HelpPanel url={help.url} onClose={help.close} />}

@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client'
 
 import { Avatar, Chart, Checkbox, Combobox, CopyButton, DataTable, DatePicker, GlobalSearch, NotificationBell, PickerDialog, Sortable, DateRangePicker, Facts, Input, RadioGroup, Select, Textarea, getJson, postJson, SearchInput, sendJson, StatsStrip, Thumb, Zoomable } from '@tungsten'
 import { FlashToastFor } from '@tungsten/components/panel/FlashToast'
+import { PageWidthContext } from '@tungsten/lib/pageWidth'
 import { RichText } from '@tungsten/rich-text'
 
 function mount(element) {
@@ -494,6 +495,33 @@ Object.assign(checks, {
         await frame()
         assert.deepEqual(reports, [[2, 1]])
         assert.deepEqual([...document.querySelectorAll('tbody tr')].map((tr) => tr.getAttribute('data-sortable-row')), ['2', '1', '1', '1'])
+        box.unmount()
+    },
+
+    'DataTable fit: the table takes its columns\' width, not the full width': () => {
+        const columns = [{ key: 'name', label: 'ชื่อ' }]
+        const box = mount(<DataTable columns={columns} rows={[{ id: 1, name: 'ก' }]} />)
+
+        assert.ok(document.querySelector('table').classList.contains('w-full'), 'full width by default')
+
+        box.render(<DataTable columns={columns} rows={[{ id: 1, name: 'ก' }]} fit />)
+        assert.ok(!document.querySelector('table').classList.contains('w-full'), 'fit drops w-full')
+        assert.ok(document.querySelector('table').parentElement.classList.contains('w-fit'), 'the frame hugs the table')
+
+        const spaced = [...columns, { key: 'spacer', label: '', className: 'w-full', render: () => null }]
+        box.render(<DataTable columns={spaced} rows={[{ id: 1, name: 'ก' }]} />)
+        assert.ok(document.querySelector('tbody td:last-child').classList.contains('w-full'), 'a spacer takes the room by default')
+
+        box.render(<DataTable columns={spaced} rows={[{ id: 1, name: 'ก' }]} fit />)
+        assert.ok(!document.querySelector('tbody td:last-child').classList.contains('w-full'), 'fit drops the spacer\'s w-full')
+
+        box.render(
+            <PageWidthContext value="fit">
+                <DataTable columns={spaced} rows={[{ id: 1, name: 'ก' }]} />
+            </PageWidthContext>,
+        )
+        assert.ok(!document.querySelector('tbody td:last-child').classList.contains('w-full'), 'a fit page drops it too')
+        assert.ok(document.querySelector('table').classList.contains('w-full'), 'and the table still fills its (fitted) box')
         box.unmount()
     },
 })

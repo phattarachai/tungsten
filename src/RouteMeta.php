@@ -21,8 +21,8 @@ use InvalidArgumentException;
  */
 class RouteMeta
 {
-    /** The content widths a page may take (Tailwind's max-w steps); `full` leaves it uncapped. */
-    public const array WIDTHS = ['sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl', '5xl', '6xl', '7xl', 'full'];
+    /** The content widths a page may take (Tailwind's max-w steps); `full` leaves it uncapped, `fit` hugs its widest child. */
+    public const array WIDTHS = ['sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl', '5xl', '6xl', '7xl', 'full', 'fit'];
 
     /**
      * @return array<string, mixed>
@@ -59,7 +59,7 @@ class RouteMeta
             return RouteMeta::put($this, 'help', $url);
         });
 
-        /** Caps the page's content width inside the sheet (`'4xl'`, `'5xl'`, `'7xl'` … or `'full'`): layout `width`. */
+        /** Caps the page's content width inside the sheet (`'4xl'`, `'5xl'`, `'7xl'` …, `'full'` or `'fit'`): layout `width`. */
         Route::macro('width', function (string $width): Route {
             /** @var Route $this */
             throw_unless(in_array($width, RouteMeta::WIDTHS, true), InvalidArgumentException::class, "Unknown page width [{$width}]; use one of: ".implode(', ', RouteMeta::WIDTHS).'.');
