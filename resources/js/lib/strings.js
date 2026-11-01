@@ -5,6 +5,8 @@
  */
 export const strings = {
     close: 'ปิด',
+    copy: 'คัดลอก',
+    copied: 'คัดลอกแล้ว',
     pickerDone: 'เสร็จ',
     pickerEmpty: 'ไม่พบรายการ',
     richTextHeading2: 'หัวข้อ',

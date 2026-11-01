@@ -534,7 +534,9 @@ Route::post('ui-kit/toast', UiKitToastController::class)->name('ui-kit.toast');
 - **Records**: `RecordLayout`, `PageHeader`, `GroupedNav`, `NavList`, `RecordPager`, `Section`, `SectionGrid`,
   `TabSection`, `DetailList`, `Timeline`, `Stepper`, `AuditPanel`, `LastEdited`.
 - **Buttons**: `Button` (`solid · outline · ghost` × `neutral · brand · amber · blue · danger`), `IconButton`,
-  `ActionMenu`, `RowActions`, `ButtonBar`, `ButtonGroup`, `SyncButton`, `Badge` (colour tones and status tones, below).
+  `ActionMenu`, `RowActions`, `ButtonBar`, `ButtonGroup`, `SyncButton`, `CopyButton`, `Badge` (colour tones and status
+  tones, below).
+- **Charts**: `Chart`, a small bar or line chart over a date series (below).
 
 Components take `className` where it makes sense; nothing stops a page from using plain elements beside them.
 
@@ -646,6 +648,33 @@ Turn it on behind a "จัดลำดับ" toggle and drop paging and search
 ```
 
 `useSortable({ items, keyOf, onReorder })` (with `SortHandle`) builds the same on other markup.
+
+### Chart and CopyButton
+
+`Chart` draws a short series (30 days of clicks, a week of orders) as bars or a line, in a theme tone. It is plain
+divs and an SVG, so it renders on the server too. Hovering a bar or a point shows its label and value.
+
+```jsx
+<Chart data={stats.map((day) => ({ label: day.label, value: day.clicks }))} unit="คลิก" />   // bars, brand tone
+<Chart data={points} type="line" tone="done" height="5rem" format={baht} label="ยอดขาย 7 วัน" />
+```
+
+| Prop | |
+|---|---|
+| `data` | `[{ label, value }]`, oldest first; the first, middle and last labels go under the axis |
+| `type` | `bar` (default) or `line` |
+| `tone` | `brand` (default), `zinc`, or a status tone (`done`, `active`, `waiting`, …) |
+| `height` | CSS height, `8rem` by default |
+| `format`, `unit` | how a value reads in the top label and the tooltip (`format` defaults to Thai digit grouping) |
+| `empty` | the text when there is no data or every value is 0 (`ไม่มีข้อมูล`) |
+| `label` | the chart's accessible name |
+
+`CopyButton` copies a short link or a code; the icon turns to a tick and the tooltip to "คัดลอกแล้ว" for a moment.
+It falls back to `execCommand('copy')` where the clipboard API is missing (a page on plain http).
+
+```jsx
+<span className="font-mono">{link.short_url}</span> <CopyButton value={link.short_url} label="คัดลอกลิงก์" />
+```
 
 ### Lightbox
 
