@@ -257,7 +257,8 @@ The metadata a route can carry:
 | `->breadcrumb($label, parent:)` | the trail's last label. The parent nav route — inferred from the name (`admin.orders.edit` → `admin.orders`) or given — links before it. |
 | `->breadcrumbs([...])` | a fixed trail: `[['label' => 'ตั้งค่า'], ['label' => 'SMS', 'route' => 'admin.settings.sms']]`. |
 | `->help($url)` | the topbar `?` for this route. |
-| `->layout([...])` | defaults for `AppLayout` (`sheet`, `flush`, `sidebar`, `topbar`, `className`, `mainClassName`), merged over the panel's `->layout()` and shared as the `layout` prop. |
+| `->width('4xl')` | caps the page's content width inside the sheet: `sm` … `7xl` or `full` (the default). A short form keeps its width, a list uses the room. |
+| `->layout([...])` | defaults for `AppLayout` (`sheet`, `flush`, `width`, `sidebar`, `topbar`, `className`, `mainClassName`), merged over the panel's `->layout()` (and an earlier `->width()`) and shared as the `layout` prop. |
 
 Without metadata a nav route's trail is its group and label. A controller replaces the trail by passing a
 `breadcrumbs` prop; `Tungsten::breadcrumbs($order->number)` gives the parent trail ending in a record name.
@@ -453,7 +454,7 @@ Route::get('ui-kit', UiKitPage::class)->name('ui-kit')->nav('UI Kit', icon: 'pal
 Route::post('ui-kit/toast', UiKitToastController::class)->name('ui-kit.toast');
 ```
 
-- **Shell**: `AppLayout` (`toolbar`, `sheet`, `flush`, `sidebar={false}`, `topbar={false}`, `className`, `mainClassName`), and
+- **Shell**: `AppLayout` (`toolbar`, `sheet`, `flush`, `width` — the content's max width, `'4xl'` … `'full'`, `sidebar={false}`, `topbar={false}`, `className`, `mainClassName`), and
   its parts for a layout of your own: `Sidebar`, `Topbar`, `PanelSwitcher`, `FlashToast`, `TooltipLayer`, `Aside`.
 - **Lists**: `DataTable` (sortable, selection, row actions, groups with subtotals, sticky columns), `DataList`,
   `TreeTable`, `Filters` (bar or menu), `FilterBar` / `FilterField`, `FilterMenu`, `FilterChip`, `TableToolbar`, `Pagination` (optional per-page picker), `Pills` (scrolls
