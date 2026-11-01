@@ -10,6 +10,7 @@ use Phattarachai\Tungsten\Tests\Fixtures\Http\OrderController;
 use Phattarachai\Tungsten\Tests\Fixtures\Http\PendingOrders;
 use Phattarachai\Tungsten\Tests\Fixtures\Pages\OrderPage;
 use Phattarachai\Tungsten\Tests\Fixtures\Pages\OrdersPage;
+use Phattarachai\Tungsten\Tests\Fixtures\Search\OrderSearch;
 
 class OrdersSet extends PanelSet
 {
@@ -29,5 +30,10 @@ class OrdersSet extends PanelSet
     public static function helpTopics(): array
     {
         return ['admin.orders*' => '/help/orders'];
+    }
+
+    public static function searches(): array
+    {
+        return [OrderSearch::class];
     }
 }

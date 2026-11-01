@@ -7,6 +7,13 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.20 — 2026-11-01
+
+- **Global search**: `GlobalSearch` classes (label, query, attributes, title, details, url, image, ability, limit,
+  operator), opted in per panel with `->globalSearch([...])` or a set's `searches()`. A topbar search box (⌘K / Ctrl+K,
+  ↑ / ↓ / Enter) asks `{path}/search` behind the panel's auth and gate and shows grouped results. `TableQuery`'s LIKE
+  matching moved to `LikeSearch`, shared by both.
+
 ## v0.2.19 — 2026-11-01
 
 - **Laravel Boost**: a guideline (`resources/boost/guidelines/core.blade.php`) and a `tungsten-development` skill with

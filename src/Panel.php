@@ -13,8 +13,10 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Phattarachai\Tungsten\Exceptions\MissingPageClass;
+use Phattarachai\Tungsten\Http\Controllers\GlobalSearchController;
 use Phattarachai\Tungsten\Http\Middleware\AuthenticatePanel;
 use Phattarachai\Tungsten\Http\Middleware\HandleTungstenRequests;
+use Phattarachai\Tungsten\Search\GlobalSearch;
 use Symfony\Component\Finder\Finder;
 use WeakMap;
 
@@ -51,6 +53,11 @@ class Panel
     private ?string $filterLayout = null;
 
     private ?PanelLogin $login = null;
+
+    /**
+     * @var list<class-string<GlobalSearch>>
+     */
+    private array $globalSearch = [];
 
     private ?string $brandColor = null;
 
@@ -199,6 +206,31 @@ class Panel
         $this->login = new PanelLogin($guard, $labels, $forgotPasswordUrl, $authorize);
 
         return $this;
+    }
+
+    /**
+     * Turns on the topbar's global search over these kinds of records (each a {@see GlobalSearch}); sets add theirs
+     * with `searches()`. The search answers at `{path}/search`, behind the panel's auth and gate.
+     *
+     * @param  list<class-string<GlobalSearch>>  $searches
+     */
+    public function globalSearch(array $searches): self
+    {
+        $this->globalSearch = $searches;
+
+        return $this;
+    }
+
+    /**
+     * The panel's global searches and its sets'.
+     *
+     * @return list<class-string<GlobalSearch>>
+     */
+    public function getGlobalSearches(): array
+    {
+        $fromSets = array_merge(...array_map(fn (string $set): array => $set::searches(), $this->getSets()));
+
+        return array_values(array_unique([...$this->globalSearch, ...$fromSets]));
     }
 
     /**
@@ -521,6 +553,10 @@ class Panel
      */
     public function registerRoutes(): void
     {
+        if ($this->getGlobalSearches() !== []) {
+            app('router')->get('search', GlobalSearchController::class)->name('search');
+        }
+
         foreach ($this->getSets() as $set) {
             $set::routes();
         }

@@ -38,6 +38,26 @@ app(PanelRegistry::class)
     ->link('Metabase', 'https://metabase.example.com', icon: 'gauge', ability: 'viewReports');
 ```
 
+## Global search
+
+A topbar search (⌘K) over the records a panel opts in. One class per kind of record:
+
+```php
+class OrderSearch extends \Phattarachai\Tungsten\Search\GlobalSearch
+{
+    public function label(): string { return 'คำสั่งซื้อ'; }
+    public function query(): Builder { return Order::query()->with('customer')->latest('id'); }
+    public function attributes(): array { return ['number', 'customer.name', 'customer.phone']; }
+    public function title(Model $record): string { return $record->number; }
+    public function details(Model $record): array { return ['ลูกค้า' => $record->customer?->name]; }
+    public function url(Model $record): string { return route('admin.orders.show', $record); }
+}
+```
+
+Declare it in the set that owns the records (`public static function searches(): array { return [OrderSearch::class]; }`)
+or on the panel (`->globalSearch([...])`). `ability()` hides a kind from users who fail it; `operator()` returns
+`'ilike'` on PostgreSQL.
+
 ## Sets and routes
 
 A set is one area of the panel (orders, customers). One file, discovered by `discoverSets()`:

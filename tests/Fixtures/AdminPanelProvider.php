@@ -7,6 +7,7 @@ namespace Phattarachai\Tungsten\Tests\Fixtures;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Phattarachai\Tungsten\Panel;
 use Phattarachai\Tungsten\PanelProvider;
+use Phattarachai\Tungsten\Tests\Fixtures\Search\CustomerSearch;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -16,6 +17,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->label('ร้านค้า')
             ->brand('ร้านค้า', tag: 'v2', logo: 'images/brand-mark.svg')
+            ->globalSearch([CustomerSearch::class])
             ->description('คำสั่งซื้อ · ลูกค้า')
             ->color('#0d9488')
             ->brandColor('#0d9488')

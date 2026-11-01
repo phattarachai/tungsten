@@ -4,6 +4,7 @@ import { ChevronDown, CircleHelp, PanelLeft } from 'lucide-react'
 import { cn } from '../../lib/cn'
 
 import { opensInPanel, useHelpPanel } from './helpContext'
+import { GlobalSearch } from './GlobalSearch'
 import { PanelSwitcher } from './PanelSwitcher'
 import { strings } from '../../lib/strings'
 import { linkProps, urlOf } from '../../lib/href'
@@ -82,7 +83,8 @@ function HelpButton({ url }) {
 }
 
 /**
- * `search` is the slot a global search trigger takes (Tungsten v0.3); `toolbar` holds a page's own topbar controls.
+ * `search` replaces the global search box (shown when the panel has `globalSearch()`); `toolbar` holds a page's own
+ * topbar controls.
  */
 export function Topbar({ sidebarClosed, onToggleSidebar, toolbar, search }) {
     const { auth, panel, breadcrumbs } = usePage().props
@@ -106,7 +108,7 @@ export function Topbar({ sidebarClosed, onToggleSidebar, toolbar, search }) {
                 <Breadcrumbs items={breadcrumbs} />
             </div>
             <div className="flex shrink-0 items-center gap-2">
-                {search}
+                {search ?? (panel.search && <GlobalSearch url={panel.search} />)}
                 {toolbar}
                 <HelpButton url={panel.help} />
                 {auth?.user && <UserMenu user={{ ...auth.user, logoutUrl: auth.logoutUrl }} />}

@@ -233,6 +233,29 @@ return $panel
 - Every word on the page is a label in `config('tungsten.login.labels')` (Thai by default): `title`, `intro`,
   `email`, `password`, `remember`, `submit`, `forgot`, `failed`, `denied`, `throttled` (`:seconds`, `:minutes`).
 
+## Global search (optional)
+
+The topbar gets a search box (⌘K / Ctrl+K) across the records a panel opts in, like Filament's globally searchable
+resources. Each kind of record is a `GlobalSearch` class:
+
+```php
+class CustomerSearch extends \Phattarachai\Tungsten\Search\GlobalSearch
+{
+    public function label(): string { return 'ลูกค้า'; }                                        // group heading
+    public function query(): Builder { return Customer::query()->with('company'); }
+    public function attributes(): array { return ['name', 'phone', 'email', 'company.name']; }   // relation.column works
+    public function title(Model $record): string { return $record->name; }
+    public function details(Model $record): array { return ['เบอร์โทร' => $record->phone]; }
+    public function url(Model $record): string { return route('admin.customers.show', $record); }
+    public function ability(): ?string { return 'viewCustomers'; }                               // optional
+}
+```
+
+Turn it on per panel with `->globalSearch([CustomerSearch::class])`, or let a set declare its own in
+`public static function searches(): array`. The box asks `{path}/search?q=` (behind the panel's auth and gate) after
+two letters; each kind answers up to `limit()` matches (5), LIKE-escaped, `ilike` with `operator()` on PostgreSQL.
+`image()` adds a thumbnail. A panel without searches has no box and no route.
+
 ## Declare routes
 
 Three places, all the same route group (the panel's path prefix, middleware, gate and `{id}.` name prefix):
@@ -710,7 +733,7 @@ record / form recipes and the kit catalogue), so an agent building a panel page 
 
 ## Coming next
 
-- Global search, a database-notification bell, and a profile page (v0.3).
+- A database-notification bell and a profile page (v0.3).
 - Later — CSV/Excel import wizard, table export, a documentation site.
 
 ## Testing

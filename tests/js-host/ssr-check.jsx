@@ -9,7 +9,7 @@ const pages = import.meta.glob('./resources/js/pages/panel/**/*.jsx')
 const shared = {
     errors: {},
     auth: { user: { id: 1, name: 'Admin', email: 'admin@example.com' }, logoutUrl: { url: '/logout', method: 'post' } },
-    panel: { id: 'admin', label: 'ร้านค้า', short: 'S', icon: 'store', color: '#0d9488', rail: null, brand: { label: 'ร้านค้า', icon: null, tag: 'v2', logo: '/images/brand-mark.svg' }, help: '/help', home: '/admin', environment: 'uat', env: { label: 'UAT', tone: 'todo' } },
+    panel: { id: 'admin', label: 'ร้านค้า', short: 'S', icon: 'store', color: '#0d9488', rail: null, brand: { label: 'ร้านค้า', icon: null, tag: 'v2', logo: '/images/brand-mark.svg' }, help: '/help', home: '/admin', environment: 'uat', env: { label: 'UAT', tone: 'todo' }, search: '/admin/search' },
     panels: [{ id: 'admin', label: 'ร้านค้า', description: '', url: '/admin', short: 'S', icon: 'store', color: '#0d9488', current: true, divider_after: false, replaces: null }],
     panel_links: [{ label: 'เว็บไซต์', url: 'https://shop.example.com/', icon: null, image: '/images/store.png' }, { label: 'Metabase', url: 'https://metabase.example.com', icon: 'gauge', image: null }],
     nav: [{ group: 'การขาย', items: [{ label: 'คำสั่งซื้อ', icon: 'shopping-cart', url: { url: '/admin/orders', method: 'get' }, active: true, badge: null, external: false, legacy: false }] }],
