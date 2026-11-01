@@ -318,6 +318,34 @@ Object.assign(checks, {
         box.unmount()
     },
 
+    'a drag still drops when the moved row loses the pointer: move and release land elsewhere, not on the handle': () => {
+        const reports = []
+        const rows = [{ id: 1 }, { id: 2 }, { id: 3 }]
+        const box = mount(<DataTable columns={[{ key: 'id', label: '#' }]} rows={rows} reorderable={{ onReorder: (next) => reports.push(next.map((row) => row.id)) }} />)
+        const original = document.elementFromPoint
+        const row = (id) => document.querySelector(`tbody tr[data-sortable-row="${id}"]`)
+
+        document.elementFromPoint = () => row(3)
+        pointer('pointerdown', document.querySelector('[data-sortable-handle="1"]'))
+        pointer('pointermove', row(3))
+        assert.deepEqual([...document.querySelectorAll('tbody tr')].map((tr) => tr.getAttribute('data-sortable-row')), ['2', '3', '1'], 'moved live: the dragged <tr> was re-inserted')
+
+        pointer('pointerup', document.body)
+        assert.deepEqual(reports, [[2, 3, 1]], 'the drop is reported')
+        assert.equal(document.querySelector('[data-dragging]'), null, 'and the row no longer fades')
+        assert.equal(document.body.style.userSelect, '')
+
+        document.elementFromPoint = () => row(1)
+        pointer('pointerdown', document.querySelector('[data-sortable-handle="2"]'))
+        pointer('pointermove', row(1))
+        pointer('pointercancel', document.body)
+        assert.deepEqual([...document.querySelectorAll('tbody tr')].map((tr) => tr.getAttribute('data-sortable-row')), ['1', '2', '3'], 'a cancelled drag puts the rows back')
+        assert.equal(reports.length, 1)
+
+        document.elementFromPoint = original
+        box.unmount()
+    },
+
     'DataTable reorderable: a handle column, rows reorder by key, sorting off; a wrap column clamps with a tooltip': async () => {
         const reports = []
         const rows = [{ id: 1, title: 'ชุดของขวัญปีใหม่ 2569 พร้อมการ์ดอวยพรและกล่องพรีเมียม' }, { id: 2, title: 'ร่ม' }]

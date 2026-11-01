@@ -166,8 +166,8 @@ Other options: `->ability('…' | null)`, `->sets([...])`, `->routes(fn () => �
 
 **The brand mark** on the sidebar head and the login page is a chip in the panel's `->color()`, holding (first that is
 set) `brand(logo:)` — a single-colour SVG drawn white as a CSS mask; a public path goes through `asset()`, a full URL
-is kept — then `brand(icon:)`, then the panel's `short` letters. The switcher's rows keep their own chips. The tab
-icon is `config('tungsten.favicon')`: one path, or several for the browser to choose from
+is kept — then `brand(icon:)`, then the panel's `short` letters. Each panel's switcher row shows its
+own mark the same way (logo, then `->icon()`, then `short`); `entry()` rows keep theirs. The tab icon is `config('tungsten.favicon')`: one path, or several for the browser to choose from
 (`['favicon.png', 'images/brand-mark.svg']`, SVG last), plus `tungsten.apple_touch_icon`.
 
 **The environment** shows as a small "• UAT" line under the brand name (sidebar head and login page), as a tone
