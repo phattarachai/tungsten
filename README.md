@@ -462,7 +462,9 @@ Route::post('ui-kit/toast', UiKitToastController::class)->name('ui-kit.toast');
   opens it full screen).
   `DataTable`, `FilterBar`, `TableToolbar` and `Pagination` take `flush` to drop their frame and side padding, for a
   table on a sheet or a bare page. A `DataTable` column takes `valign: 'top'` for multi-line cells (or the table its
-  own `valign`), and `plainLinks` makes `rowHref` render a plain `<a>` for rows that open non-Inertia pages.
+  own `valign`), and `plainLinks` makes `rowHref` render a plain `<a>` for rows that open non-Inertia pages. A long
+  text column takes `wrap` (`true` for `w-72`, or a width such as `'w-96'`): two lines at that width, the rest in its
+  tooltip — cells are `whitespace-nowrap` otherwise.
 - **Forms**: `FormField` (inline label, `hint`, `info`, `error`), `Input`, `Select`, `Textarea`, `Combobox`
   (searchable, multiple; `size="sm"` + `label` for a filter bar; an option's `avatar` — a URL, or null for the
   initial — draws a small round photo before its label), `ButtonGroup` (`size="sm"` for toolbar presets), `RadioGroup` (options `{ value, label, description?, disabled? }` as
@@ -518,6 +520,25 @@ const created = await postJson(storeUrl, data)                                  
 
 `errors` holds a 422's first message per field, ready for `FormField error`; the thrown error carries `message`,
 `status` and `errors`. A GET's data goes in the query string.
+
+### Reordering
+
+`Sortable` reorders a list by its rows' drag handles: mouse, pen or touch (pointer events, not HTML5 drag), or ↑ / ↓
+on the focused handle, which keeps focus on the moved row. Rows move live; the dragged one fades; `onReorder(items)`
+fires once per drop and once per key move.
+
+```jsx
+<Sortable items={rewards} keyOf={(reward) => reward.id} onReorder={save} numbered renderItem={(reward) => reward.title} />
+```
+
+A `DataTable` takes the same with `reorderable={{ onReorder }}`: a handle column and whole rows dragged, sorting off.
+Turn it on behind a "จัดลำดับ" toggle and drop paging and search while it's on, so every row is there:
+
+```jsx
+<DataTable columns={columns} rows={reordering ? all : page.rows} reorderable={reordering ? { onReorder: (rows) => router.post(reorderUrl, { ids: rows.map((row) => row.id) }) } : undefined} />
+```
+
+`useSortable({ items, keyOf, onReorder })` (with `SortHandle`) builds the same on other markup.
 
 ### Lightbox
 

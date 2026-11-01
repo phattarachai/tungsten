@@ -45,6 +45,7 @@ import {
     SectionGrid,
     Select,
     SelectionBar,
+    Sortable,
     Stepper,
     Switch,
     SyncButton,
@@ -601,6 +602,45 @@ function RecordParts() {
     )
 }
 
+const REWARDS = [
+    { id: 1, title: 'ร่มพับ Nectapharma', points: 500 },
+    { id: 2, title: 'ชุดของขวัญปีใหม่ 2569 พร้อมการ์ดอวยพรและกล่องพรีเมียมสำหรับลูกค้าคนสำคัญ', points: 3200 },
+    { id: 3, title: 'แก้วเก็บความเย็น', points: 900 },
+    { id: 4, title: 'คูปองส่วนลด 10%', points: 300 },
+]
+
+function Reorder() {
+    const [items, setItems] = useState(REWARDS)
+    const [sorting, setSorting] = useState(false)
+
+    return (
+        <Section
+            id="reorder"
+            title="Sortable · DataTable reorderable · wrap"
+            hint="ลากที่จับ หรือกด ↑ ↓ บนที่จับ"
+            actions={
+                <Button size="sm" variant={sorting ? 'solid' : 'outline'} tone="amber" onClick={() => setSorting(!sorting)}>
+                    {sorting ? 'เสร็จสิ้น' : 'จัดลำดับ'}
+                </Button>
+            }
+            flush
+        >
+            <DataTable
+                flush
+                columns={[
+                    { key: 'title', label: 'ของรางวัล', wrap: 'w-64', sortable: true },
+                    { key: 'points', label: 'แต้ม', align: 'right', sortable: true },
+                ]}
+                rows={items}
+                reorderable={sorting ? { onReorder: setItems } : undefined}
+            />
+            <div className="border-t border-zinc-100 px-2.5 py-1.5">
+                <Sortable items={items} onReorder={setItems} numbered renderItem={(item) => <span className="truncate">{item.title}</span>} />
+            </div>
+        </Section>
+    )
+}
+
 function Lists() {
     const [page, setPage] = useState(1)
 
@@ -848,6 +888,7 @@ export default function UiKit({ toastUrl }) {
                     <GroupedTable />
                     <Filtering />
                     <RecordParts />
+                    <Reorder />
                     <Lists />
                     <Containers />
                     <Navs />
