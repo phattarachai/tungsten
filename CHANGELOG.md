@@ -7,6 +7,13 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.15 — 2026-11-01
+
+- Fix: a width passed in `className` lost to a field's own `w-full` (`cn` only joins classes). `Input`, `Textarea`,
+  `Select`, `Combobox`, `DatePicker` / `DateTimePicker` and `DateRangePicker` now drop their `w-full` when the caller
+  sets a width (`w-*`, `size-*`, `basis-*`, with any variant); `max-w-*` / `min-w-*` still bound the default.
+  `DateRangePicker` takes `className`.
+
 ## v0.2.14 — 2026-11-01
 
 - **`RadioGroup`**: one choice among `{ value, label, description?, disabled? }` as native radios (Tab enters, arrows

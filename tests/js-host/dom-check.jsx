@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 
-import { Avatar, Checkbox, Combobox, Facts, RadioGroup, getJson, postJson, SearchInput, sendJson, StatsStrip, Thumb, Zoomable } from '@tungsten'
+import { Avatar, Checkbox, Combobox, DatePicker, DateRangePicker, Facts, Input, RadioGroup, Select, Textarea, getJson, postJson, SearchInput, sendJson, StatsStrip, Thumb, Zoomable } from '@tungsten'
 import { FlashToastFor } from '@tungsten/components/panel/FlashToast'
 
 function mount(element) {
@@ -234,6 +234,41 @@ Object.assign(checks, {
 
         box.render(<Checkbox checked onChange={() => {}} label="ยืนยันการรวมลูกค้า" />)
         assert.equal(input.indeterminate, false)
+        box.unmount()
+    },
+})
+
+const classes = (element) => element.className.split(/\s+/)
+
+Object.assign(checks, {
+    "a caller's width wins over a field's own w-full; max-w / min-w keep it": () => {
+        const box = mount(
+            <>
+                <Input data-check="input" className="w-64" />
+                <Input data-check="capped" className="max-w-xs min-w-0" />
+                <Textarea data-check="textarea" className="w-96" />
+                <Select data-check="select" className="w-40">
+                    <option>ก</option>
+                </Select>
+                <Select data-check="select-full">
+                    <option>ก</option>
+                </Select>
+                <Combobox options={[]} value="" onChange={() => {}} aria-label="combo" className="w-56" />
+                <DatePicker value="" onChange={() => {}} aria-label="date" className="w-48" />
+                <DateRangePicker start="" end="" onChange={() => {}} className="w-64" />
+            </>,
+        )
+        const get = (name) => document.querySelector(`[data-check="${name}"]`)
+
+        assert.ok(classes(get('input')).includes('w-64') && !classes(get('input')).includes('w-full'))
+        assert.ok(classes(get('capped')).includes('w-full'), 'max-w / min-w bound the default, not replace it')
+        assert.ok(!classes(get('textarea')).includes('w-full'))
+        assert.ok(!classes(get('select')).includes('w-full') && !classes(get('select').parentElement).includes('w-full'))
+        assert.ok(classes(get('select-full')).includes('w-full'), 'the default stays without a caller width')
+        assert.ok(!classes(document.querySelector('button[aria-label="combo"]').parentElement).includes('w-full'))
+
+        const frames = [...document.querySelectorAll('span.rounded-md.border')].filter((frame) => classes(frame).includes('relative'))
+        assert.ok(frames.length >= 2 && frames.every((frame) => !classes(frame).includes('w-full')), 'date pickers take the caller width')
         box.unmount()
     },
 })

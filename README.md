@@ -469,6 +469,8 @@ Route::post('ui-kit/toast', UiKitToastController::class)->name('ui-kit.toast');
   native radios — arrow keys move within the group; `layout` `list` / `cards` / `inline`; `invalid` for the red frame),
   `Checkbox` (`label`, `hint`, `error`, `indeterminate`; `onChange` gets the checked state), `Switch`, `DatePicker` / `DateTimePicker` / `DateRangePicker` (values stay ISO
   Gregorian; display is พ.ศ.), `FormDialog`, `ConfirmDialog`, `Dialog`.
+  Fields are full width by default; a width in `className` (`w-64`, `md:w-48`, `size-*`, `basis-*`) replaces it, while
+  `max-w-*` / `min-w-*` only bound it (`Input`, `Textarea`, `Select`, `Combobox`, the date pickers).
 - **Records**: `RecordLayout`, `PageHeader`, `GroupedNav`, `NavList`, `RecordPager`, `Section`, `SectionGrid`,
   `TabSection`, `DetailList`, `Timeline`, `Stepper`, `AuditPanel`, `LastEdited`.
 - **Buttons**: `Button` (`solid · outline · ghost` × `neutral · brand · amber · blue · danger`), `IconButton`,

@@ -1,10 +1,10 @@
 import { ChevronDown, Info } from 'lucide-react'
 import { useEffect, useId, useRef } from 'react'
 
-import { cn } from '../../lib/cn'
+import { cn, widthUnless } from '../../lib/cn'
 
 const CONTROL =
-    'w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-[0.8125rem] text-zinc-900 transition placeholder:text-zinc-400 focus:border-brand focus:outline-none disabled:opacity-50'
+    'rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-[0.8125rem] text-zinc-900 transition placeholder:text-zinc-400 focus:border-brand focus:outline-none disabled:opacity-50'
 
 function FieldMessage({ error, hint }) {
     if (error) {
@@ -56,25 +56,26 @@ export function FormField({ label, error, hint, info, htmlFor, stacked = false, 
 }
 
 export function Input({ className, ...props }) {
-    return <input className={cn(CONTROL, className)} {...props} />
+    return <input className={cn(CONTROL, widthUnless(className), className)} {...props} />
 }
 
 export function Textarea({ className, ...props }) {
-    return <textarea className={cn(CONTROL, 'min-h-20', className)} {...props} />
+    return <textarea className={cn(CONTROL, widthUnless(className), 'min-h-20', className)} {...props} />
 }
 
 const SELECT_SIZES = {
-    md: 'w-full rounded-md py-1.5 pr-8 pl-3 text-[0.8125rem]',
+    md: 'rounded-md py-1.5 pr-8 pl-3 text-[0.8125rem]',
     sm: 'h-6 min-w-20 rounded py-0 pr-7 pl-2 text-[0.6875rem]',
 }
 
 export function Select({ size = 'md', className, children, ...props }) {
     return (
-        <span className={cn('relative', size === 'md' ? 'flex w-full' : 'inline-flex')}>
+        <span className={cn('relative', size === 'md' && widthUnless(className) ? 'flex w-full' : 'inline-flex')}>
             <select
                 className={cn(
                     'appearance-none border border-zinc-300 bg-white text-zinc-900 tabular-nums transition focus:border-brand focus:outline-none disabled:opacity-50',
                     SELECT_SIZES[size],
+                    size === 'md' && widthUnless(className),
                     className,
                 )}
                 {...props}
