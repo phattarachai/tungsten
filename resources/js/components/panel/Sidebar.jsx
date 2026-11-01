@@ -75,9 +75,16 @@ function NavGroup({ section, collapsed, onToggle }) {
     )
 }
 
+/**
+ * The panel's nav: ungrouped entries first with no heading, then the groups (each folds; see `useCollapsedGroups`),
+ * and the `pinned: 'bottom'` entries at the foot, apart from the groups.
+ */
 export function Sidebar({ closed, mobileOpen, onClose }) {
-    const { nav = [], panel } = usePage().props
-    const groups = useCollapsedGroups(panel?.id ?? 'panel')
+    const page = usePage()
+    const { nav = [], panel } = page.props
+    const groups = useCollapsedGroups(panel?.id ?? 'panel', nav, page.url)
+    const listed = nav.filter((section) => section.pinned !== 'bottom')
+    const bottom = nav.find((section) => section.pinned === 'bottom')
 
     return (
         <>
@@ -96,15 +103,17 @@ export function Sidebar({ closed, mobileOpen, onClose }) {
                 </div>
 
                 <nav className="flex-1 space-y-3 overflow-y-auto p-1.5" onClick={onClose}>
-                    {nav.map((section, index) => (
-                        <NavGroup
-                            key={section.group ?? `group-${index}`}
-                            section={section}
-                            collapsed={section.group !== null && groups.isCollapsed(section.group)}
-                            onToggle={() => groups.toggle(section.group)}
-                        />
+                    {listed.map((section, index) => (
+                        <NavGroup key={section.group ?? `group-${index}`} section={section} collapsed={groups.isCollapsed(section)} onToggle={() => groups.toggle(section)} />
                     ))}
                 </nav>
+                {bottom && (
+                    <nav className="space-y-px border-t border-rail-line p-1.5" onClick={onClose} aria-label={strings.pinnedNav}>
+                        {bottom.items.map((item) => (
+                            <NavItem key={urlOf(item.url)} item={item} />
+                        ))}
+                    </nav>
+                )}
             </aside>
         </>
     )

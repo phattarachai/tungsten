@@ -8,6 +8,7 @@ import { Avatar, Chart, Checkbox, Combobox, CopyButton, DataTable, DatePicker, L
 import { FlashToastFor } from '@tungsten/components/panel/FlashToast'
 import { PageWidthContext } from '@tungsten/lib/pageWidth'
 import { sameUrl } from '@tungsten/lib/launchpadStore'
+import { useCollapsedGroups } from '@tungsten/lib/useCollapsedGroups'
 import { RichText } from '@tungsten/rich-text'
 
 function mount(element) {
@@ -546,6 +547,49 @@ Object.assign(checks, {
         assert.deepEqual(reports, [[2, 1]])
         assert.deepEqual([...document.querySelectorAll('tbody tr')].map((tr) => tr.getAttribute('data-sortable-row')), ['2', '1', '1', '1'])
         box.unmount()
+    },
+
+    'Sidebar folds: server defaults, remembered choices per panel, the active page\'s group opens on its own': async () => {
+        window.localStorage.clear()
+        const nav = (activeIn) => [
+            { group: null, collapsed: false, items: [{ label: 'หน้าหลัก', url: '/admin', active: activeIn === null }] },
+            { group: 'การขาย', collapsed: false, items: [{ label: 'คำสั่งซื้อ', url: '/admin/orders', active: activeIn === 'การขาย' }] },
+            { group: 'การตลาด', collapsed: true, items: [{ label: 'คูปอง', url: '/admin/coupons', active: activeIn === 'การตลาด' }] },
+        ]
+        let api
+        function Probe({ panel = 'admin', activeIn = null, url = '/admin' }) {
+            const sections = nav(activeIn)
+            api = useCollapsedGroups(panel, sections, url)
+
+            return <p>{sections.map((section) => `${section.group ?? '-'}:${api.isCollapsed(section) ? 'shut' : 'open'}`).join(' ')}</p>
+        }
+        const text = () => document.querySelector('p').textContent
+        const box = mount(<Probe />)
+
+        assert.equal(text(), '-:open การขาย:open การตลาด:shut', 'the server default folds การตลาด; ungrouped never folds')
+        act(() => api.toggle(nav(null)[2]))
+        assert.equal(text(), '-:open การขาย:open การตลาด:open')
+        act(() => api.toggle(nav(null)[1]))
+        assert.deepEqual(JSON.parse(window.localStorage.getItem('panel-nav-folds:admin')), { การตลาด: false, การขาย: true })
+        box.unmount()
+
+        const again = mount(<Probe />)
+        await frame()
+        assert.equal(text(), '-:open การขาย:shut การตลาด:open', 'choices come back on the next page')
+        again.unmount()
+
+        const active = mount(<Probe activeIn="การขาย" url="/admin/orders" />)
+        await frame()
+        assert.equal(text(), '-:open การขาย:open การตลาด:open', 'a folded group opens while it holds the active page')
+        act(() => api.toggle(nav('การขาย')[1]))
+        assert.equal(text(), '-:open การขาย:shut การตลาด:open', 'and the user can still fold it there')
+        active.unmount()
+
+        window.localStorage.setItem('panel-nav-collapsed:shop', JSON.stringify(['การขาย']))
+        const legacy = mount(<Probe panel="shop" />)
+        await frame()
+        assert.equal(text(), '-:open การขาย:shut การตลาด:shut', 'the older stored list still reads')
+        legacy.unmount()
     },
 
     'DataTable fit: the table takes its columns\' width, not the full width': () => {

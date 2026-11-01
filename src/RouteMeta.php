@@ -36,10 +36,15 @@ class RouteMeta
 
     public static function register(): void
     {
-        /** @param  string|null  $badge  a fixed string, or the class of an invokable that returns one per request */
-        Route::macro('nav', function (string $label, ?string $icon = null, ?string $group = null, int $sort = 0, ?string $badge = null, ?string $ability = null): Route {
+        /**
+         * @param  string|null  $badge  a fixed string, or the class of an invokable that returns one per request
+         * @param  string|null  $pinned  `'bottom'` keeps the entry at the sidebar's foot, out of the groups
+         */
+        Route::macro('nav', function (string $label, ?string $icon = null, ?string $group = null, int $sort = 0, ?string $badge = null, ?string $ability = null, ?string $pinned = null): Route {
             /** @var Route $this */
-            return RouteMeta::put($this, 'nav', compact('label', 'icon', 'group', 'sort', 'badge', 'ability'));
+            throw_unless($pinned === null || $pinned === 'bottom', InvalidArgumentException::class, "Unknown nav pin [{$pinned}]; use 'bottom'.");
+
+            return RouteMeta::put($this, 'nav', compact('label', 'icon', 'group', 'sort', 'badge', 'ability', 'pinned'));
         });
 
         /** Lights up the nav entry named `$route` while this route is open (a page that lives under another entry), and links it as the breadcrumb's parent. */

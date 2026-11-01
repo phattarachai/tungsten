@@ -36,6 +36,7 @@ export const strings = {
     launchpadPlaceholder: 'ค้นหาเมนูหรือรายการ…',
     launchpadEmpty: 'ปักหมุดเมนูหรือรายการที่ใช้บ่อยได้จากผลการค้นหา',
     menu: 'เมนู',
+    pinnedNav: 'เมนูท้าย',
     pin: 'ปักหมุด',
     unpin: 'เลิกปักหมุด',
     pinned: 'ปักหมุด',

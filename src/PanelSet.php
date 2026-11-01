@@ -26,7 +26,7 @@ abstract class PanelSet
     /**
      * Sidebar links to screens outside the panel (e.g. a page still on the old admin).
      *
-     * @return list<array{label: string, url?: string, route?: string, icon?: ?string, group?: ?string, sort?: int, ability?: ?string, legacy?: bool}>
+     * @return list<array{label: string, url?: string, route?: string, icon?: ?string, group?: ?string, sort?: int, ability?: ?string, legacy?: bool, pinned?: ?string}>
      */
     public static function links(): array
     {

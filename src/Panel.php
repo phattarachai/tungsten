@@ -94,12 +94,19 @@ class Panel
     private array $navigationGroups = [];
 
     /**
+     * Groups folded until the user opens them.
+     *
+     * @var list<string>
+     */
+    private array $collapsedGroups = [];
+
+    /**
      * @var list<string>
      */
     private array $sets = [];
 
     /**
-     * @var list<array{label: string, url: string, route: ?string, icon: ?string, group: ?string, sort: int, ability: ?string, legacy: bool}>
+     * @var list<array{label: string, url: string, route: ?string, icon: ?string, group: ?string, sort: int, ability: ?string, legacy: bool, pinned: ?string}>
      */
     private array $links = [];
 
@@ -358,11 +365,25 @@ class Panel
     }
 
     /**
-     * @param  list<string>  $groups
+     * The sidebar's group order; a group with options folds by default: `['การขาย', 'การตลาด' => ['collapsed' => true]]`.
+     * The user's own open / closed choice per group is remembered in the browser, and a folded group opens on its own
+     * while it holds the active page.
+     *
+     * @param  array<int|string, string|array{collapsed?: bool}>  $groups
      */
     public function navigationGroups(array $groups): self
     {
-        $this->navigationGroups = $groups;
+        $this->navigationGroups = [];
+        $this->collapsedGroups = [];
+
+        foreach ($groups as $key => $value) {
+            $name = is_int($key) ? (string) $value : $key;
+            $this->navigationGroups[] = $name;
+
+            if (is_array($value) && ($value['collapsed'] ?? false)) {
+                $this->collapsedGroups[] = $name;
+            }
+        }
 
         return $this;
     }
@@ -400,7 +421,7 @@ class Panel
      * Sidebar links to screens that aren't routes of this panel. With `route` it is an in-app screen (same tab,
      * marked active); with `url` it opens in a new tab; `legacy` marks a page still on the old admin.
      *
-     * @param  list<array{label: string, url?: string, route?: string, icon?: ?string, group?: ?string, sort?: int, ability?: ?string, legacy?: bool}>  $links
+     * @param  list<array{label: string, url?: string, route?: string, icon?: ?string, group?: ?string, sort?: int, ability?: ?string, legacy?: bool, pinned?: ?string}>  $links
      */
     public function navigationLinks(array $links): self
     {
@@ -662,7 +683,11 @@ class Panel
      * The sidebar tree — routes with `->nav()` and the panel's links, grouped in the declared group order, filtered
      * by each route's `can:` middleware and nav ability, each flagged active against the current request.
      *
-     * @return list<array{group: ?string, items: list<array<string, mixed>>}>
+     * Ungrouped entries come first, with no heading. A group from `navigationGroups()` with `collapsed` is flagged so
+     * the sidebar folds it until the user opens it. Entries with `pinned: 'bottom'` leave their group for a last
+     * section (`pinned: 'bottom'`), drawn at the sidebar's foot.
+     *
+     * @return list<array{group: ?string, collapsed: bool, pinned: ?string, items: list<array<string, mixed>>}>
      */
     public function navigation(Request $request): array
     {
@@ -670,23 +695,33 @@ class Panel
             ->filter($this->allows(...))
             ->map(fn (Route $route): array => $this->navItem($route, $request))
             ->concat($this->linkItems($request));
+        [$bottom, $listed] = $items->partition(fn (array $item): bool => $item['pinned'] === 'bottom');
 
         $groups = collect($this->navigationGroups)
-            ->merge($items->pluck('group'))
+            ->merge($listed->pluck('group'))
             ->filter()
             ->unique()
             ->all();
 
-        return collect([null, ...$groups])
-            ->map(fn (?string $group): array => [
-                'group' => $group,
-                'items' => $items->where('group', $group)
-                    ->sortBy('sort')
-                    ->map(fn (array $item): array => collect($item)->except(['sort', 'group'])->all())
-                    ->values()
-                    ->all(),
-            ])
-            ->filter(fn (array $section): bool => $section['items'] !== [])
+        $sections = array_map(fn (?string $group): array => [
+            'group' => $group,
+            'collapsed' => in_array($group, $this->collapsedGroups, true),
+            'pinned' => null,
+            'items' => $this->sectionItems($listed->where('group', $group)),
+        ], [null, ...$groups]);
+        $sections[] = ['group' => null, 'collapsed' => false, 'pinned' => 'bottom', 'items' => $this->sectionItems($bottom)];
+
+        return array_values(array_filter($sections, fn (array $section): bool => $section['items'] !== []));
+    }
+
+    /**
+     * @param  Collection<int, array<string, mixed>>  $items
+     * @return list<array<string, mixed>>
+     */
+    private function sectionItems(Collection $items): array
+    {
+        return $items->sortBy('sort')
+            ->map(fn (array $item): array => collect($item)->except(['sort', 'group', 'pinned'])->all())
             ->values()
             ->all();
     }
@@ -770,6 +805,7 @@ class Panel
             'legacy' => false,
             'group' => $nav['group'],
             'sort' => $nav['sort'],
+            'pinned' => $nav['pinned'] ?? null,
         ];
     }
 
@@ -788,7 +824,7 @@ class Panel
     }
 
     /**
-     * @return Collection<int, array{label: string, icon: ?string, url: string, active: bool, badge: null, external: bool, legacy: bool, group: ?string, sort: int}>
+     * @return Collection<int, array{label: string, icon: ?string, url: string, active: bool, badge: null, external: bool, legacy: bool, group: ?string, sort: int, pinned: ?string}>
      */
     private function linkItems(Request $request): Collection
     {
@@ -807,6 +843,7 @@ class Panel
                 'legacy' => $link['legacy'],
                 'group' => $link['group'],
                 'sort' => $link['sort'],
+                'pinned' => $link['pinned'],
             ]);
     }
 
@@ -868,8 +905,8 @@ class Panel
     }
 
     /**
-     * @param  array{label: string, url?: string, route?: string, icon?: ?string, group?: ?string, sort?: int, ability?: ?string, legacy?: bool}  $link
-     * @return array{label: string, url: string, route: ?string, icon: ?string, group: ?string, sort: int, ability: ?string, legacy: bool}
+     * @param  array{label: string, url?: string, route?: string, icon?: ?string, group?: ?string, sort?: int, ability?: ?string, legacy?: bool, pinned?: ?string}  $link
+     * @return array{label: string, url: string, route: ?string, icon: ?string, group: ?string, sort: int, ability: ?string, legacy: bool, pinned: ?string}
      */
     private static function link(array $link): array
     {
@@ -882,6 +919,7 @@ class Panel
             'sort' => $link['sort'] ?? 0,
             'ability' => $link['ability'] ?? null,
             'legacy' => $link['legacy'] ?? false,
+            'pinned' => $link['pinned'] ?? null,
         ];
     }
 }
