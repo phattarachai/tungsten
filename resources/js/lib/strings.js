@@ -5,6 +5,8 @@
  */
 export const strings = {
     close: 'ปิด',
+    pickerDone: 'เสร็จ',
+    pickerEmpty: 'ไม่พบรายการ',
     richTextHeading2: 'หัวข้อ',
     richTextHeading3: 'หัวข้อย่อย',
     richTextBold: 'ตัวหนา',

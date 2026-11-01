@@ -91,6 +91,7 @@ doesn't squeeze it.
 - **Side information** (history, logs, audit) opens in the kit `Aside` from an `IconButton`, loaded lazily
   (`router.reload({ only: [...] })`), never a modal over the page.
 - **Single values** are edited with a pencil `IconButton` beside the value that opens a `FormDialog`.
+- **Adding products / rewards** to a record: `PickerDialog` (picture cards, a click adds one, ×qty), never a dropdown.
 - **Inline editing** of lines stays hidden behind an "แก้ไขรายการ" toggle.
 - **A record's tables** (lines, history, logs) can be tabs of one `TabSection flush` instead of sections down the page.
 
