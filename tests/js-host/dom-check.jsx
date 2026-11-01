@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 
-import { Avatar, Combobox, Facts, getJson, postJson, SearchInput, sendJson, StatsStrip, Thumb, Zoomable } from '@tungsten'
+import { Avatar, Checkbox, Combobox, Facts, RadioGroup, getJson, postJson, SearchInput, sendJson, StatsStrip, Thumb, Zoomable } from '@tungsten'
 import { FlashToastFor } from '@tungsten/components/panel/FlashToast'
 
 function mount(element) {
@@ -195,6 +195,46 @@ Object.assign(checks, {
 
         globalThis.fetch = async () => ({ ok: true, status: 200, json: async () => ({ id: 7 }) })
         assert.deepEqual(await postJson('/admin/customers', { name: 'ก' }), { id: 7 })
+    },
+})
+
+Object.assign(checks, {
+    'RadioGroup: one named group of native radios, picks by value, skips a disabled option, marks invalid': () => {
+        const picked = []
+        const options = [
+            { value: 1, label: 'ใช้ข้อมูลของลูกค้า A', description: 'ชื่อ เบอร์ อีเมล' },
+            { value: 2, label: 'ใช้ข้อมูลของลูกค้า B' },
+            { value: 3, label: 'ปิดอยู่', disabled: true },
+        ]
+        const box = mount(<RadioGroup options={options} value="1" onChange={(value) => picked.push(value)} invalid aria-label="ข้อมูลที่เก็บไว้" />)
+        const radios = [...document.querySelectorAll('input[type="radio"]')]
+
+        assert.equal(new Set(radios.map((radio) => radio.name)).size, 1)
+        assert.deepEqual(radios.map((radio) => radio.checked), [true, false, false], 'string "1" matches value 1')
+        assert.equal(radios[2].disabled, true)
+        assert.equal(document.querySelector('[role="radiogroup"]').getAttribute('aria-invalid'), 'true')
+
+        act(() => radios[1].click())
+        assert.deepEqual(picked, [2])
+        assert.match(document.body.textContent, /ชื่อ เบอร์ อีเมล/)
+        box.unmount()
+    },
+
+    'Checkbox: reports the new state, shows the mixed state and its error': () => {
+        const changes = []
+        const box = mount(<Checkbox checked={false} indeterminate onChange={(value) => changes.push(value)} label="ยืนยันการรวมลูกค้า" hint="ย้อนกลับไม่ได้" error="ต้องยืนยันก่อน" />)
+        const input = document.querySelector('input[type="checkbox"]')
+
+        assert.equal(input.indeterminate, true)
+        assert.equal(input.getAttribute('aria-invalid'), 'true')
+        assert.match(document.body.textContent, /ต้องยืนยันก่อน/)
+
+        act(() => document.querySelector('label').click())
+        assert.deepEqual(changes, [true])
+
+        box.render(<Checkbox checked onChange={() => {}} label="ยืนยันการรวมลูกค้า" />)
+        assert.equal(input.indeterminate, false)
+        box.unmount()
     },
 })
 

@@ -7,6 +7,12 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.14 — 2026-11-01
+
+- **`RadioGroup`**: one choice among `{ value, label, description?, disabled? }` as native radios (Tab enters, arrows
+  move), `layout` `list` (bordered rows), `cards` or `inline`, `invalid` for the red frame under a `FormField error`.
+- **`Checkbox`**: label, `hint`, `error`, `indeterminate`; `onChange(checked)`.
+
 ## v0.2.13 — 2026-11-01
 
 - **`StatsStrip`**: a row of figures (`{ label, value, hint?, tone?, href? }`) with hairlines, 2 / 3 / 6 columns by
