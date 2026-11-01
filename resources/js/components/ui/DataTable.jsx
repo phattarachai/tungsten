@@ -6,6 +6,8 @@ import { cn } from '../../lib/cn'
 import { nextSort, sortRows } from '../../lib/sortRows'
 
 import { firstAction, KeyAction, RowActions } from './RowActions'
+import { SortHandle } from './Sortable'
+import { useSortable } from '../../lib/useSortable'
 import { strings } from '../../lib/strings'
 import { linkProps, methodOf, urlOf } from '../../lib/href'
 
@@ -23,9 +25,22 @@ function keyOf(row, rowKey, index) {
     return row[rowKey] ?? index
 }
 
+const WRAP = 'w-72'
+
+/** A `wrap` column's content: wraps to two lines at its width (`wrap: 'w-96'`, or `true` for w-72), the rest in a tooltip. */
+function Wrapped({ wrap, title, children }) {
+    return (
+        <div className={cn('line-clamp-2 whitespace-normal', typeof wrap === 'string' ? wrap : WRAP)} title={title}>
+            {children}
+        </div>
+    )
+}
+
 function Cell({ column, row, href, action, valign, plainLinks }) {
-    const value = column.render ? column.render(row) : row[column.key]
-    const title = column.truncate && typeof row[column.key] === 'string' ? row[column.key] : undefined
+    const raw = column.render ? column.render(row) : row[column.key]
+    const text = typeof row[column.key] === 'string' ? row[column.key] : undefined
+    const title = column.truncate ? text : undefined
+    const value = column.wrap ? <Wrapped wrap={column.wrap} title={text}>{raw}</Wrapped> : raw
 
     return (
         <td
@@ -55,14 +70,14 @@ function Cell({ column, row, href, action, valign, plainLinks }) {
     )
 }
 
-function Row({ row, columns, rowHref, rowActions, rowClassName, valign, plainLinks }) {
+function Row({ row, columns, rowHref, rowActions, rowClassName, valign, plainLinks, sortableProps }) {
     const href = rowHref?.(row)
     const action = href ? null : firstAction(rowActions?.(row))
     const primaryIndex = columns.findIndex((column) => column.primary)
-    const linkIndex = primaryIndex >= 0 ? primaryIndex : columns.findIndex((column) => column.key !== '__select' && column.key !== '__actions')
+    const linkIndex = primaryIndex >= 0 ? primaryIndex : columns.findIndex((column) => !['__select', '__actions', '__reorder'].includes(column.key))
 
     return (
-        <tr className={cn('group/row border-b border-zinc-100 last:border-0 hover:bg-zinc-50', rowClassName?.(row))}>
+        <tr {...sortableProps} className={cn('group/row border-b border-zinc-100 transition-opacity last:border-0 hover:bg-zinc-50 data-[dragging]:opacity-40', rowClassName?.(row))}>
             {columns.map((column, columnIndex) => (
                 <Cell key={column.key} column={column} row={row} valign={valign} plainLinks={plainLinks} href={columnIndex === linkIndex ? href : undefined} action={columnIndex === linkIndex ? action : undefined} />
             ))}
@@ -169,14 +184,31 @@ function withActions(columns, rowActions, rowActionsTitle, actionsPosition) {
     return actionsPosition === 'start' ? [column, ...columns] : [...columns, column]
 }
 
+/** Reorder mode's first column: each row's drag handle. */
+function withReorder(columns, sortable) {
+    const handle = {
+        key: '__reorder',
+        label: '',
+        className: 'w-8 pr-0',
+        render: (row) => <SortHandle {...sortable.handleProps(row, sortable.order.indexOf(row))} />,
+    }
+
+    return [handle, ...columns]
+}
+
 function withSelect(columns, column, actionsPosition) {
     return actionsPosition === 'start' && columns[0]?.key === '__actions' ? [columns[0], column, ...columns.slice(1)] : [column, ...columns]
 }
 
 /**
- * A column is `{ key, label, render?, align?, valign?, sortable?, primary?, truncate?, sticky?, className? }`;
+ * A column is `{ key, label, render?, align?, valign?, sortable?, primary?, truncate?, wrap?, sticky?, className? }`;
  * `valign: 'top'` (or the table's `valign`) top-aligns a column of multi-line cells. `rowHref(row)` links the primary
  * cell with an Inertia `<Link>`, or a plain `<a>` with `plainLinks` (rows that open non-Inertia pages).
+ * A column's `wrap` (`true`, or a width such as `'w-96'`; w-72 by default) lets a long value wrap to two lines at that
+ * width, the full text in its tooltip.
+ * `reorderable={{ onReorder, disabled? }}` adds a drag handle to each row (mouse, pen, touch, or ↑ / ↓ on the handle)
+ * and calls `onReorder(rows)` with the new order per drop; sorting is off meanwhile. Switch it on behind the page's
+ * "จัดลำดับ" toggle, with paging and search off, so every row is there to reorder.
  */
 export function DataTable({
     columns: baseColumns,
@@ -198,12 +230,20 @@ export function DataTable({
     defaultSort = null,
     selection,
     onSelectionChange,
+    reorderable,
 }) {
     const selectable = selection !== undefined && onSelectionChange !== undefined
     const allRows = groups ? groups.flatMap((group) => group.rows) : rows
     const keyFor = (row) => keyOf(row, rowKey, allRows.indexOf(row))
+    const sortable = useSortable({
+        items: rows,
+        keyOf: (row) => keyOf(row, rowKey, rows.indexOf(row)),
+        onReorder: (next) => reorderable?.onReorder(next),
+        disabled: !reorderable || Boolean(reorderable.disabled),
+    })
     const actionColumns = withActions(baseColumns, rowActions, rowActionsTitle, actionsPosition)
-    const columns = selectable ? withSelect(actionColumns, selectColumn(allRows, keyFor, selection, onSelectionChange), actionsPosition) : actionColumns
+    const pickedColumns = selectable ? withSelect(actionColumns, selectColumn(allRows, keyFor, selection, onSelectionChange), actionsPosition) : actionColumns
+    const columns = reorderable ? withReorder(pickedColumns, sortable) : pickedColumns
     const rowClassName = selectable ? (row) => cn(selection.includes(keyFor(row)) && 'bg-zinc-100', baseRowClassName?.(row)) : baseRowClassName
     const [localSort, setLocalSort] = useState(defaultSort)
     const controlled = onSort !== undefined
@@ -231,11 +271,11 @@ export function DataTable({
                 <thead>
                     <tr>
                         {columns.map((column) => (
-                            <HeaderCell key={column.key} column={column} sort={activeSort} onSort={changeSort} />
+                            <HeaderCell key={column.key} column={reorderable ? { ...column, sortable: false } : column} sort={activeSort} onSort={changeSort} />
                         ))}
                     </tr>
                 </thead>
-                <tbody className="text-zinc-800">
+                <tbody ref={reorderable ? sortable.container : undefined} className="text-zinc-800">
                     {isEmpty && (
                         <tr>
                             <td colSpan={columns.length} className="px-2 py-6 text-center text-zinc-400">
@@ -254,7 +294,9 @@ export function DataTable({
                                       ))}
                                   </Fragment>
                               ))
-                        : ordered(rows).map((row, index) => <Row key={keyOf(row, rowKey, index)} row={row} index={index} {...rowProps} />)}
+                        : reorderable
+                          ? sortable.order.map((row, index) => <Row key={keyOf(row, rowKey, index)} row={row} index={index} sortableProps={sortable.rowProps(row)} {...rowProps} />)
+                          : ordered(rows).map((row, index) => <Row key={keyOf(row, rowKey, index)} row={row} index={index} {...rowProps} />)}
                 </tbody>
             </table>
         </div>

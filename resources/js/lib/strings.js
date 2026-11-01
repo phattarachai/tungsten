@@ -5,6 +5,7 @@
  */
 export const strings = {
     close: 'ปิด',
+    moveItem: (position) => `ย้ายลำดับที่ ${position}`,
     requestFailed: 'ทำรายการไม่สำเร็จ',
     image: 'รูปภาพ',
     viewImage: (alt) => (alt ? `ดูรูป ${alt}` : 'ดูรูป'),

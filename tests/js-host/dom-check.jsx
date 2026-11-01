@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 
-import { Avatar, Checkbox, Combobox, DatePicker, DateRangePicker, Facts, Input, RadioGroup, Select, Textarea, getJson, postJson, SearchInput, sendJson, StatsStrip, Thumb, Zoomable } from '@tungsten'
+import { Avatar, Checkbox, Combobox, DataTable, DatePicker, Sortable, DateRangePicker, Facts, Input, RadioGroup, Select, Textarea, getJson, postJson, SearchInput, sendJson, StatsStrip, Thumb, Zoomable } from '@tungsten'
 import { FlashToastFor } from '@tungsten/components/panel/FlashToast'
 
 function mount(element) {
@@ -269,6 +269,74 @@ Object.assign(checks, {
 
         const frames = [...document.querySelectorAll('span.rounded-md.border')].filter((frame) => classes(frame).includes('relative'))
         assert.ok(frames.length >= 2 && frames.every((frame) => !classes(frame).includes('w-full')), 'date pickers take the caller width')
+        box.unmount()
+    },
+})
+
+const frame = () => new Promise((resolve) => requestAnimationFrame(resolve))
+const pointer = (type, element, extra = {}) =>
+    act(() => element.dispatchEvent(new window.MouseEvent(type, { bubbles: true, button: 0, clientX: 5, clientY: 5, ...extra })))
+
+Object.assign(checks, {
+    'Sortable: ↑/↓ on a handle moves the row, reports the order and keeps focus on it': async () => {
+        const reports = []
+        const items = [{ id: 'a', name: 'ร่ม' }, { id: 'b', name: 'แก้ว' }, { id: 'c', name: 'กระเป๋า' }]
+        const box = mount(<Sortable items={items} renderItem={(item) => item.name} onReorder={(next) => reports.push(next.map((item) => item.id))} numbered />)
+        const handle = document.querySelector('[data-sortable-handle="a"]')
+
+        assert.equal(handle.getAttribute('aria-label'), 'ย้ายลำดับที่ 1')
+        act(() => handle.focus())
+        act(() => handle.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })))
+        await frame()
+
+        assert.deepEqual(reports, [['b', 'a', 'c']])
+        assert.deepEqual([...document.querySelectorAll('[data-sortable-row]')].map((row) => row.getAttribute('data-sortable-row')), ['b', 'a', 'c'])
+        assert.equal(document.activeElement.getAttribute('data-sortable-handle'), 'a', 'focus stays on the moved row')
+        assert.equal(document.activeElement.getAttribute('aria-label'), 'ย้ายลำดับที่ 2')
+        box.unmount()
+    },
+
+    'Sortable: a pointer drag moves rows live, fades the dragged one and reports once on drop': () => {
+        const reports = []
+        const items = [{ id: 'a' }, { id: 'b' }, { id: 'c' }]
+        const box = mount(<Sortable items={items} renderItem={(item) => item.id} onReorder={(next) => reports.push(next.map((item) => item.id))} />)
+        const handle = document.querySelector('[data-sortable-handle="a"]')
+        const original = document.elementFromPoint
+
+        document.elementFromPoint = () => document.querySelector('[data-sortable-row="c"]')
+        pointer('pointerdown', handle)
+        pointer('pointermove', handle)
+
+        assert.deepEqual([...document.querySelectorAll('[data-sortable-row]')].map((row) => row.getAttribute('data-sortable-row')), ['b', 'c', 'a'])
+        assert.equal(document.querySelector('[data-sortable-row="a"]').hasAttribute('data-dragging'), true)
+        assert.deepEqual(reports, [], 'nothing reported mid-drag')
+
+        pointer('pointerup', handle)
+        assert.deepEqual(reports, [['b', 'c', 'a']])
+        assert.equal(document.querySelector('[data-dragging]'), null)
+        document.elementFromPoint = original
+        box.unmount()
+    },
+
+    'DataTable reorderable: a handle column, rows reorder by key, sorting off; a wrap column clamps with a tooltip': async () => {
+        const reports = []
+        const rows = [{ id: 1, title: 'ชุดของขวัญปีใหม่ 2569 พร้อมการ์ดอวยพรและกล่องพรีเมียม' }, { id: 2, title: 'ร่ม' }]
+        const columns = [{ key: 'title', label: 'ชื่อ', sortable: true, wrap: 'w-96' }]
+        const box = mount(<DataTable columns={columns} rows={rows} reorderable={{ onReorder: (next) => reports.push(next.map((row) => row.id)) }} />)
+
+        assert.equal(document.querySelectorAll('[data-sortable-handle]').length, 2)
+        assert.equal(document.querySelector('th button'), null, 'no sort button while reordering')
+
+        const clamp = document.querySelector('td .line-clamp-2')
+        assert.ok(clamp.classList.contains('w-96') && clamp.classList.contains('whitespace-normal'))
+        assert.equal(clamp.getAttribute('title'), rows[0].title)
+
+        const handle = document.querySelector('[data-sortable-handle="1"]')
+        act(() => handle.focus())
+        act(() => handle.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })))
+        await frame()
+        assert.deepEqual(reports, [[2, 1]])
+        assert.deepEqual([...document.querySelectorAll('tbody tr')].map((row) => row.getAttribute('data-sortable-row')), ['2', '1'])
         box.unmount()
     },
 })

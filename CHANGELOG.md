@@ -7,6 +7,15 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.16 — 2026-11-01
+
+- **`Sortable`**: a list reordered by drag handles with pointer events (mouse, pen, touch) or ↑ / ↓ on the focused
+  handle (focus kept, `aria-label` "ย้ายลำดับที่ N"); live moves, the dragged row fades, `onReorder(items)` once per
+  drop / key move; `numbered`, `disabled`. `useSortable` and `SortHandle` for other markup.
+- **`DataTable reorderable={{ onReorder }}`**: a handle column, whole rows dragged the same way, sorting off.
+- **`DataTable` column `wrap`**: `true` or a width (`'w-96'`) wraps the value to two lines at that width with the full
+  text as the tooltip.
+
 ## v0.2.15 — 2026-11-01
 
 - Fix: a width passed in `className` lost to a field's own `w-full` (`cn` only joins classes). `Input`, `Textarea`,
