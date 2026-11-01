@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 
-import { Avatar, Checkbox, Combobox, DataTable, DatePicker, GlobalSearch, Sortable, DateRangePicker, Facts, Input, RadioGroup, Select, Textarea, getJson, postJson, SearchInput, sendJson, StatsStrip, Thumb, Zoomable } from '@tungsten'
+import { Avatar, Checkbox, Combobox, DataTable, DatePicker, GlobalSearch, NotificationBell, Sortable, DateRangePicker, Facts, Input, RadioGroup, Select, Textarea, getJson, postJson, SearchInput, sendJson, StatsStrip, Thumb, Zoomable } from '@tungsten'
 import { FlashToastFor } from '@tungsten/components/panel/FlashToast'
 
 function mount(element) {
@@ -411,6 +411,51 @@ Object.assign(checks, {
         act(() => input.blur())
         act(() => document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true })))
         assert.equal(document.activeElement, input)
+        box.unmount()
+    },
+})
+
+Object.assign(checks, {
+    'NotificationBell: unread badge from the first load, a list on open, mark one and all read': async () => {
+        const calls = []
+        let items = [
+            { id: 'n1', title: 'ชำระเงินแล้ว', body: 'คำสั่งซื้อ SO-1', url: null, tone: 'done', icon: 'wallet', read: false, at: new Date().toISOString() },
+            { id: 'n2', title: 'ส่งสินค้าแล้ว', body: null, url: null, tone: null, icon: null, read: false, at: new Date().toISOString() },
+        ]
+        const answer = () => ({ ok: true, status: 200, json: async () => ({ unread: items.filter((item) => !item.read).length, items }) })
+        globalThis.fetch = async (url, init) => {
+            calls.push(`${init.method} ${new URL(String(url), 'http://tungsten.local').pathname}`)
+
+            if (String(url).endsWith('/n1/read')) {
+                items = items.map((item) => (item.id === 'n1' ? { ...item, read: true } : item))
+            } else if (String(url).endsWith('/notifications/read')) {
+                items = items.map((item) => ({ ...item, read: true }))
+            }
+
+            return answer()
+        }
+        const box = mount(<NotificationBell url="/admin/notifications" poll={60} />)
+        await act(() => new Promise((resolve) => setTimeout(resolve, 20)))
+
+        const bell = document.querySelector('button[aria-expanded]')
+        assert.equal(bell.textContent, '2')
+        assert.equal(bell.getAttribute('aria-label'), 'การแจ้งเตือน ยังไม่อ่าน 2')
+
+        await act(async () => bell.click())
+        await act(() => new Promise((resolve) => setTimeout(resolve, 20)))
+        assert.match(document.body.textContent, /ชำระเงินแล้ว/)
+        assert.match(document.body.textContent, /คำสั่งซื้อ SO-1/)
+
+        await act(async () => [...document.querySelectorAll('button')].find((button) => button.textContent.includes('ชำระเงินแล้ว')).click())
+        await act(() => new Promise((resolve) => setTimeout(resolve, 20)))
+        assert.ok(calls.includes('POST /admin/notifications/n1/read'))
+        assert.equal(document.querySelector('button[aria-expanded]').textContent, '1')
+
+        await act(async () => document.querySelector('button[aria-expanded]').click())
+        await act(async () => [...document.querySelectorAll('button')].find((button) => button.textContent === 'อ่านทั้งหมดแล้ว').click())
+        await act(() => new Promise((resolve) => setTimeout(resolve, 20)))
+        assert.ok(calls.includes('POST /admin/notifications/read'))
+        assert.equal(document.querySelector('button[aria-expanded]').textContent, '', 'no badge once all are read')
         box.unmount()
     },
 })

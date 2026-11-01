@@ -131,6 +131,10 @@ class HandleTungstenRequests extends Middleware
             'environment' => app()->environment(),
             'env' => Tungsten::environment(),
             'search' => $panel->getGlobalSearches() === [] ? null : route("{$panel->getId()}.search"),
+            'notifications' => $panel->getNotificationPoll() === null ? null : [
+                'url' => route("{$panel->getId()}.notifications"),
+                'poll' => $panel->getNotificationPoll(),
+            ],
             'filterLayout' => $panel->getFilterLayout(),
         ];
     }

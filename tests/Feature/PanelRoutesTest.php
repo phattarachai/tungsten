@@ -25,7 +25,7 @@ it('mounts set routes and route-file routes under the panel path with the {id}. 
 it('generates no route from a page class: only declared routes (and ->login()\'s) exist', function (): void {
     $names = collect(app('router')->getRoutes()->getRoutes())->map->getName()->filter(fn (?string $name): bool => str_starts_with((string) $name, 'admin.'))->sort()->values()->all();
 
-    expect($names)->toBe(['admin.clashing-props', 'admin.dashboard', 'admin.login', 'admin.login.attempt', 'admin.logout', 'admin.orders', 'admin.orders.edit', 'admin.orders.ship', 'admin.orders.show', 'admin.reports.sales', 'admin.search', 'admin.ui-kit', 'admin.ui-kit.toast']);
+    expect($names)->toBe(['admin.clashing-props', 'admin.dashboard', 'admin.login', 'admin.login.attempt', 'admin.logout', 'admin.notifications', 'admin.notifications.read', 'admin.notifications.read-all', 'admin.orders', 'admin.orders.edit', 'admin.orders.ship', 'admin.orders.show', 'admin.reports.sales', 'admin.search', 'admin.ui-kit', 'admin.ui-kit.toast']);
 });
 
 it('runs every panel route behind the configured middleware, the gate and the panel middleware', function (): void {

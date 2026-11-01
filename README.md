@@ -256,6 +256,29 @@ Turn it on per panel with `->globalSearch([CustomerSearch::class])`, or let a se
 two letters; each kind answers up to `limit()` matches (5), LIKE-escaped, `ilike` with `operator()` on PostgreSQL.
 `image()` adds a thumbnail. A panel without searches has no box and no route.
 
+## Notification bell (optional)
+
+`->notifications(poll: 30)` on a panel puts a bell in the topbar over the signed-in user's Laravel database
+notifications (the `notifications` table — `php artisan make:notifications-table` — and a `Notifiable` user): the
+unread count on the bell, refreshed every `poll` seconds while the tab is visible; the latest 20 in its menu; opening
+one marks it read and follows its link; "อ่านทั้งหมดแล้ว" clears the count. Store the panel's fields from
+`toDatabase()`:
+
+```php
+public function toDatabase(object $notifiable): array
+{
+    return PanelNotification::make('ชำระเงินแล้ว')
+        ->body("คำสั่งซื้อ {$this->order->number}")
+        ->url(route('admin.orders.show', $this->order))
+        ->tone('done')            // a status tone for the mark
+        ->icon('truck')           // a registered kit icon name (registerIcons() adds more)
+        ->toArray();
+}
+```
+
+The routes are `GET {path}/notifications`, `POST {path}/notifications/{id}/read` and `POST {path}/notifications/read`,
+behind the panel's auth and gate; a user only ever sees and marks their own.
+
 ## Declare routes
 
 Three places, all the same route group (the panel's path prefix, middleware, gate and `{id}.` name prefix):
@@ -733,7 +756,7 @@ record / form recipes and the kit catalogue), so an agent building a panel page 
 
 ## Coming next
 
-- A database-notification bell and a profile page (v0.3).
+- A profile page (v0.3).
 - Later — CSV/Excel import wizard, table export, a documentation site.
 
 ## Testing

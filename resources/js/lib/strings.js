@@ -5,6 +5,10 @@
  */
 export const strings = {
     close: 'ปิด',
+    notifications: 'การแจ้งเตือน',
+    notificationsCount: (unread) => (unread > 0 ? `การแจ้งเตือน ยังไม่อ่าน ${unread}` : 'การแจ้งเตือน'),
+    markAllRead: 'อ่านทั้งหมดแล้ว',
+    noNotifications: 'ไม่มีการแจ้งเตือน',
     globalSearch: 'ค้นหา…',
     searching: 'กำลังค้นหา…',
     noResults: 'ไม่พบผลลัพธ์',

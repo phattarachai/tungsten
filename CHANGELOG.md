@@ -7,6 +7,12 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.21 — 2026-11-01
+
+- **Notification bell**: `->notifications(poll: 30)` on a panel adds a topbar bell over the user's Laravel database
+  notifications — unread count (polled while the tab is visible), the latest 20, mark one / all read, follow the
+  link. `PanelNotification::make()->body()->url()->tone()->icon()->toArray()` builds the stored data.
+
 ## v0.2.20 — 2026-11-01
 
 - **Global search**: `GlobalSearch` classes (label, query, attributes, title, details, url, image, ability, limit,

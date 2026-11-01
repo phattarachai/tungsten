@@ -58,6 +58,12 @@ Declare it in the set that owns the records (`public static function searches():
 or on the panel (`->globalSearch([...])`). `ability()` hides a kind from users who fail it; `operator()` returns
 `'ilike'` on PostgreSQL.
 
+## Notification bell
+
+`->notifications(poll: 30)` on the panel; notifications use Laravel's `database` channel and store the panel's fields:
+`return PanelNotification::make('ชำระเงินแล้ว')->body(…)->url(route(…))->tone('done')->icon('truck')->toArray();`
+from `toDatabase()`. `icon` is a registered kit icon name.
+
 ## Sets and routes
 
 A set is one area of the panel (orders, customers). One file, discovered by `discoverSets()`:

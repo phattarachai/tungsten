@@ -14,6 +14,7 @@ before relying on a prop not listed here.
 | `AuditPanel`, `LastEdited` | the audit trail in the Aside, and its quiet "แก้ไข …" trigger |
 | `Sidebar`, `Topbar`, `PanelSwitcher`, `FlashToast`, `TooltipLayer` | parts of `AppLayout`, for a layout of your own |
 | `GlobalSearch` | `url` — the topbar search box (shown by `Topbar` when the panel has searches) |
+| `NotificationBell` | `url`, `poll` — the topbar bell (shown by `Topbar` when the panel has `notifications()`) |
 
 ## Lists
 
