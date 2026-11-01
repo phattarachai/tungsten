@@ -701,11 +701,16 @@ only. Sizes are rem only — the shell scales the rem base to 125%, so write `te
   full props to disk (~100 ms a request, hundreds of MB in days). Set `tungsten.disable_inertia_devtools` to
   `false` to leave Inertia's default alone.
 
+## Laravel Boost
+
+Tungsten ships a Boost guideline and a `tungsten-development` skill (panels, sets, routes, `TableQuery`, the list /
+record / form recipes and the kit catalogue), so an agent building a panel page follows the kit. Pick
+`phattarachai/tungsten` when `php artisan boost:install` asks for third-party guidelines, or list it under
+`"packages"` in `boost.json` for a non-interactive install. Re-run `boost:update` after upgrading Tungsten.
+
 ## Coming next
 
-- Kit changes from the first production pages; a Laravel Boost guideline and a `tungsten-development` skill (list,
-  view/edit, modal, policies, each mapped to its Filament equivalent).
-- Global search, a database-notification bell, and a profile page.
+- Global search, a database-notification bell, and a profile page (v0.3).
 - Later — CSV/Excel import wizard, table export, a documentation site.
 
 ## Testing
