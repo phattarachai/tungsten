@@ -330,7 +330,9 @@ The metadata a route can carry:
 | Macro | What it does |
 |---|---|
 | `->nav($label, icon:, group:, sort:, badge:, ability:)` | a sidebar entry. `icon` is a lucide name; `badge` a string or the class of an invokable returning one per request (a count); `ability` hides it. A route's own `can:` middleware hides it too. Only parameterless GET routes. |
-| `->breadcrumb($label, parent:)` | the trail's last label. The parent nav route — inferred from the name (`admin.orders.edit` → `admin.orders`) or given — links before it. |
+| `->navParent('admin.settings')` | a page that lives under another nav entry: that entry lights up while the page is open, and it becomes the breadcrumb's parent (unless `breadcrumb(parent:)` names another). |
+| `->activeFor('admin.order-types*', …)` | on a nav route: it also lights up on routes matching these names or patterns. One line on the entry covers a family of routes. |
+| `->breadcrumb($label, parent:)` | the trail's last label. The parent nav route — inferred from the name (`admin.orders.edit` → `admin.orders`), `navParent`, or given — links before it. |
 | `->breadcrumbs([...])` | a fixed trail: `[['label' => 'ตั้งค่า'], ['label' => 'SMS', 'route' => 'admin.settings.sms']]`. |
 | `->help($url)` | the topbar `?` for this route. |
 | `->width('4xl')` | caps the page's content width inside the sheet: `sm` … `7xl` or `full` (the default). A short form keeps its width, a list uses the room. `fit` makes the content as wide as its widest child: a list with few columns hugs them instead of spanning the sheet, and a column's `w-full` (a spacer) is dropped there. |

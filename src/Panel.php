@@ -713,7 +713,7 @@ class Panel
             ]));
         }
 
-        $parent = $this->parentRoute($route, $meta['breadcrumb']['parent'] ?? null);
+        $parent = $this->parentRoute($route, $meta['breadcrumb']['parent'] ?? $meta['navParent'] ?? null);
         $parentNav = RouteMeta::of($parent)['nav'] ?? null;
         $label = $leaf ?? $meta['breadcrumb']['label'] ?? null;
 
@@ -756,14 +756,15 @@ class Panel
      */
     private function navItem(Route $route, Request $request): array
     {
-        $nav = RouteMeta::of($route)['nav'];
+        $meta = RouteMeta::of($route);
+        $nav = $meta['nav'];
         $name = (string) $route->getName();
 
         return [
             'label' => $nav['label'],
             'icon' => $nav['icon'],
             'url' => $this->urlFor($route),
-            'active' => $request->routeIs($name, "{$name}.*"),
+            'active' => $request->routeIs($name, "{$name}.*", ...($meta['activeFor'] ?? [])) || $this->isNavParent($request, $name),
             'badge' => $this->badge($nav['badge']),
             'external' => false,
             'legacy' => false,
@@ -800,13 +801,21 @@ class Panel
                 'label' => $link['label'],
                 'icon' => $link['icon'],
                 'url' => $link['route'] === null ? url($link['url']) : route($link['route']),
-                'active' => $link['route'] !== null && $request->routeIs($link['route'], "{$link['route']}.*"),
+                'active' => $link['route'] !== null && ($request->routeIs($link['route'], "{$link['route']}.*") || $this->isNavParent($request, $link['route'])),
                 'badge' => null,
                 'external' => $link['route'] === null && ! $link['legacy'],
                 'legacy' => $link['legacy'],
                 'group' => $link['group'],
                 'sort' => $link['sort'],
             ]);
+    }
+
+    /** Whether the open route names `$name` as its `->navParent()`. */
+    private function isNavParent(Request $request, string $name): bool
+    {
+        $current = $request->route();
+
+        return $current instanceof Route && (RouteMeta::of($current)['navParent'] ?? null) === $name;
     }
 
     private function parentRoute(?Route $route, ?string $parent): ?Route

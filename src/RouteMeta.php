@@ -42,7 +42,19 @@ class RouteMeta
             return RouteMeta::put($this, 'nav', compact('label', 'icon', 'group', 'sort', 'badge', 'ability'));
         });
 
-        /** The trail's last label; the parent nav route (inferred from the route name, or `parent`) links before it. */
+        /** Lights up the nav entry named `$route` while this route is open (a page that lives under another entry), and links it as the breadcrumb's parent. */
+        Route::macro('navParent', function (string $route): Route {
+            /** @var Route $this */
+            return RouteMeta::put($this, 'navParent', $route);
+        });
+
+        /** On a nav route: also lights it up on routes matching these names or patterns (`'admin.order-types*'`). */
+        Route::macro('activeFor', function (string ...$patterns): Route {
+            /** @var Route $this */
+            return RouteMeta::put($this, 'activeFor', [...(RouteMeta::of($this)['activeFor'] ?? []), ...$patterns]);
+        });
+
+        /** The trail's last label; the parent nav route (inferred from the route name, `navParent`, or `parent`) links before it. */
         Route::macro('breadcrumb', function (string $label, ?string $parent = null): Route {
             /** @var Route $this */
             return RouteMeta::put($this, 'breadcrumb', compact('label', 'parent'));

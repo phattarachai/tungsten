@@ -7,6 +7,14 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.30 — 2026-11-01
+
+- **`->navParent('admin.settings')`** on a route: a page that lives under another nav entry (its name doesn't share
+  the prefix) lights that entry up, and the entry becomes its breadcrumb parent. It also works for a panel link's
+  route.
+- **`->activeFor('admin.order-types*', …)`** on a nav route: the entry is also active on routes matching these names
+  or patterns.
+
 ## v0.2.29 — 2026-11-01
 
 - Fix: a launchpad row whose `image` fails to load (a dead disk or CDN link) falls back to the kind's icon, or to the
