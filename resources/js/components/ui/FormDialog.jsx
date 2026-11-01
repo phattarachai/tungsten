@@ -9,6 +9,7 @@ export function FormDialog({ title, submitLabel = strings.save, processing = fal
 
     function submit(event) {
         event.preventDefault()
+        event.stopPropagation()
         onSubmit()
     }
 

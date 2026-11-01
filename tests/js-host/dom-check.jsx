@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 import { act, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
-import { Avatar, Chart, Checkbox, Combobox, CopyButton, DataTable, DatePicker, Launchpad, NotificationBell, PickerDialog, Sortable, DateRangePicker, Facts, Input, RadioGroup, Select, Textarea, getJson, postJson, SearchInput, sendJson, StatsStrip, Thumb, Zoomable } from '@tungsten'
+import { Avatar, Chart, Checkbox, Combobox, CopyButton, DataTable, DatePicker, Launchpad, NotificationBell, PickerDialog, Sortable, DateRangePicker, Facts, FormDialog, Input, RadioGroup, Select, Textarea, getJson, postJson, SearchInput, sendJson, StatsStrip, Thumb, Zoomable } from '@tungsten'
 import { FlashToastFor } from '@tungsten/components/panel/FlashToast'
 import { PageWidthContext } from '@tungsten/lib/pageWidth'
 import { sameUrl } from '@tungsten/lib/launchpadStore'
@@ -772,6 +772,22 @@ Object.assign(checks, {
         const second = document.querySelector('[role="status"]')
         assert.ok(second && second !== first, 'a new id starts a new toast')
         assert.equal(document.querySelectorAll('[role="status"]').length, 1)
+        box.unmount()
+    },
+
+    'submitting a FormDialog opened inside another form does not submit the outer form (React bubbles portalled events)': () => {
+        const submitted = []
+        const box = mount(
+            <form onSubmit={(event) => (event.preventDefault(), submitted.push('outer'))}>
+                <FormDialog title="เพิ่มวัตถุดิบ" onSubmit={() => submitted.push('dialog')} onClose={() => {}}>
+                    <input name="name" />
+                </FormDialog>
+            </form>,
+        )
+        const dialogForm = document.querySelector('[role="dialog"] form')
+
+        act(() => dialogForm.requestSubmit())
+        assert.deepEqual(submitted, ['dialog'])
         box.unmount()
     },
 })
