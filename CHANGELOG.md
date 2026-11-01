@@ -7,6 +7,12 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.32 — 2026-11-01
+
+- **Fixed**: pressing Enter (or the submit button) in a `FormDialog` opened from inside another `<form>` no longer
+  submits the outer form too. The dialog is portalled, but React bubbles its submit event through the component tree;
+  `FormDialog` now stops it.
+
 ## v0.2.31 — 2026-11-01
 
 - **Folded groups**: `->navigationGroups(['การขาย', 'การตลาด' => ['collapsed' => true]])` starts a group folded.
