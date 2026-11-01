@@ -229,11 +229,11 @@ class Panel
 
     /**
      * Turns on the topbar's notification bell over the user's Laravel database notifications (the `notifications`
-     * table, a `Notifiable` user), refreshed every `$pollSeconds` while the tab is visible.
+     * table, a `Notifiable` user), refreshed every `$poll` seconds while the tab is visible.
      */
-    public function notifications(int $pollSeconds = 30): self
+    public function notifications(int $poll = 30): self
     {
-        $this->notificationPoll = max(5, $pollSeconds);
+        $this->notificationPoll = max(5, $poll);
 
         return $this;
     }

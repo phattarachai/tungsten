@@ -1,11 +1,12 @@
 // Kit components checked in a DOM (jsdom) under Node: `npm run unit` runs it after unit-check.js, with
 // dom-setup.js loaded first (`node --import`) so React sees a browser.
 import assert from 'node:assert/strict'
-import { act } from 'react'
+import { act, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
 import { Avatar, Checkbox, Combobox, DataTable, DatePicker, GlobalSearch, NotificationBell, Sortable, DateRangePicker, Facts, Input, RadioGroup, Select, Textarea, getJson, postJson, SearchInput, sendJson, StatsStrip, Thumb, Zoomable } from '@tungsten'
 import { FlashToastFor } from '@tungsten/components/panel/FlashToast'
+import { RichText } from '@tungsten/rich-text'
 
 function mount(element) {
     const host = document.createElement('div')
@@ -493,6 +494,52 @@ Object.assign(checks, {
         await frame()
         assert.deepEqual(reports, [[2, 1]])
         assert.deepEqual([...document.querySelectorAll('tbody tr')].map((tr) => tr.getAttribute('data-sortable-row')), ['2', '1', '1', '1'])
+        box.unmount()
+    },
+})
+
+Object.assign(checks, {
+    'RichText: loads stored HTML without reporting a change; the HTML view edits the source, and the editor follows': async () => {
+        const changes = []
+        const stored = '<h2>วิตามินซี</h2><p>ช่วย<strong>เสริม</strong>ภูมิคุ้มกัน</p><ul><li><p>วันละ 1 เม็ด</p></li></ul>'
+
+        function Field() {
+            const [value, setValue] = useState(stored)
+
+            return (
+                <RichText
+                    value={value}
+                    onChange={(html) => {
+                        changes.push(html)
+                        setValue(html)
+                    }}
+                />
+            )
+        }
+
+        const box = mount(<Field />)
+        await act(() => new Promise((resolve) => setTimeout(resolve, 50)))
+
+        const editable = document.querySelector('[contenteditable="true"]')
+        assert.ok(editable, 'the editor mounted')
+        assert.match(editable.innerHTML, /<h2>วิตามินซี<\/h2>/)
+        assert.match(editable.innerHTML, /<strong>เสริม<\/strong>/)
+        assert.deepEqual(changes, [], 'loading reports nothing, so stored HTML is never rewritten by opening it')
+
+        await act(async () => document.querySelector('button[aria-label="HTML"]').click())
+        const source = document.querySelector('textarea[aria-label="HTML"]')
+        assert.equal(source.value, stored, 'the HTML view shows the stored source as it is')
+
+        const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set
+        await act(async () => {
+            setter.call(source, '<p>แก้จาก <a href="https://example.com">HTML</a></p>')
+            source.dispatchEvent(new window.Event('input', { bubbles: true }))
+        })
+        assert.equal(changes.at(-1), '<p>แก้จาก <a href="https://example.com">HTML</a></p>')
+
+        await act(async () => document.querySelector('button[aria-label="HTML"]').click())
+        await act(() => new Promise((resolve) => setTimeout(resolve, 20)))
+        assert.match(document.querySelector('[contenteditable="true"]').innerHTML, /แก้จาก <a[^>]*href="https:\/\/example.com"/, 'back in the editor with the edited source')
         box.unmount()
     },
 })

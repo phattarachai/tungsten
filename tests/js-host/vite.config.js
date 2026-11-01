@@ -8,7 +8,7 @@ export default defineConfig({
     plugins: [laravel({ input: ['resources/js/tungsten.jsx'] }), react(), tailwindcss()],
     resolve: {
         alias: { '@tungsten': path.resolve(__dirname, '../../resources/js') },
-        dedupe: ['react', 'react-dom', '@inertiajs/react', 'lucide-react'],
+        dedupe: ['react', 'react-dom', '@inertiajs/react', 'lucide-react', '@tiptap/react', '@tiptap/pm', '@tiptap/starter-kit', '@tiptap/extension-image', '@tiptap/extensions'],
     },
     server: { fs: { allow: ['../..'] } },
 })

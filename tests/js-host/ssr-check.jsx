@@ -3,6 +3,7 @@
 import { renderToString } from 'react-dom/server'
 
 import { createTungstenApp } from '@tungsten'
+import { RichText } from '@tungsten/rich-text'
 
 const pages = import.meta.glob('./resources/js/pages/panel/**/*.jsx')
 
@@ -63,4 +64,15 @@ for (const [component, props, expected] of cases) {
     }
 
     console.log('ssr ok  env line and "UAT · " title prefix')
+}
+
+// The rich-text editor renders on the server too (Tiptap builds the editor only in the browser).
+{
+    const html = renderToString(<RichText value="<p>สวัสดี</p>" onChange={() => {}} />)
+
+    if (!html.includes('aria-label="ตัวหนา"')) {
+        throw new Error('RichText: toolbar missing from the server render')
+    }
+
+    console.log('ssr ok  RichText toolbar (editor mounts in the browser)')
 }
