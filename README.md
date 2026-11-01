@@ -267,7 +267,7 @@ two letters; each kind answers up to `limit()` matches (5), LIKE-escaped, `ilike
 
 ## Notification bell (optional)
 
-`->notifications(poll: 30)` on a panel puts a bell in the topbar over the signed-in user's Laravel database
+`->notifications(poll: 30)` (seconds) on a panel puts a bell in the topbar over the signed-in user's Laravel database
 notifications (the `notifications` table — `php artisan make:notifications-table` — and a `Notifiable` user): the
 unread count on the bell, refreshed every `poll` seconds while the tab is visible; the latest 20 in its menu; opening
 one marks it read and follows its link; "อ่านทั้งหมดแล้ว" clears the count. Store the panel's fields from
@@ -578,6 +578,33 @@ const created = await postJson(storeUrl, data)                                  
 
 `errors` holds a 422's first message per field, ready for `FormField error`; the thrown error carries `message`,
 `status` and `errors`. A GET's data goes in the query string.
+
+### Rich text
+
+`RichText` is a Tiptap editor (headings, bold, italic, underline, lists, links, images by URL or upload) that reads and
+writes HTML. It's a separate entry, so apps that don't use it never need Tiptap:
+
+```bash
+npm install @tiptap/react@^3.32 @tiptap/pm@^3.32 @tiptap/starter-kit@^3.32 @tiptap/extension-image@^3.32 @tiptap/extensions@^3.32
+```
+
+Add the five `@tiptap/*` packages to `resolve.dedupe` in `vite.config.js` next to `react`, then:
+
+```jsx
+import { RichText } from '@tungsten/rich-text'
+
+<FormField label="รายละเอียด" stacked error={form.errors.content}>
+    <RichText value={form.data.content} onChange={(html) => form.setData('content', html)} onUploadImage={uploadImage} />
+</FormField>
+```
+
+- `onChange` fires only on an edit, so opening stored HTML never rewrites it. Once edited, markup the editor doesn't
+  model (a `div`, inline styles, a table) is normalised; the **HTML** button shows and edits the source as it is.
+- No trailing empty paragraph is added and links keep their own attributes, so an edit changes only what was edited.
+- `onUploadImage(file)` returns the image URL (or omit it: images then go in by URL); `headings={false}` drops the
+  heading buttons; an empty editor reports `''`. Re-key it to load another record.
+- Show stored HTML read-only with `RichTextView html={…}` from `@tungsten` (no Tiptap needed). Sanitise HTML that
+  isn't yours before storing it.
 
 ### Reordering
 

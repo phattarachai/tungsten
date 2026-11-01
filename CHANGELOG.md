@@ -7,6 +7,13 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.24 — 2026-11-01
+
+- **`RichText`** (`@tungsten/rich-text`, needs the `@tiptap/*` packages): headings, bold, italic, underline, lists,
+  links, images by URL or `onUploadImage`, an HTML source view; HTML in and out, `onChange` only on edits, no trailing
+  paragraph or added link attributes. **`RichTextView`** (`@tungsten`) shows stored HTML read-only, no Tiptap.
+- Fix: `Panel::notifications()` takes `poll:` as documented (the parameter was named `$pollSeconds`).
+
 ## v0.2.23 — 2026-11-01
 
 - **`dates` filter `default`**: with a server default preset, ทั้งหมด and a custom range send `all`;
