@@ -13,7 +13,8 @@ before relying on a prop not listed here.
 | `Aside` | `open`, `title`, `actions`, `onClose`, `widthKey` — docked right panel, resizable |
 | `AuditPanel`, `LastEdited` | the audit trail in the Aside, and its quiet "แก้ไข …" trigger |
 | `Sidebar`, `Topbar`, `PanelSwitcher`, `FlashToast`, `TooltipLayer` | parts of `AppLayout`, for a layout of your own |
-| `GlobalSearch` | `url` — the topbar search box (shown by `Topbar` when the panel has searches) |
+| `GlobalSearch`, `Launchpad` | `url` — the topbar box that opens the launchpad (menus from `nav`, records from `url`, pinned and recent per panel); `Topbar` shows it when the panel has searches |
+| `useRememberRecord` | `{ title, subtitle, url, icon, image }` — a show page lists its record under the launchpad's เปิดล่าสุด |
 | `NotificationBell` | `url`, `poll` — the topbar bell (shown by `Topbar` when the panel has `notifications()`) |
 
 ## Lists

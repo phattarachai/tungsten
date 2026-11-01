@@ -40,7 +40,8 @@ app(PanelRegistry::class)
 
 ## Global search
 
-A topbar search (⌘K) over the records a panel opts in. One class per kind of record:
+A topbar launchpad (click the box or ⌘K) over the panel's menus (its `nav`, from one letter) and the records it opts
+in (from two letters), with pinned and recent items. One class per kind of record:
 
 ```php
 class OrderSearch extends \Phattarachai\Tungsten\Search\GlobalSearch
@@ -56,7 +57,8 @@ class OrderSearch extends \Phattarachai\Tungsten\Search\GlobalSearch
 
 Declare it in the set that owns the records (`public static function searches(): array { return [OrderSearch::class]; }`)
 or on the panel (`->globalSearch([...])`). `ability()` hides a kind from users who fail it; `operator()` returns
-`'ilike'` on PostgreSQL.
+`'ilike'` on PostgreSQL; `icon()` names the icon beside its results. A record's show page calls
+`useRememberRecord({ title, subtitle, url, icon })` so it shows under เปิดล่าสุด.
 
 ## Notification bell
 

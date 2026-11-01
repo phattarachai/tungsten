@@ -15,7 +15,7 @@ use Phattarachai\Tungsten\Table\LikeSearch;
 
 /**
  * The topbar's global search: each of the panel's {@see GlobalSearch} kinds the user may see, matched on its
- * attributes, as `{ groups: [{ label, results: [{ title, url, details, image }] }] }`. Kinds with no match are left out.
+ * attributes, as `{ groups: [{ label, icon, results: [{ title, url, details, image }] }] }`. Kinds with no match are left out.
  */
 class GlobalSearchController
 {
@@ -30,7 +30,7 @@ class GlobalSearchController
         $groups = collect($panel->getGlobalSearches())
             ->map(fn (string $class): GlobalSearch => app($class))
             ->filter(fn (GlobalSearch $search): bool => $search->ability() === null || Gate::allows($search->ability()))
-            ->map(fn (GlobalSearch $search): array => ['label' => $search->label(), 'results' => $this->results($search, $request->term())])
+            ->map(fn (GlobalSearch $search): array => ['label' => $search->label(), 'icon' => $search->icon(), 'results' => $this->results($search, $request->term())])
             ->filter(fn (array $group): bool => $group['results'] !== [])
             ->values()
             ->all();

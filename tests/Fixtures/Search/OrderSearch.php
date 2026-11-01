@@ -19,6 +19,11 @@ class OrderSearch extends GlobalSearch
         return 'คำสั่งซื้อ';
     }
 
+    public function icon(): string
+    {
+        return 'package';
+    }
+
     public function query(): Builder
     {
         return Order::query()->with('customer')->latest('id');

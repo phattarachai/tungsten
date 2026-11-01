@@ -28,6 +28,7 @@ it('groups matches by kind, limited, with titles, urls and non-empty details', f
         ->assertOk()
         ->assertJsonCount(1, 'groups')
         ->assertJsonPath('groups.0.label', 'คำสั่งซื้อ')
+        ->assertJsonPath('groups.0.icon', 'package')
         ->assertJsonCount(2, 'groups.0.results')
         ->assertJsonPath('groups.0.results.0.title', 'SO-1003')
         ->assertJsonPath('groups.0.results.0.url', url('/admin/orders/3'))
@@ -39,6 +40,7 @@ it('searches relations and the panel\'s kinds before its sets\', escaping LIKE w
         ->getJson('/admin/search?q='.urlencode('100%'))
         ->assertOk()
         ->assertJsonPath('groups.0.label', 'ลูกค้า')
+        ->assertJsonPath('groups.0.icon', null)
         ->assertJsonPath('groups.0.results.0.title', 'สมชาย 100% จริง')
         ->assertJsonPath('groups.1.label', 'คำสั่งซื้อ')
         ->assertJsonPath('groups.1.results.0.title', 'SO-2001');
