@@ -2,7 +2,7 @@ import { CalendarDays, X } from 'lucide-react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
-import { cn } from '../../lib/cn'
+import { cn, widthUnless } from '../../lib/cn'
 import { popoverMotion } from '../../lib/motion'
 import { clampDate, dayOf, formatThaiDate, nowTime, timeOf, todayKey } from '../../lib/thaiDate'
 
@@ -14,9 +14,11 @@ const POPOVER_GAP = 4
 const POPOVER_HEIGHT_REM = 21
 
 /** The trigger frame shared by DatePicker and DateRangePicker: the kit control border, brand while open. */
-export function pickerFrame({ open, invalid, disabled }) {
+export function pickerFrame({ open, invalid, disabled, className }) {
     return cn(
-        'relative flex w-full items-center rounded-md border bg-white text-[0.8125rem] text-zinc-900 tabular-nums transition',
+        widthUnless(className),
+        className,
+        'relative flex items-center rounded-md border bg-white text-[0.8125rem] text-zinc-900 tabular-nums transition',
         invalid ? 'border-red-400 ring-1 ring-red-200' : open ? 'border-brand' : 'border-zinc-300 focus-within:border-brand',
         disabled && 'opacity-50',
     )
@@ -220,7 +222,7 @@ export function DatePicker({
     }
 
     return (
-        <span ref={anchor} className={cn(pickerFrame({ open, invalid, disabled }), className)}>
+        <span ref={anchor} className={pickerFrame({ open, invalid, disabled, className })}>
             <button
                 ref={trigger}
                 id={id}

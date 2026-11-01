@@ -37,6 +37,7 @@ export function DateRangePicker({
     invalid = false,
     disabled = false,
     'aria-label': ariaLabel = strings.dateRange,
+    className,
 }) {
     const [open, setOpen] = useState(false)
     const [phase, setPhase] = useState('start')
@@ -127,7 +128,7 @@ export function DateRangePicker({
     }
 
     return (
-        <span ref={anchor} className={pickerFrame({ open, invalid, disabled })}>
+        <span ref={anchor} className={pickerFrame({ open, invalid, disabled, className })}>
             {half('start', start, strings.startDate)}
             <ArrowRight className="size-3 shrink-0 text-zinc-400" />
             {half('end', end, strings.endDate)}

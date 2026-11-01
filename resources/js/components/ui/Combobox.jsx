@@ -3,7 +3,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { Avatar, initialOf } from '../panel/Avatar'
-import { cn } from '../../lib/cn'
+import { cn, widthUnless } from '../../lib/cn'
 import { popoverMotion } from '../../lib/motion'
 import { strings } from '../../lib/strings'
 
@@ -207,7 +207,7 @@ export function Combobox({
     }
 
     return (
-        <span className={cn('relative', size === 'md' ? 'flex w-full' : 'inline-flex', className)}>
+        <span className={cn('relative', size === 'md' ? cn('flex', widthUnless(className)) : 'inline-flex', className)}>
             <button
                 ref={trigger}
                 type="button"
