@@ -9,6 +9,10 @@ This file records anything released before that automation landed.
 
 ## v0.2.18 — 2026-11-01
 
+- Fix: a real mouse drag in `DataTable reorderable` / `Sortable` lost its drop. The row moved live, then stayed faded,
+  and `onReorder` never fired: moving the row re-inserts it, which drops pointer capture on its handle, and the move
+  and up events then went elsewhere. The drag now listens on `window` from pointerdown to pointerup (cancel puts the
+  rows back), and text selection is off while dragging.
 - A panel's switcher row chip shows its `brand(logo:)` mark, white on the panel colour, like the summary: logo, then
   icon, then `short`. Switcher rows gain `logo` (null for `entry()` rows).
 

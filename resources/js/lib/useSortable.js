@@ -16,13 +16,21 @@ function moved(list, from, to) {
  * handle. Rows move live while dragging; `onReorder(items)` gets the new order once per drop and once per key move.
  * Spread `rowProps(item)` on each row and `handleProps(item, index)` on its handle button; `container` goes on the
  * list so hit-testing stays inside it.
+ *
+ * The drag listens on `window` from pointerdown to pointerup: a live move re-inserts the row, which drops any pointer
+ * capture on its handle, so listeners on the handle would miss the drop.
  */
 export function useSortable({ items, keyOf = (item) => item.id, onReorder, disabled = false }) {
     const [order, setOrder] = useState(items)
     const [dragging, setDragging] = useState(null)
     const container = useRef(null)
     const live = useRef(items)
-    const changed = useRef(false)
+    const latest = useRef({ items, onReorder })
+    const stopDrag = useRef(null)
+
+    useEffect(() => {
+        latest.current = { items, onReorder }
+    })
 
     useEffect(() => {
         if (dragging === null) {
@@ -30,6 +38,8 @@ export function useSortable({ items, keyOf = (item) => item.id, onReorder, disab
             live.current = items
         }
     }, [items, dragging])
+
+    useEffect(() => () => stopDrag.current?.(false), [])
 
     const indexOf = (key) => live.current.findIndex((item) => String(keyOf(item)) === String(key))
 
@@ -54,6 +64,54 @@ export function useSortable({ items, keyOf = (item) => item.id, onReorder, disab
         requestAnimationFrame(() => container.current?.querySelector(selector)?.focus())
     }
 
+    /** Follows the pointer on `window` until it's released (report the order) or cancelled (put it back). */
+    function startDrag(key) {
+        let changed = false
+        const { userSelect } = document.body.style
+
+        function onMove(event) {
+            const over = rowUnder(event)
+            const from = indexOf(key)
+            const to = over === null ? -1 : indexOf(over)
+
+            if (to >= 0 && to !== from) {
+                move(from, to)
+                changed = true
+            }
+        }
+
+        function stop(drop) {
+            window.removeEventListener('pointermove', onMove)
+            window.removeEventListener('pointerup', onUp)
+            window.removeEventListener('pointercancel', onCancel)
+            document.body.style.userSelect = userSelect
+            stopDrag.current = null
+            setDragging(null)
+
+            if (drop && changed) {
+                latest.current.onReorder(live.current)
+
+                return
+            }
+
+            if (changed) {
+                live.current = latest.current.items
+                setOrder(latest.current.items)
+            }
+        }
+
+        const onUp = () => stop(true)
+        const onCancel = () => stop(false)
+
+        stopDrag.current?.(false)
+        stopDrag.current = stop
+        document.body.style.userSelect = 'none'
+        window.addEventListener('pointermove', onMove)
+        window.addEventListener('pointerup', onUp)
+        window.addEventListener('pointercancel', onCancel)
+        setDragging(key)
+    }
+
     function handleProps(item, index) {
         const key = String(keyOf(item))
 
@@ -68,38 +126,9 @@ export function useSortable({ items, keyOf = (item) => item.id, onReorder, disab
                     return
                 }
 
-                event.currentTarget.setPointerCapture?.(event.pointerId)
-                changed.current = false
-                setDragging(key)
-            },
-            onPointerMove(event) {
-                if (dragging !== key) {
-                    return
-                }
-
-                const over = rowUnder(event)
-                const from = indexOf(key)
-                const to = over === null ? -1 : indexOf(over)
-
-                if (to >= 0 && to !== from) {
-                    move(from, to)
-                    changed.current = true
-                }
-            },
-            onPointerUp() {
-                if (dragging !== key) {
-                    return
-                }
-
-                setDragging(null)
-
-                if (changed.current) {
-                    changed.current = false
-                    onReorder(live.current)
-                }
-            },
-            onPointerCancel() {
-                setDragging(null)
+                event.preventDefault()
+                event.currentTarget.focus()
+                startDrag(key)
             },
             onKeyDown(event) {
                 const from = indexOf(key)
@@ -110,7 +139,7 @@ export function useSortable({ items, keyOf = (item) => item.id, onReorder, disab
                 }
 
                 event.preventDefault()
-                onReorder(move(from, to))
+                latest.current.onReorder(move(from, to))
                 focusHandle(key)
             },
         }
