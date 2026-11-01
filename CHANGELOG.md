@@ -7,6 +7,11 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.18 — 2026-11-01
+
+- A panel's switcher row chip shows its `brand(logo:)` mark, white on the panel colour, like the summary: logo, then
+  icon, then `short`. Switcher rows gain `logo` (null for `entry()` rows).
+
 ## v0.2.17 — 2026-11-01
 
 - **Page content width** (Filament's `maxContentWidth`): `->width('4xl')` on a route, `<AppLayout width="4xl">`, or a

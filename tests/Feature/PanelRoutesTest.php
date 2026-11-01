@@ -205,6 +205,15 @@ it('lists the switcher: business entries and panels, a divider, then tool panels
             ->where('panels.1.current', true)
             ->where('panels.1.divider_after', true)
             ->where('panels.2.id', 'tools'));
+});
+
+it('gives a panel\'s switcher row its brand logo, and an entry none', function (): void {
+    $this->actingAs($this->admin(1))
+        ->get('/admin/orders')
+        ->assertInertia(fn (Assert $page): Assert => $page
+            ->where('panels.0.logo', null)
+            ->where('panels.1.logo', asset('images/brand-mark.svg'))
+            ->where('panels.2.logo', 'https://cdn.example.com/mark.svg'));
 
     $this->actingAs($this->admin(2))
         ->get('/admin/orders')

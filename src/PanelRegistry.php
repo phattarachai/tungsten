@@ -96,9 +96,9 @@ class PanelRegistry
 
     /**
      * The panel menu: business panels and entries first, then (after a divider) tool panels, each only if the user
-     * passes its ability.
+     * passes its ability. A panel's row chip shows its `brand(logo:)` mark when it has one, else its icon or `short`.
      *
-     * @return list<array{id: string, label: string, description: string, url: string, short: string, icon: ?string, color: string, current: bool, divider_after: bool, replaces: ?string}>
+     * @return list<array{id: string, label: string, description: string, url: string, short: string, icon: ?string, color: string, logo: ?string, current: bool, divider_after: bool, replaces: ?string}>
      */
     public function switcherFor(?Authenticatable $user, ?string $currentId): array
     {
@@ -142,7 +142,7 @@ class PanelRegistry
     }
 
     /**
-     * @return array{id: string, label: string, description: string, url: string, short: string, icon: ?string, color: string, current: bool, divider_after: bool, replaces: ?string}
+     * @return array{id: string, label: string, description: string, url: string, short: string, icon: ?string, color: string, logo: ?string, current: bool, divider_after: bool, replaces: ?string}
      */
     private function panelRow(Panel $panel, ?string $currentId): array
     {
@@ -154,13 +154,14 @@ class PanelRegistry
             'short' => $panel->getShort(),
             'icon' => $panel->getIcon(),
             'color' => $panel->getColor(),
+            'logo' => $panel->getBrand()['logo'] ?? null,
             'replaces' => $panel->getReplaces(),
         ], $currentId);
     }
 
     /**
-     * @param  array{id: string, label: string, description: string, url: string, short: string, icon: ?string, color: string, replaces?: ?string}  $entry
-     * @return array{id: string, label: string, description: string, url: string, short: string, icon: ?string, color: string, current: bool, divider_after: bool, replaces: ?string}
+     * @param  array{id: string, label: string, description: string, url: string, short: string, icon: ?string, color: string, logo?: ?string, replaces?: ?string}  $entry
+     * @return array{id: string, label: string, description: string, url: string, short: string, icon: ?string, color: string, logo: ?string, current: bool, divider_after: bool, replaces: ?string}
      */
     private function row(array $entry, ?string $currentId): array
     {
@@ -172,6 +173,7 @@ class PanelRegistry
             'short' => $entry['short'],
             'icon' => $entry['icon'],
             'color' => $entry['color'],
+            'logo' => $entry['logo'] ?? null,
             'current' => $entry['id'] === $currentId,
             'divider_after' => false,
             'replaces' => $entry['replaces'] ?? null,
