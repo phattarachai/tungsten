@@ -7,6 +7,13 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.22 — 2026-11-01
+
+- **Profile page**: `->profile(avatar:, disk:, labels:)` on a panel adds `{path}/profile` (and its update and password
+  routes) behind the panel's auth: name, unique email, an optional photo on a disk (replace / remove, shown in the
+  topbar), and a password change checked against the current one. The user menu links to it; `auth.user.avatar` and
+  `auth.profileUrl` are shared.
+
 ## v0.2.21 — 2026-11-01
 
 - **Notification bell**: `->notifications(poll: 30)` on a panel adds a topbar bell over the user's Laravel database

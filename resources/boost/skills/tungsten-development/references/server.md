@@ -64,6 +64,11 @@ or on the panel (`->globalSearch([...])`). `ability()` hides a kind from users w
 `return PanelNotification::make('ชำระเงินแล้ว')->body(…)->url(route(…))->tone('done')->icon('truck')->toArray();`
 from `toDatabase()`. `icon` is a registered kit icon name.
 
+## Profile page
+
+`->profile(avatar: 'avatar_path')` adds `{path}/profile` (name, email, photo, password) linked from the user menu; omit
+`avatar` for no photo. Needs `storage:link` for the `public` disk.
+
 ## Sets and routes
 
 A set is one area of the panel (orders, customers). One file, discovered by `discoverSets()`:

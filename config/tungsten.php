@@ -45,6 +45,30 @@ return [
     ],
 
     /*
+    | A panel's own profile page, on for panels that call `->profile()`. A panel overrides any label with
+    | `->profile(labels: [...])`.
+    */
+    'profile' => [
+        'labels' => [
+            'title' => 'โปรไฟล์',
+            'details' => 'ข้อมูลส่วนตัว',
+            'name' => 'ชื่อ',
+            'email' => 'อีเมล',
+            'avatar' => 'รูปโปรไฟล์',
+            'changeAvatar' => 'เปลี่ยนรูป',
+            'removeAvatar' => 'ลบรูป',
+            'save' => 'บันทึก',
+            'saved' => 'บันทึกโปรไฟล์แล้ว',
+            'password' => 'เปลี่ยนรหัสผ่าน',
+            'currentPassword' => 'รหัสผ่านปัจจุบัน',
+            'newPassword' => 'รหัสผ่านใหม่',
+            'confirmPassword' => 'ยืนยันรหัสผ่านใหม่',
+            'savePassword' => 'เปลี่ยนรหัสผ่าน',
+            'passwordSaved' => 'เปลี่ยนรหัสผ่านแล้ว',
+        ],
+    ],
+
+    /*
     | How each environment shows in the panel (a line under the brand, a Badge in the compact switcher, the login page,
     | and a "Label · " tab-title prefix): env name => ['label' => …, 'tone' => a status tone], or null to show nothing.
     | These entries go over the kit's defaults: production null, local Local/active, staging Staging/done, uat

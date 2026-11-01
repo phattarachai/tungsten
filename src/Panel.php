@@ -15,6 +15,7 @@ use InvalidArgumentException;
 use Phattarachai\Tungsten\Exceptions\MissingPageClass;
 use Phattarachai\Tungsten\Http\Controllers\GlobalSearchController;
 use Phattarachai\Tungsten\Http\Controllers\NotificationController;
+use Phattarachai\Tungsten\Http\Controllers\ProfileController;
 use Phattarachai\Tungsten\Http\Middleware\AuthenticatePanel;
 use Phattarachai\Tungsten\Http\Middleware\HandleTungstenRequests;
 use Phattarachai\Tungsten\Search\GlobalSearch;
@@ -61,6 +62,8 @@ class Panel
     private array $globalSearch = [];
 
     private ?int $notificationPoll = null;
+
+    private ?PanelProfile $profile = null;
 
     private ?string $brandColor = null;
 
@@ -233,6 +236,24 @@ class Panel
         $this->notificationPoll = max(5, $pollSeconds);
 
         return $this;
+    }
+
+    /**
+     * The signed-in user's own profile page at `{path}/profile`: name, email, password and, when `$avatar` names a
+     * column on the user, a photo stored on `$disk`. Linked from the user menu.
+     *
+     * @param  array<string, string>  $labels  overrides for `tungsten.profile.labels`
+     */
+    public function profile(?string $avatar = null, string $disk = 'public', array $labels = []): self
+    {
+        $this->profile = new PanelProfile($avatar, $disk, $labels);
+
+        return $this;
+    }
+
+    public function getProfile(): ?PanelProfile
+    {
+        return $this->profile;
     }
 
     public function getNotificationPoll(): ?int
@@ -574,6 +595,12 @@ class Panel
     {
         if ($this->getGlobalSearches() !== []) {
             app('router')->get('search', GlobalSearchController::class)->name('search');
+        }
+
+        if ($this->profile !== null) {
+            app('router')->get('profile', [ProfileController::class, 'show'])->name('profile');
+            app('router')->put('profile', [ProfileController::class, 'update'])->name('profile.update');
+            app('router')->put('profile/password', [ProfileController::class, 'password'])->name('profile.password');
         }
 
         if ($this->notificationPoll !== null) {

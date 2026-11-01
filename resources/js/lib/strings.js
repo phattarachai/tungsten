@@ -5,6 +5,7 @@
  */
 export const strings = {
     close: 'ปิด',
+    profile: 'โปรไฟล์',
     notifications: 'การแจ้งเตือน',
     notificationsCount: (unread) => (unread > 0 ? `การแจ้งเตือน ยังไม่อ่าน ${unread}` : 'การแจ้งเตือน'),
     markAllRead: 'อ่านทั้งหมดแล้ว',

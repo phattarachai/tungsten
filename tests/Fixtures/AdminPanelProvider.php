@@ -19,6 +19,7 @@ class AdminPanelProvider extends PanelProvider
             ->brand('ร้านค้า', tag: 'v2', logo: 'images/brand-mark.svg')
             ->globalSearch([CustomerSearch::class])
             ->notifications(15)
+            ->profile(avatar: 'avatar_path')
             ->description('คำสั่งซื้อ · ลูกค้า')
             ->color('#0d9488')
             ->brandColor('#0d9488')
