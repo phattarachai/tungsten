@@ -7,6 +7,12 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.19 — 2026-11-01
+
+- **Laravel Boost**: a guideline (`resources/boost/guidelines/core.blade.php`) and a `tungsten-development` skill with
+  references for the server side (panels, sets, routes, `TableQuery`, login, tests), page recipes (list, record,
+  form, reorder, JSON calls) and the kit catalogue. Install with `boost:install` (pick `phattarachai/tungsten`).
+
 ## v0.2.18 — 2026-11-01
 
 - Fix: a real mouse drag in `DataTable reorderable` / `Sortable` lost its drop. The row moved live, then stayed faded,

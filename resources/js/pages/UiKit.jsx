@@ -603,7 +603,7 @@ function RecordParts() {
 }
 
 const REWARDS = [
-    { id: 1, title: 'ร่มพับ Nectapharma', points: 500 },
+    { id: 1, title: 'ร่มพับ', points: 500 },
     { id: 2, title: 'ชุดของขวัญปีใหม่ 2569 พร้อมการ์ดอวยพรและกล่องพรีเมียมสำหรับลูกค้าคนสำคัญ', points: 3200 },
     { id: 3, title: 'แก้วเก็บความเย็น', points: 900 },
     { id: 4, title: 'คูปองส่วนลด 10%', points: 300 },
