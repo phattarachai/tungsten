@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 
-import { Avatar, Checkbox, Combobox, DataTable, DatePicker, Sortable, DateRangePicker, Facts, Input, RadioGroup, Select, Textarea, getJson, postJson, SearchInput, sendJson, StatsStrip, Thumb, Zoomable } from '@tungsten'
+import { Avatar, Checkbox, Combobox, DataTable, DatePicker, GlobalSearch, Sortable, DateRangePicker, Facts, Input, RadioGroup, Select, Textarea, getJson, postJson, SearchInput, sendJson, StatsStrip, Thumb, Zoomable } from '@tungsten'
 import { FlashToastFor } from '@tungsten/components/panel/FlashToast'
 
 function mount(element) {
@@ -365,6 +365,52 @@ Object.assign(checks, {
         await frame()
         assert.deepEqual(reports, [[2, 1]])
         assert.deepEqual([...document.querySelectorAll('tbody tr')].map((row) => row.getAttribute('data-sortable-row')), ['2', '1'])
+        box.unmount()
+    },
+})
+
+Object.assign(checks, {
+    'GlobalSearch: two letters, debounced, grouped results, ↑ / ↓ across groups, ⌘K focuses': async () => {
+        const asked = []
+        globalThis.fetch = async (url) => {
+            asked.push(String(url))
+            const q = new URL(String(url)).searchParams.get('q')
+
+            return {
+                ok: true,
+                status: 200,
+                json: async () => ({
+                    groups: q === 'SO'
+                        ? [
+                              { label: 'ลูกค้า', results: [{ title: 'สมชาย SO', url: '/admin/customers/1', details: [{ label: 'เบอร์', value: '081' }], image: null }] },
+                              { label: 'คำสั่งซื้อ', results: [{ title: 'SO-1001', url: '/admin/orders/1', details: [], image: null }] },
+                          ]
+                        : [],
+                }),
+            }
+        }
+        const box = mount(<GlobalSearch url="/admin/search" />)
+        const input = document.querySelector('input[role="combobox"]')
+
+        type(input, 'S')
+        await new Promise((resolve) => setTimeout(resolve, 300))
+        assert.equal(asked.length, 0, 'one letter asks nothing')
+
+        type(input, 'SO')
+        await act(() => new Promise((resolve) => setTimeout(resolve, 320)))
+        assert.equal(asked.length, 1)
+        assert.match(asked[0], /\/admin\/search\?q=SO$/)
+        assert.deepEqual([...document.querySelectorAll('[role="listbox"] > div > div:first-child')].map((heading) => heading.textContent), ['ลูกค้า', 'คำสั่งซื้อ'])
+        assert.match(document.querySelector('[role="option"]').textContent, /เบอร์ 081/)
+
+        const selected = () => [...document.querySelectorAll('[role="option"]')].findIndex((option) => option.getAttribute('aria-selected') === 'true')
+        assert.equal(selected(), 0)
+        act(() => input.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })))
+        assert.equal(selected(), 1, 'moves into the next group')
+
+        act(() => input.blur())
+        act(() => document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true })))
+        assert.equal(document.activeElement, input)
         box.unmount()
     },
 })

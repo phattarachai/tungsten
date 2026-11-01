@@ -8,6 +8,7 @@ export { registerIcons } from './components/ui/Icon'
 
 export { AppLayout } from './layouts/AppLayout'
 export { FlashToast } from './components/panel/FlashToast'
+export { GlobalSearch } from './components/panel/GlobalSearch'
 export { PanelSwitcher } from './components/panel/PanelSwitcher'
 export { Sidebar } from './components/panel/Sidebar'
 export { TooltipLayer } from './components/panel/TooltipLayer'

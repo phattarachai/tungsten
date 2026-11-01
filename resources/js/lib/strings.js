@@ -5,6 +5,9 @@
  */
 export const strings = {
     close: 'ปิด',
+    globalSearch: 'ค้นหา…',
+    searching: 'กำลังค้นหา…',
+    noResults: 'ไม่พบผลลัพธ์',
     moveItem: (position) => `ย้ายลำดับที่ ${position}`,
     requestFailed: 'ทำรายการไม่สำเร็จ',
     image: 'รูปภาพ',

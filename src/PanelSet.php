@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Phattarachai\Tungsten;
 
+use Phattarachai\Tungsten\Search\GlobalSearch;
+
 /**
  * One menu set of a panel — its routes, links and help topics in one class, so parallel work adds a file instead of
  * editing the panel provider. A panel picks sets up with `->sets([...])` or `->discoverSets(...)`.
@@ -37,6 +39,16 @@ abstract class PanelSet
      * @return array<string, string>
      */
     public static function helpTopics(): array
+    {
+        return [];
+    }
+
+    /**
+     * This set's kinds of records for the panel's global search (each a {@see GlobalSearch} class).
+     *
+     * @return list<class-string<GlobalSearch>>
+     */
+    public static function searches(): array
     {
         return [];
     }

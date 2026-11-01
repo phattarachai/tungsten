@@ -297,38 +297,7 @@ class TableQuery
             return;
         }
 
-        $like = '%'.str_replace(['\\', '%', '_'], ['\\\\', '\%', '\_'], $term).'%';
-
-        $query->where(function (mixed $query) use ($like): void {
-            foreach ($this->search as $column) {
-                $this->orWhereLike($query, $column, $like);
-            }
-        });
-    }
-
-    private function orWhereLike(mixed $query, string $column, string $like): void
-    {
-        if (str_contains($column, '.') && $query instanceof Builder) {
-            $query->orWhereHas(Str::beforeLast($column, '.'), fn (mixed $related) => $this->whereLike($related, Str::afterLast($column, '.'), $like));
-
-            return;
-        }
-
-        $query->orWhere(fn (mixed $query) => $this->whereLike($query, $column, $like));
-    }
-
-    /**
-     * SQLite has no default LIKE escape character, so it gets an explicit `escape '\'`.
-     */
-    private function whereLike(mixed $query, string $column, string $like): void
-    {
-        if ($query->getConnection()->getDriverName() === 'sqlite') {
-            $query->whereRaw("{$query->getGrammar()->wrap($column)} like ? escape '\\'", [$like]);
-
-            return;
-        }
-
-        $query->where($column, $this->searchOperator, $like);
+        LikeSearch::apply($query, $this->search, $term, $this->searchOperator);
     }
 
     private function applyFilters(mixed $query): void
