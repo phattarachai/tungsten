@@ -104,7 +104,9 @@ class OrdersSet extends \Phattarachai\Tungsten\PanelSet
 | Route macro | Does |
 |---|---|
 | `->nav($label, icon:, group:, sort:, badge:, ability:)` | a sidebar entry (parameterless GET routes); `badge` is a string or an invokable class |
-| `->breadcrumb($label, parent:)` | the trail's last crumb; the parent nav route is inferred from the name (`admin.orders.edit` → `admin.orders`) |
+| `->navParent('admin.settings')` | lights up that nav entry on a page that lives under it (its name doesn't share the prefix), and makes it the breadcrumb's parent |
+| `->activeFor('admin.order-types*', …)` | on a nav route: also active on routes matching these names or patterns |
+| `->breadcrumb($label, parent:)` | the trail's last crumb; the parent nav route is inferred from the name (`admin.orders.edit` → `admin.orders`), or comes from `navParent` / `parent:` |
 | `->breadcrumbs([...])` | a fixed trail |
 | `->help($url)` | the topbar `?` for this route |
 | `->width('4xl')` | caps the content width inside the sheet (`sm` … `7xl`, `full`), or `fit`: as wide as the widest child (a list with few columns) |

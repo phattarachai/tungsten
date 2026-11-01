@@ -26,7 +26,7 @@ it('mounts set routes and route-file routes under the panel path with the {id}. 
 it('generates no route from a page class: only declared routes (and ->login()\'s) exist', function (): void {
     $names = collect(app('router')->getRoutes()->getRoutes())->map->getName()->filter(fn (?string $name): bool => str_starts_with((string) $name, 'admin.'))->sort()->values()->all();
 
-    expect($names)->toBe(['admin.clashing-props', 'admin.dashboard', 'admin.login', 'admin.login.attempt', 'admin.logout', 'admin.notifications', 'admin.notifications.read', 'admin.notifications.read-all', 'admin.orders', 'admin.orders.edit', 'admin.orders.ship', 'admin.orders.show', 'admin.profile', 'admin.profile.password', 'admin.profile.update', 'admin.reports.sales', 'admin.search', 'admin.ui-kit', 'admin.ui-kit.toast']);
+    expect($names)->toBe(['admin.clashing-props', 'admin.dashboard', 'admin.login', 'admin.login.attempt', 'admin.logout', 'admin.notifications', 'admin.notifications.read', 'admin.notifications.read-all', 'admin.order-statuses', 'admin.order-statuses.create', 'admin.order-types', 'admin.orders', 'admin.orders.edit', 'admin.orders.ship', 'admin.orders.show', 'admin.profile', 'admin.profile.password', 'admin.profile.update', 'admin.reports.sales', 'admin.search', 'admin.ui-kit', 'admin.ui-kit.toast']);
 });
 
 it('runs every panel route behind the configured middleware, the gate and the panel middleware', function (): void {
@@ -84,6 +84,30 @@ it('treats a plain controller route the same, with its breadcrumb and layout met
             ->where('breadcrumbs', [['label' => 'การขาย'], ['label' => 'คำสั่งซื้อ', 'url' => url('/admin/orders')], ['label' => 'แก้ไข']])
             ->where('layout', ['flush' => true])
             ->where('nav.1.items.0.active', true));
+});
+
+it('lights up a nav entry on a route that names it with navParent, and links it in the trail', function (): void {
+    $this->actingAs($this->admin())
+        ->get('/admin/order-types')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page
+            ->where('nav.1.items.0.label', 'คำสั่งซื้อ')
+            ->where('nav.1.items.0.active', true)
+            ->where('nav.0.items.0.active', false)
+            ->where('breadcrumbs', [['label' => 'การขาย'], ['label' => 'คำสั่งซื้อ', 'url' => url('/admin/orders')], ['label' => 'ประเภทคำสั่งซื้อ']]));
+});
+
+it('lights up a nav entry on routes matching its activeFor patterns', function (string $url): void {
+    $this->actingAs($this->admin())
+        ->get($url)
+        ->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->where('nav.1.items.0.active', true));
+})->with(['/admin/order-statuses', '/admin/order-statuses/create']);
+
+it('leaves the entry dark elsewhere', function (): void {
+    $this->actingAs($this->admin())
+        ->get('/admin/ui-kit')
+        ->assertInertia(fn (Assert $page): Assert => $page->where('nav.1.items.0.active', false));
 });
 
 it('lets a page replace the breadcrumbs, ending the parent trail in a record name', function (): void {
