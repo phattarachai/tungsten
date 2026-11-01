@@ -4,6 +4,7 @@ import { ChevronDown, CircleHelp, PanelLeft } from 'lucide-react'
 import { cn } from '../../lib/cn'
 
 import { opensInPanel, useHelpPanel } from './helpContext'
+import { Avatar } from './Avatar'
 import { GlobalSearch } from './GlobalSearch'
 import { NotificationBell } from './NotificationBell'
 import { PanelSwitcher } from './PanelSwitcher'
@@ -37,7 +38,7 @@ function UserMenu({ user }) {
     return (
         <details className="group relative">
             <summary className="flex cursor-pointer list-none items-center gap-1.5 rounded-md px-1.5 py-0.5 hover:bg-topbar-hover">
-                <span className="flex size-6 items-center justify-center rounded-full bg-zinc-200 text-xs font-semibold text-zinc-600">{user.name?.charAt(0)?.toUpperCase()}</span>
+                <Avatar person={{ avatar: user.avatar, name: user.name }} className="size-6 text-xs" />
                 <ChevronDown className="size-3.5 text-zinc-400" />
             </summary>
             <div className="absolute right-0 z-40 mt-1 w-52 group-open:animate-panel-drop overflow-hidden rounded-md border border-zinc-200 bg-white shadow-lg">
@@ -45,6 +46,11 @@ function UserMenu({ user }) {
                     <p className="truncate text-[0.8125rem] font-medium text-zinc-900">{user.name}</p>
                     <p className="truncate text-xs text-zinc-400">{user.email}</p>
                 </div>
+                {user.profileUrl && (
+                    <Link href={urlOf(user.profileUrl)} className="block w-full px-3 py-2 text-left text-[0.8125rem] text-zinc-700 hover:bg-zinc-50">
+                        {strings.profile}
+                    </Link>
+                )}
                 {user.logoutUrl && (
                     <Link {...linkProps(user.logoutUrl, 'post')} as="button" className="block w-full px-3 py-2 text-left text-[0.8125rem] text-zinc-700 hover:bg-zinc-50">
                         {strings.signOut}
@@ -113,7 +119,7 @@ export function Topbar({ sidebarClosed, onToggleSidebar, toolbar, search }) {
                 {toolbar}
                 {panel.notifications && <NotificationBell url={panel.notifications.url} poll={panel.notifications.poll} />}
                 <HelpButton url={panel.help} />
-                {auth?.user && <UserMenu user={{ ...auth.user, logoutUrl: auth.logoutUrl }} />}
+                {auth?.user && <UserMenu user={{ ...auth.user, logoutUrl: auth.logoutUrl, profileUrl: auth.profileUrl }} />}
             </div>
         </header>
     )

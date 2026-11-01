@@ -233,6 +233,15 @@ return $panel
 - Every word on the page is a label in `config('tungsten.login.labels')` (Thai by default): `title`, `intro`,
   `email`, `password`, `remember`, `submit`, `forgot`, `failed`, `denied`, `throttled` (`:seconds`, `:minutes`).
 
+## Profile page (optional)
+
+`->profile(avatar: 'avatar_path', disk: 'public')` gives the signed-in user a page at `{path}/profile`, linked from the
+user menu: name and email (unique among users), a photo when `avatar` names a column on the user (stored under
+`avatars/` on `disk`, replaced or removed, shown in the topbar), and a password change that asks for the current one
+(`Password::defaults()` applies). Without `avatar` there's no photo part. Labels are `config('tungsten.profile.labels')`,
+overridable per panel with `->profile(labels: [...])`. It sits next to `->login()` but doesn't need it: any auth works.
+Run `php artisan storage:link` for the `public` disk, and keep `APP_URL` right, since photo URLs come from the disk.
+
 ## Global search (optional)
 
 The topbar gets a search box (⌘K / Ctrl+K) across the records a panel opts in, like Filament's globally searchable
@@ -756,7 +765,6 @@ record / form recipes and the kit catalogue), so an agent building a panel page 
 
 ## Coming next
 
-- A profile page (v0.3).
 - Later — CSV/Excel import wizard, table export, a documentation site.
 
 ## Testing

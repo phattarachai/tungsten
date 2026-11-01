@@ -25,6 +25,7 @@ const cases = [
     ['tungsten::Home', { title: 'ร้านค้า', description: '' }, 'คำสั่งซื้อ'],
     ['tungsten::errors/Error', { status: 404, home: '/admin' }, '404'],
     ['panel/orders/Index', { title: 'คำสั่งซื้อ', table }, 'คำสั่งซื้อ'],
+    ['tungsten::auth/Profile', { labels: { title: 'โปรไฟล์', details: 'ข้อมูลส่วนตัว', name: 'ชื่อ', email: 'อีเมล', avatar: 'รูปโปรไฟล์', changeAvatar: 'เปลี่ยนรูป', removeAvatar: 'ลบรูป', save: 'บันทึก', password: 'เปลี่ยนรหัสผ่าน', currentPassword: 'รหัสผ่านปัจจุบัน', newPassword: 'รหัสผ่านใหม่', confirmPassword: 'ยืนยันรหัสผ่านใหม่', savePassword: 'เปลี่ยนรหัสผ่าน' }, profile: { name: 'Admin', email: 'admin@example.com', avatar: null }, withAvatar: true, updateUrl: '/admin/profile', passwordUrl: '/admin/profile/password' }, 'รหัสผ่านปัจจุบัน'],
     ['tungsten::auth/Login', { labels: { title: 'เข้าสู่ระบบ', intro: '', email: 'อีเมล', password: 'รหัสผ่าน', remember: 'จดจำ', submit: 'เข้าสู่ระบบ', forgot: 'ลืมรหัสผ่าน?' }, action: '/admin/login', forgotPasswordUrl: '/forgot-password' }, 'ลืมรหัสผ่าน?'],
 ]
 

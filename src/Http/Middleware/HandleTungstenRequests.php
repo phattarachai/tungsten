@@ -97,7 +97,7 @@ class HandleTungstenRequests extends Middleware
     }
 
     /**
-     * @return array{user: ?array{id: mixed, name: ?string, email: ?string}, logoutUrl: ?string}
+     * @return array{user: ?array{id: mixed, name: ?string, email: ?string, avatar: ?string}, profileUrl: ?string, logoutUrl: ?string}
      */
     private function auth(Request $request, Panel $panel): array
     {
@@ -108,7 +108,9 @@ class HandleTungstenRequests extends Middleware
                 'id' => $user->getAuthIdentifier(),
                 'name' => $user->name ?? null,
                 'email' => $user->email ?? null,
+                'avatar' => $panel->getProfile()?->avatarUrl($user),
             ],
+            'profileUrl' => $panel->getProfile() === null ? null : route("{$panel->getId()}.profile"),
             'logoutUrl' => $panel->logoutUrlFor(),
         ];
     }
