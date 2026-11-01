@@ -7,6 +7,16 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.31 — 2026-11-01
+
+- **Folded groups**: `->navigationGroups(['การขาย', 'การตลาด' => ['collapsed' => true]])` starts a group folded.
+  Each user's open or closed choice per group is remembered per panel in localStorage; the older stored list still
+  reads. A folded group opens on its own while it holds the active page, and the user can still fold it there.
+- **Bottom entry**: `->nav('ตั้งค่า', icon: 'settings', pinned: 'bottom')` (or a link's `'pinned' => 'bottom'`) sits
+  at the sidebar's foot, apart from the groups. The nav prop gets a last section with `pinned: 'bottom'`, and every
+  section carries `collapsed`.
+- Ungrouped entries (no `group`) already came first with no heading; this is now documented.
+
 ## v0.2.30 — 2026-11-01
 
 - **`->navParent('admin.settings')`** on a route: a page that lives under another nav entry (its name doesn't share

@@ -153,11 +153,17 @@ class AdminPanelProvider extends PanelProvider
             ->brand('My Shop', tag: 'v2', logo: 'images/brand-mark.svg')   // sidebar head + login: name, tag, mark
             ->brandColor('#0d9488')              // accent; or theme it in CSS, see "Theme"
             ->middleware(['panel.enabled'])      // on top of config('tungsten.middleware')
-            ->navigationGroups(['การขาย', 'ลูกค้า', 'ระบบ'])
+            ->navigationGroups(['การขาย', 'ลูกค้า', 'การตลาด' => ['collapsed' => true], 'ระบบ'])
             ->discoverSets(app_path('Panel/Sets'), 'App\\Panel\\Sets');
     }
 }
 ```
+
+**The sidebar** lists ungrouped entries (`->nav()` with no `group`) first, with no heading, then the groups in
+`navigationGroups()` order. A group with `['collapsed' => true]` starts folded. Each user's own open or closed choice
+per group is remembered per panel in the browser. A folded group opens on its own while it holds the active page.
+`->nav('ตั้งค่า', icon: 'settings', pinned: 'bottom')` (or a link's `'pinned' => 'bottom'`) keeps an entry at the
+sidebar's foot, apart from the groups.
 
 Other options: `->ability('…' | null)`, `->sets([...])`, `->routes(fn () => …)`, `->navigationLinks([...])`,
 `->help(fn ($routeName) => $url)`, `->login(...)` (see Sign-in), `->logoutUrl('logout' | url | closure | false)`, `->rail('#14262a')` (sidebar tint),
@@ -329,7 +335,7 @@ The metadata a route can carry:
 
 | Macro | What it does |
 |---|---|
-| `->nav($label, icon:, group:, sort:, badge:, ability:)` | a sidebar entry. `icon` is a lucide name; `badge` a string or the class of an invokable returning one per request (a count); `ability` hides it. A route's own `can:` middleware hides it too. Only parameterless GET routes. |
+| `->nav($label, icon:, group:, sort:, badge:, ability:, pinned:)` | a sidebar entry. `icon` is a lucide name; `badge` a string or the class of an invokable returning one per request (a count); `ability` hides it. A route's own `can:` middleware hides it too. `pinned: 'bottom'` puts it at the sidebar's foot. Only parameterless GET routes. |
 | `->navParent('admin.settings')` | a page that lives under another nav entry: that entry lights up while the page is open, and it becomes the breadcrumb's parent (unless `breadcrumb(parent:)` names another). |
 | `->activeFor('admin.order-types*', …)` | on a nav route: it also lights up on routes matching these names or patterns. One line on the entry covers a family of routes. |
 | `->breadcrumb($label, parent:)` | the trail's last label. The parent nav route — inferred from the name (`admin.orders.edit` → `admin.orders`), `navParent`, or given — links before it. |

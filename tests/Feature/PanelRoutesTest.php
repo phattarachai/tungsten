@@ -215,6 +215,39 @@ it('builds the nav from route metadata in group order, filtered by can: middlewa
         ->assertInertia(fn (Assert $page): Assert => $page->where('nav.2.group', 'รายงาน')->where('nav.2.items.0.label', 'ยอดขาย'));
 });
 
+it('folds a group by default when navigationGroups gives it collapsed, and pins an entry at the bottom', function (): void {
+    app(PanelRegistry::class)->find('admin')->navigationGroups(['การขาย' => ['collapsed' => true], 'รายงาน']);
+    $uiKit = Route::getRoutes()->getByName('admin.ui-kit');
+    RouteMeta::put($uiKit, 'nav', [...RouteMeta::of($uiKit)['nav'], 'pinned' => 'bottom']);
+
+    $this->actingAs($this->admin(1))
+        ->get('/admin/orders')
+        ->assertInertia(fn (Assert $page): Assert => $page
+            ->where('nav.0.group', null)
+            ->where('nav.0.collapsed', false)
+            ->where('nav.0.items', fn ($items): bool => collect($items)->pluck('label')->all() === ['หน้าหลัก'])
+            ->where('nav.1.group', 'การขาย')
+            ->where('nav.1.collapsed', true)
+            ->where('nav.1.pinned', null)
+            ->where('nav.2.group', 'รายงาน')
+            ->where('nav.2.collapsed', false)
+            ->where('nav.3.pinned', 'bottom')
+            ->where('nav.3.group', null)
+            ->where('nav.3.items.0.label', 'UI Kit')
+            ->missing('nav.3.items.0.pinned')
+            ->missing('nav.4'));
+});
+
+it('keeps the plain list form of navigationGroups', function (): void {
+    $this->actingAs($this->admin(1))
+        ->get('/admin/orders')
+        ->assertInertia(fn (Assert $page): Assert => $page->where('nav.1.group', 'การขาย')->where('nav.1.collapsed', false)->where('nav.2.group', 'รายงาน'));
+});
+
+it('refuses an unknown nav pin', function (): void {
+    Route::get('odd', HomePage::class)->nav('แปลก', pinned: 'top');
+})->throws(InvalidArgumentException::class, 'Unknown nav pin [top]');
+
 it('takes the help URL from the route, else the set topics', function (): void {
     $this->actingAs($this->admin(1))
         ->get('/admin/reports/sales')

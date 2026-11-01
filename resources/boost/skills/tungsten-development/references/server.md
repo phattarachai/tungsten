@@ -17,7 +17,7 @@ class AdminPanelProvider extends \Phattarachai\Tungsten\PanelProvider
             ->color('#d42a2f')                                            // switcher chip
             ->ability('accessPanel')                                      // null: no gate
             ->middleware([EnsureFeatureEnabled::class])                    // after config('tungsten.middleware')
-            ->navigationGroups(['การขาย', 'ลูกค้า', 'ระบบ'])
+            ->navigationGroups(['การขาย', 'ลูกค้า', 'การตลาด' => ['collapsed' => true], 'ระบบ'])   // folded until opened
             ->discoverSets(app_path('Panel/Sets'), 'App\\Panel\\Sets')
             ->layout(['sheet' => true])                                   // AppLayout defaults for every page
             ->filterLayout('bar')                                          // or 'menu'
@@ -103,7 +103,7 @@ class OrdersSet extends \Phattarachai\Tungsten\PanelSet
 
 | Route macro | Does |
 |---|---|
-| `->nav($label, icon:, group:, sort:, badge:, ability:)` | a sidebar entry (parameterless GET routes); `badge` is a string or an invokable class |
+| `->nav($label, icon:, group:, sort:, badge:, ability:, pinned:)` | a sidebar entry (parameterless GET routes); `badge` is a string or an invokable class; no `group` lists it at the top with no heading; `pinned: 'bottom'` puts it at the sidebar's foot |
 | `->navParent('admin.settings')` | lights up that nav entry on a page that lives under it (its name doesn't share the prefix), and makes it the breadcrumb's parent |
 | `->activeFor('admin.order-types*', …)` | on a nav route: also active on routes matching these names or patterns |
 | `->breadcrumb($label, parent:)` | the trail's last crumb; the parent nav route is inferred from the name (`admin.orders.edit` → `admin.orders`), or comes from `navParent` / `parent:` |
