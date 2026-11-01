@@ -446,7 +446,21 @@ Object.assign(checks, {
         const other = mount(<Launchpad url="/admin/search" nav={nav} scope="shop" />)
         act(() => document.querySelectorAll('button[aria-haspopup="dialog"]')[1].click())
         assert.match(dialog().textContent, /ปักหมุดเมนูหรือรายการที่ใช้บ่อย/, 'each panel keeps its own lists')
+        key('Escape')
+        window.localStorage.setItem('tungsten:shop:launchpad-pinned', JSON.stringify([
+            { kind: 'record', title: 'เกศินี วงศ์ใหญ่', url: '/admin/staff/1', image: '/dead/staff-1.jpg' },
+            { kind: 'record', title: 'SO-1001', url: '/admin/orders/1', image: '/dead/order-1.jpg', icon: 'package' },
+        ]))
+        act(() => document.querySelectorAll('button[aria-haspopup="dialog"]')[1].click())
+        const marks = () => [...dialog().querySelectorAll('[role="option"]')].map((option) => option.firstElementChild)
+        assert.deepEqual(marks().map((mark) => mark.tagName), ['IMG', 'IMG'])
+        marks().forEach((image) => act(() => image.dispatchEvent(new window.Event('error'))))
+        assert.deepEqual(marks().map((mark) => mark.tagName), ['SPAN', 'SPAN'], 'a dead image falls back')
+        assert.equal(marks()[0].textContent, 'ก', "no icon: the title's initial, as Avatar draws it")
+        assert.ok(marks()[1].querySelector('svg'), "the kind's icon when it has one")
+        key('Escape')
         other.unmount()
+
         assert.ok(sameUrl('http://tungsten.local/admin/orders/1', '/admin/orders/1'), "route()'s absolute URL is a page's relative one")
         assert.ok(!sameUrl('/admin/orders/1', '/admin/orders/12'))
         box.unmount()
