@@ -7,6 +7,15 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.28 — 2026-11-01
+
+- **Launchpad**: the topbar search box opens a centred launchpad instead of a dropdown. It has a large input, a
+  **เมนู** group that matches the panel's nav (label or group, from one letter, ability-filtered as the sidebar is)
+  before the record kinds, and **ปักหมุด** / **ค้นหาล่าสุด** / **เปิดล่าสุด** lists in localStorage, one set per panel.
+  The footer shows the keys: ↑↓ เลือก · ↵ เปิด · ⌘↵ แท็บใหม่ · esc ปิด. ⌘K / Ctrl+K opens it from anywhere.
+- `useRememberRecord({ title, subtitle, url, icon })` lists a record page under เปิดล่าสุด.
+- `GlobalSearch::icon()` (optional) names the icon beside a kind's results. The providers' API is otherwise unchanged.
+
 ## v0.2.27 — 2026-11-01
 
 - **`->width('fit')`** / `<AppLayout width="fit">`: the page's content is as wide as its widest child, so a list with

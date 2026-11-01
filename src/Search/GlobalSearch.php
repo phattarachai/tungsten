@@ -70,6 +70,12 @@ abstract class GlobalSearch
         return null;
     }
 
+    /** A named icon beside this kind's results in the launchpad (as in `->nav(icon:)`); null for a plain dot. */
+    public function icon(): ?string
+    {
+        return null;
+    }
+
     /** The gate a user must pass to see these results; null for anyone in the panel. */
     public function ability(): ?string
     {

@@ -244,8 +244,9 @@ Run `php artisan storage:link` for the `public` disk, and keep `APP_URL` right, 
 
 ## Global search (optional)
 
-The topbar gets a search box (⌘K / Ctrl+K) across the records a panel opts in, like Filament's globally searchable
-resources. Each kind of record is a `GlobalSearch` class:
+The topbar gets a search box that opens a launchpad (click it, or ⌘K / Ctrl+K from anywhere): a large input over
+the panel's menus and the records it opts in, like Filament's globally searchable resources. Each kind of record is a
+`GlobalSearch` class:
 
 ```php
 class CustomerSearch extends \Phattarachai\Tungsten\Search\GlobalSearch
@@ -256,6 +257,7 @@ class CustomerSearch extends \Phattarachai\Tungsten\Search\GlobalSearch
     public function title(Model $record): string { return $record->name; }
     public function details(Model $record): array { return ['เบอร์โทร' => $record->phone]; }
     public function url(Model $record): string { return route('admin.customers.show', $record); }
+    public function icon(): ?string { return 'users'; }                                          // optional, beside its results
     public function ability(): ?string { return 'viewCustomers'; }                               // optional
 }
 ```
@@ -264,6 +266,24 @@ Turn it on per panel with `->globalSearch([CustomerSearch::class])`, or let a se
 `public static function searches(): array`. The box asks `{path}/search?q=` (behind the panel's auth and gate) after
 two letters; each kind answers up to `limit()` matches (5), LIKE-escaped, `ilike` with `operator()` on PostgreSQL.
 `image()` adds a thumbnail. A panel without searches has no box and no route.
+
+In the launchpad:
+
+- **เมนู** matches the panel's nav entries (the shared `nav`, already filtered by each route's ability) on their
+  label or group from one letter, shown before the record kinds. Legacy links are left out.
+- **Records** come from the `GlobalSearch` classes from two letters, one group per kind.
+- With the input empty, it lists **ปักหมุด** (pinned), **ค้นหาล่าสุด** (records opened from it) and **เปิดล่าสุด**
+  (record pages the user viewed). These lists live in localStorage, one set per panel. Any row can be pinned.
+- Keys: ↑↓ เลือก · ↵ เปิด · ⌘↵ / Ctrl ↵ แท็บใหม่ · esc ปิด.
+
+A record page adds itself to เปิดล่าสุด with the hook (it also refreshes a pinned copy, so a renamed record reads
+right):
+
+```jsx
+useRememberRecord({ title: order.number, subtitle: order.customer, url: order.url, icon: 'package' })
+```
+
+`setStrings({ launchpadPlaceholder: 'ค้นหาคำสั่งซื้อ ลูกค้า สินค้า หรือชื่อเมนู…' })` sets the input's hint.
 
 ## Notification bell (optional)
 

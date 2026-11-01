@@ -4,9 +4,10 @@ import assert from 'node:assert/strict'
 import { act, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
-import { Avatar, Chart, Checkbox, Combobox, CopyButton, DataTable, DatePicker, GlobalSearch, NotificationBell, PickerDialog, Sortable, DateRangePicker, Facts, Input, RadioGroup, Select, Textarea, getJson, postJson, SearchInput, sendJson, StatsStrip, Thumb, Zoomable } from '@tungsten'
+import { Avatar, Chart, Checkbox, Combobox, CopyButton, DataTable, DatePicker, Launchpad, NotificationBell, PickerDialog, Sortable, DateRangePicker, Facts, Input, RadioGroup, Select, Textarea, getJson, postJson, SearchInput, sendJson, StatsStrip, Thumb, Zoomable } from '@tungsten'
 import { FlashToastFor } from '@tungsten/components/panel/FlashToast'
 import { PageWidthContext } from '@tungsten/lib/pageWidth'
+import { sameUrl } from '@tungsten/lib/launchpadStore'
 import { RichText } from '@tungsten/rich-text'
 
 function mount(element) {
@@ -372,47 +373,82 @@ Object.assign(checks, {
 })
 
 Object.assign(checks, {
-    'GlobalSearch: two letters, debounced, grouped results, ↑ / ↓ across groups, ⌘K focuses': async () => {
+    'Launchpad: ⌘K opens it, menus from one letter, records from two, keys, recent and pinned per panel': async () => {
+        window.localStorage.clear()
         const asked = []
+        const opened = []
         globalThis.fetch = async (url) => {
             asked.push(String(url))
-            const q = new URL(String(url)).searchParams.get('q')
 
             return {
                 ok: true,
                 status: 200,
-                json: async () => ({
-                    groups: q === 'SO'
-                        ? [
-                              { label: 'ลูกค้า', results: [{ title: 'สมชาย SO', url: '/admin/customers/1', details: [{ label: 'เบอร์', value: '081' }], image: null }] },
-                              { label: 'คำสั่งซื้อ', results: [{ title: 'SO-1001', url: '/admin/orders/1', details: [], image: null }] },
-                          ]
-                        : [],
-                }),
+                json: async () => ({ groups: [{ label: 'คำสั่งซื้อ', icon: 'package', results: [{ title: 'SO-1001 คูปองส่วนลด', url: '/admin/orders/1', details: [{ label: 'ลูกค้า', value: 'สมชาย' }], image: null }] }] }),
             }
         }
-        const box = mount(<GlobalSearch url="/admin/search" />)
-        const input = document.querySelector('input[role="combobox"]')
+        window.open = (...args) => opened.push(args)
+        const nav = [
+            { group: null, items: [{ label: 'หน้าหลัก', icon: 'layout-grid', url: '/admin' }] },
+            { group: 'การตลาด', items: [{ label: 'คูปอง', icon: 'ticket', url: '/admin/coupons' }, { label: 'คำสั่งซื้อ (ระบบเดิม)', url: '/legacy/orders', legacy: true, external: true }] },
+            { group: 'การขาย', items: [{ label: 'คำสั่งซื้อ', icon: 'shopping-cart', url: '/admin/orders' }] },
+        ]
+        const box = mount(<Launchpad url="/admin/search" nav={nav} scope="admin" />)
+        const trigger = document.querySelector('button[aria-haspopup="dialog"]')
+        const dialog = () => document.querySelector('[role="dialog"]')
+        const input = () => dialog().querySelector('input')
+        const headings = () => [...dialog().querySelectorAll('[role="group"]')].map((group) => group.getAttribute('aria-label'))
+        const titles = () => [...dialog().querySelectorAll('[role="option"]')].map((option) => option.querySelector('span.block').textContent)
+        const selected = () => [...dialog().querySelectorAll('[role="option"]')].findIndex((option) => option.getAttribute('aria-selected') === 'true')
+        const key = (name, extra = {}) => act(() => input().dispatchEvent(new window.KeyboardEvent('keydown', { key: name, bubbles: true, ...extra })))
 
-        type(input, 'S')
-        await new Promise((resolve) => setTimeout(resolve, 300))
-        assert.equal(asked.length, 0, 'one letter asks nothing')
+        act(() => window.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true })))
+        assert.ok(dialog(), '⌘K opens the launchpad')
+        assert.match(dialog().textContent, /ปักหมุดเมนูหรือรายการที่ใช้บ่อย/, 'nothing pinned or recent yet')
 
-        type(input, 'SO')
-        await act(() => new Promise((resolve) => setTimeout(resolve, 320)))
+        type(input(), 'ค')
+        await act(() => new Promise((resolve) => setTimeout(resolve, 260)))
+        assert.equal(asked.length, 0, 'one letter asks the server nothing')
+        assert.deepEqual(headings(), ['เมนู'])
+        assert.deepEqual(titles(), ['คูปอง', 'คำสั่งซื้อ'], 'menus match from one letter; legacy links are left out')
+
+        type(input(), 'การตลาด')
+        assert.deepEqual(titles().slice(0, 1), ['คูปอง'], 'a menu matches on its group too')
+
+        type(input(), 'คูปอง')
+        await act(() => new Promise((resolve) => setTimeout(resolve, 260)))
         assert.equal(asked.length, 1)
-        assert.match(asked[0], /\/admin\/search\?q=SO$/)
-        assert.deepEqual([...document.querySelectorAll('[role="listbox"] > div > div:first-child')].map((heading) => heading.textContent), ['ลูกค้า', 'คำสั่งซื้อ'])
-        assert.match(document.querySelector('[role="option"]').textContent, /เบอร์ 081/)
+        assert.match(asked[0], /\/admin\/search\?q=%E0%B8%84/)
+        assert.deepEqual(headings(), ['เมนู', 'คำสั่งซื้อ'], 'menus first, then the record kinds')
+        assert.deepEqual(titles(), ['คูปอง', 'SO-1001 คูปองส่วนลด'])
+        assert.match(dialog().textContent, /ลูกค้า สมชาย/)
+        assert.equal(dialog().querySelector('mark').textContent, 'คูปอง', 'the match is marked')
 
-        const selected = () => [...document.querySelectorAll('[role="option"]')].findIndex((option) => option.getAttribute('aria-selected') === 'true')
         assert.equal(selected(), 0)
-        act(() => input.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })))
-        assert.equal(selected(), 1, 'moves into the next group')
+        key('ArrowDown')
+        assert.equal(selected(), 1, '↓ moves into the record group')
+        key('Enter', { metaKey: true })
+        assert.deepEqual(opened, [['/admin/orders/1', '_blank', 'noopener']], '⌘↵ opens a new tab')
+        assert.equal(dialog(), null, 'and closes the launchpad')
+        assert.deepEqual(JSON.parse(window.localStorage.getItem('tungsten:admin:launchpad-searched')).map((item) => item.url), ['/admin/orders/1'])
 
-        act(() => input.blur())
-        act(() => document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true })))
-        assert.equal(document.activeElement, input)
+        act(() => trigger.click())
+        assert.deepEqual(headings(), ['ค้นหาล่าสุด'])
+        assert.deepEqual(titles(), ['SO-1001 คูปองส่วนลด'])
+
+        act(() => dialog().querySelector('button[aria-label="ปักหมุด"]').click())
+        assert.deepEqual(headings(), ['ปักหมุด'], 'a pinned item leaves the recent list')
+        assert.ok(dialog().querySelector('button[aria-label="เลิกปักหมุด"]'))
+
+        key('Escape')
+        assert.equal(dialog(), null)
+        assert.equal(document.activeElement, trigger, 'focus goes back to the box')
+
+        const other = mount(<Launchpad url="/admin/search" nav={nav} scope="shop" />)
+        act(() => document.querySelectorAll('button[aria-haspopup="dialog"]')[1].click())
+        assert.match(dialog().textContent, /ปักหมุดเมนูหรือรายการที่ใช้บ่อย/, 'each panel keeps its own lists')
+        other.unmount()
+        assert.ok(sameUrl('http://tungsten.local/admin/orders/1', '/admin/orders/1'), "route()'s absolute URL is a page's relative one")
+        assert.ok(!sameUrl('/admin/orders/1', '/admin/orders/12'))
         box.unmount()
     },
 })
