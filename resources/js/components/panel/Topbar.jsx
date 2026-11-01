@@ -5,6 +5,7 @@ import { cn } from '../../lib/cn'
 
 import { opensInPanel, useHelpPanel } from './helpContext'
 import { GlobalSearch } from './GlobalSearch'
+import { NotificationBell } from './NotificationBell'
 import { PanelSwitcher } from './PanelSwitcher'
 import { strings } from '../../lib/strings'
 import { linkProps, urlOf } from '../../lib/href'
@@ -110,6 +111,7 @@ export function Topbar({ sidebarClosed, onToggleSidebar, toolbar, search }) {
             <div className="flex shrink-0 items-center gap-2">
                 {search ?? (panel.search && <GlobalSearch url={panel.search} />)}
                 {toolbar}
+                {panel.notifications && <NotificationBell url={panel.notifications.url} poll={panel.notifications.poll} />}
                 <HelpButton url={panel.help} />
                 {auth?.user && <UserMenu user={{ ...auth.user, logoutUrl: auth.logoutUrl }} />}
             </div>

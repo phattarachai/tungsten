@@ -14,6 +14,7 @@ use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Phattarachai\Tungsten\Exceptions\MissingPageClass;
 use Phattarachai\Tungsten\Http\Controllers\GlobalSearchController;
+use Phattarachai\Tungsten\Http\Controllers\NotificationController;
 use Phattarachai\Tungsten\Http\Middleware\AuthenticatePanel;
 use Phattarachai\Tungsten\Http\Middleware\HandleTungstenRequests;
 use Phattarachai\Tungsten\Search\GlobalSearch;
@@ -58,6 +59,8 @@ class Panel
      * @var list<class-string<GlobalSearch>>
      */
     private array $globalSearch = [];
+
+    private ?int $notificationPoll = null;
 
     private ?string $brandColor = null;
 
@@ -219,6 +222,22 @@ class Panel
         $this->globalSearch = $searches;
 
         return $this;
+    }
+
+    /**
+     * Turns on the topbar's notification bell over the user's Laravel database notifications (the `notifications`
+     * table, a `Notifiable` user), refreshed every `$pollSeconds` while the tab is visible.
+     */
+    public function notifications(int $pollSeconds = 30): self
+    {
+        $this->notificationPoll = max(5, $pollSeconds);
+
+        return $this;
+    }
+
+    public function getNotificationPoll(): ?int
+    {
+        return $this->notificationPoll;
     }
 
     /**
@@ -555,6 +574,12 @@ class Panel
     {
         if ($this->getGlobalSearches() !== []) {
             app('router')->get('search', GlobalSearchController::class)->name('search');
+        }
+
+        if ($this->notificationPoll !== null) {
+            app('router')->get('notifications', [NotificationController::class, 'index'])->name('notifications');
+            app('router')->post('notifications/read', [NotificationController::class, 'readAll'])->name('notifications.read-all');
+            app('router')->post('notifications/{notification}/read', [NotificationController::class, 'read'])->name('notifications.read');
         }
 
         foreach ($this->getSets() as $set) {
