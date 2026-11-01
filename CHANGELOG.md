@@ -7,6 +7,13 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.26 — 2026-11-01
+
+- **`Chart`**: a small bar or line chart over a date series (`data` as `[{ label, value }]`), in the brand, zinc or a
+  status tone; first / middle / last labels on the axis, the value in each bar's or point's tooltip, an empty state.
+  Plain divs and SVG, so it renders on the server.
+- **`CopyButton`**: copies `value` to the clipboard; the icon turns to a tick ("คัดลอกแล้ว") for a moment.
+
 ## v0.2.25 — 2026-11-01
 
 - **`PickerDialog`**: a picture-card picker — search on top, cards (image, title, subtitle, price / stock line),

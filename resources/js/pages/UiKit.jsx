@@ -12,11 +12,13 @@ import {
     ButtonBar,
     ButtonGroup,
     Card,
-    Checkbox,
     CardHeader,
+    Chart,
+    Checkbox,
     ColumnsMenu,
     Combobox,
     ConfirmDialog,
+    CopyButton,
     DataList,
     DataTable,
     DatePicker,
@@ -87,6 +89,8 @@ const PEOPLE = [
     { value: 'c-2', label: 'สมชาย มั่นคง', avatar: null, meta: '089-xxx-5678' },
     { value: 'c-3', label: 'Wanida P.', avatar: null, meta: '062-xxx-9012' },
 ]
+
+const CLICKS = Array.from({ length: 30 }, (_, index) => ({ label: `${index + 1} ต.ค.`, value: [3, 7, 4, 0, 12, 9, 5][index % 7] + (index > 20 ? 6 : 0) }))
 
 const STATUS_TONES_DEMO = [
     ['draft', 'ร่าง'],
@@ -295,6 +299,16 @@ function Chips() {
                         {tone}
                     </Badge>
                 ))}
+            </Row>
+            <Row label="Chart">
+                <div className="grid w-full gap-4 sm:grid-cols-2">
+                    <Chart data={CLICKS} unit="คลิก" tone="done" height="5rem" label="คลิกย้อนหลัง 30 วัน" />
+                    <Chart data={CLICKS} type="line" unit="คลิก" height="5rem" label="คลิกย้อนหลัง 30 วัน" />
+                </div>
+            </Row>
+            <Row label="CopyButton">
+                <span className="font-mono text-zinc-600">s.example.com/abc</span>
+                <CopyButton value="https://s.example.com/abc" label="คัดลอกลิงก์" />
             </Row>
             <Row label="Lightbox">
                 {GALLERY.map((image, index) => (

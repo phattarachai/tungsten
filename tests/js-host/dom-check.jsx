@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 import { act, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
-import { Avatar, Checkbox, Combobox, DataTable, DatePicker, GlobalSearch, NotificationBell, PickerDialog, Sortable, DateRangePicker, Facts, Input, RadioGroup, Select, Textarea, getJson, postJson, SearchInput, sendJson, StatsStrip, Thumb, Zoomable } from '@tungsten'
+import { Avatar, Chart, Checkbox, Combobox, CopyButton, DataTable, DatePicker, GlobalSearch, NotificationBell, PickerDialog, Sortable, DateRangePicker, Facts, Input, RadioGroup, Select, Textarea, getJson, postJson, SearchInput, sendJson, StatsStrip, Thumb, Zoomable } from '@tungsten'
 import { FlashToastFor } from '@tungsten/components/panel/FlashToast'
 import { RichText } from '@tungsten/rich-text'
 
@@ -584,6 +584,44 @@ Object.assign(checks, {
         await act(() => new Promise((resolve) => setTimeout(resolve, 300)))
         assert.deepEqual(asked, [null, 'VC'])
         assert.match(document.querySelector('[role="dialog"] .grid').textContent, /ผล VC/)
+        box.unmount()
+    },
+})
+
+Object.assign(checks, {
+    'Chart: bars scaled to the highest value, a tooltip per point, three axis labels, a line as SVG, an empty state': () => {
+        const data = [{ label: '1 ต.ค.', value: 4 }, { label: '2 ต.ค.', value: 0 }, { label: '3 ต.ค.', value: 8 }, { label: '4 ต.ค.', value: 2 }]
+        const box = mount(<Chart data={data} unit="คลิก" tone="done" label="คลิกย้อนหลัง" />)
+        const columns = [...document.querySelectorAll('[role="img"] > div')]
+
+        assert.equal(columns.length, 4)
+        assert.deepEqual(columns.map((column) => column.firstElementChild.style.height), ['50%', '0%', '100%', '25%'])
+        assert.equal(columns[2].getAttribute('title'), '3 ต.ค.: 8 คลิก')
+        assert.ok(columns[0].firstElementChild.classList.contains('bg-tone-done-ink/70'))
+        assert.deepEqual([...document.querySelectorAll('figure > div:last-child span')].map((span) => span.textContent), ['1 ต.ค.', '2 ต.ค.', '4 ต.ค.'])
+
+        box.render(<Chart data={data} type="line" />)
+        assert.equal(document.querySelector('polyline').getAttribute('points').split(' ').length, 4)
+        assert.equal(document.querySelectorAll('[role="img"] div[title]').length, 4)
+
+        box.render(<Chart data={data.map((point) => ({ ...point, value: 0 }))} empty="ไม่มีคลิก" />)
+        assert.equal(document.body.textContent, 'ไม่มีคลิก')
+        box.unmount()
+    },
+
+    'CopyButton: copies the value and shows the tick for a moment': async () => {
+        const written = []
+        Object.defineProperty(globalThis.navigator, 'clipboard', { value: { writeText: async (text) => written.push(text) }, configurable: true })
+        const box = mount(<CopyButton value="https://s.example.com/abc" label="คัดลอกลิงก์" />)
+        const button = document.querySelector('button')
+
+        assert.equal(button.getAttribute('aria-label'), 'คัดลอกลิงก์')
+        await act(async () => button.click())
+        assert.deepEqual(written, ['https://s.example.com/abc'])
+        assert.equal(button.getAttribute('aria-label'), 'คัดลอกแล้ว')
+
+        await act(() => new Promise((resolve) => setTimeout(resolve, 1600)))
+        assert.equal(button.getAttribute('aria-label'), 'คัดลอกลิงก์')
         box.unmount()
     },
 })

@@ -72,6 +72,7 @@ before relying on a prop not listed here.
 |---|---|
 | `Button` | `variant` (`solid`/`outline`/`ghost`), `tone` (`neutral`/`brand`/`amber`/`blue`/`danger`), `size`, `icon` |
 | `IconButton` | `icon`, `label` (tooltip), `tone` |
+| `CopyButton` | `value`, `label`, `copiedLabel` — copies to the clipboard, a tick for a moment |
 | `ActionMenu`, `RowActions` | `items` (`label`, `icon`, `href` or `onSelect`, `tone: 'danger'`) |
 | `ButtonGroup` | segmented choice; `size="sm"` in toolbars |
 | `ButtonBar`, `SyncButton`, `HelpLink` | grouped buttons, a "pull from another system" button, a handbook link |
@@ -79,6 +80,7 @@ before relying on a prop not listed here.
 | `Avatar`, `AvatarStack` | `person` (`avatar`, `name`), `zoom`; overlapping avatars with +N |
 | `Thumb` | `src`, `full`, `alt`, `zoom` — a rounded image with a placeholder |
 | `Zoomable`, `LightboxProvider`, `useLightbox` | full-screen images |
+| `Chart` | `data` (`[{ label, value }]`), `type` (`bar`/`line`), `tone`, `height`, `format`, `unit`, `empty`, `label` — a small SSR-safe series chart |
 | `Dropdown`, `DropdownSection`, `DropdownOption` | a popover menu |
 | `Icon`, `registerIcons` | named lucide icons (`registerIcons({ name: Component })` adds more) |
 
