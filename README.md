@@ -271,7 +271,8 @@ In the launchpad:
 
 - **เมนู** matches the panel's nav entries (the shared `nav`, already filtered by each route's ability) on their
   label or group from one letter, shown before the record kinds. Legacy links are left out.
-- **Records** come from the `GlobalSearch` classes from two letters, one group per kind.
+- **Records** come from the `GlobalSearch` classes from two letters, one group per kind. A result's `image()` that
+  fails to load falls back to the kind's `icon()`, or to the title's initial.
 - With the input empty, it lists **ปักหมุด** (pinned), **ค้นหาล่าสุด** (records opened from it) and **เปิดล่าสุด**
   (record pages the user viewed). These lists live in localStorage, one set per panel. Any row can be pinned.
 - Keys: ↑↓ เลือก · ↵ เปิด · ⌘↵ / Ctrl ↵ แท็บใหม่ · esc ปิด.

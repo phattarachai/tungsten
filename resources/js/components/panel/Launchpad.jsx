@@ -3,6 +3,7 @@ import { ArrowUpRight, History, Pin, Search } from 'lucide-react'
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
+import { initialOf } from './Avatar'
 import { Icon } from '../ui/Icon'
 import { cn } from '../../lib/cn'
 import { getJson } from '../../lib/json'
@@ -94,6 +95,25 @@ function plainClick(event) {
     return event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey
 }
 
+/**
+ * A row's picture: its `image`, else (or when the image fails to load, a dead disk or CDN link) the kind's icon, else
+ * the title's initial as `Avatar` draws it.
+ */
+function Mark({ entry, selected }) {
+    const [failed, setFailed] = useState(null)
+    const icon = entry.icon ?? (entry.kind === 'menu' ? 'layout-grid' : null)
+
+    if (entry.image && failed !== entry.image) {
+        return <img src={entry.image} alt="" onError={() => setFailed(entry.image)} className="size-6.5 shrink-0 rounded-md object-cover" />
+    }
+
+    return (
+        <span className={cn('flex size-6.5 shrink-0 items-center justify-center rounded-md', selected ? 'bg-brand text-white' : 'bg-zinc-100 text-zinc-500 group-hover:text-brand')}>
+            {icon ? <Icon name={icon} className="size-3.5" /> : <span className="text-[0.6875rem] font-semibold">{initialOf(entry.title)}</span>}
+        </span>
+    )
+}
+
 function Row({ entry, selected, term, pinned, onPin, onOpen, onHover }) {
     const ref = useRef(null)
 
@@ -117,13 +137,7 @@ function Row({ entry, selected, term, pinned, onPin, onOpen, onHover }) {
                 }}
                 className={cn('flex items-center gap-2.5 py-1.5 pr-11 pl-3.5', selected ? 'bg-brand-50 shadow-[inset_2px_0_0_var(--color-brand)]' : 'hover:bg-brand-50/50')}
             >
-                {entry.image ? (
-                    <img src={entry.image} alt="" className="size-6.5 shrink-0 rounded-md object-cover" />
-                ) : (
-                    <span className={cn('flex size-6.5 shrink-0 items-center justify-center rounded-md', selected ? 'bg-brand text-white' : 'bg-zinc-100 text-zinc-500 group-hover:text-brand')}>
-                        <Icon name={entry.icon ?? (entry.kind === 'menu' ? 'layout-grid' : undefined)} className="size-3.5" />
-                    </span>
-                )}
+                <Mark entry={entry} selected={selected} />
                 <span className="min-w-0">
                     <span className="block truncate text-[0.8125rem] text-zinc-900">
                         <Highlight text={entry.title} term={term} />

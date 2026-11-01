@@ -7,6 +7,12 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.29 — 2026-11-01
+
+- Fix: a launchpad row whose `image` fails to load (a dead disk or CDN link) falls back to the kind's icon, or to the
+  title's initial as `Avatar` draws it, instead of a broken image. This covers search results and the pinned and
+  recent rows.
+
 ## v0.2.28 — 2026-11-01
 
 - **Launchpad**: the topbar search box opens a centred launchpad instead of a dropdown. It has a large input, a
