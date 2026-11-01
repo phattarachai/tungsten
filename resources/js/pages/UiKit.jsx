@@ -35,6 +35,7 @@ import {
     IconButton,
     Input,
     PageHeader,
+    PickerDialog,
     RadioGroup,
     Pagination,
     Pills,
@@ -817,6 +818,8 @@ function Progress() {
 }
 
 function Overlays({ toastUrl }) {
+    const [picking, setPicking] = useState(false)
+    const [picked, setPicked] = useState({ 1: 2 })
     const [open, setOpen] = useState(null)
 
     function toast(tone) {
@@ -835,7 +838,19 @@ function Overlays({ toastUrl }) {
                 <Button size="sm" variant="outline" tone="danger" onClick={() => setOpen('confirm')}>
                     ConfirmDialog
                 </Button>
+                <Button size="sm" variant="outline" onClick={() => setPicking(true)}>
+                    PickerDialog
+                </Button>
             </Row>
+            <PickerDialog
+                open={picking}
+                title="เพิ่มสินค้า"
+                placeholder="ค้นหาชื่อสินค้า"
+                options={GALLERY.map((image, index) => ({ value: index + 1, title: image.alt, subtitle: index === 1 ? 'หมดสต็อก' : 'คงเหลือ 12', meta: `฿${(index + 1) * 190}`, image: image.src, disabled: index === 1 }))}
+                counts={picked}
+                onPick={(option) => setPicked((current) => ({ ...current, [option.value]: (current[option.value] ?? 0) + 1 }))}
+                onClose={() => setPicking(false)}
+            />
             {toastUrl && (
                 <Row label="Toast">
                     <Button size="sm" variant="outline" tone="neutral" onClick={() => toast('success')}>

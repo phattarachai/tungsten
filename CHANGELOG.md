@@ -7,6 +7,12 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.25 — 2026-11-01
+
+- **`PickerDialog`**: a picture-card picker — search on top, cards (image, title, subtitle, price / stock line),
+  a click picks one and the dialog stays open, ×qty from `counts`, disabled cards, an `error` line; options from a
+  prop (filtered as you type) or a JSON `url` (fetched as you type, debounced, stale answers dropped).
+
 ## v0.2.24 — 2026-11-01
 
 - **`RichText`** (`@tungsten/rich-text`, needs the `@tiptap/*` packages): headings, bold, italic, underline, lists,

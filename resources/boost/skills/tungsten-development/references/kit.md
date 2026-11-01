@@ -61,6 +61,7 @@ before relying on a prop not listed here.
 | `DatePicker`, `DateTimePicker`, `DateRangePicker` | ISO values, shown in พ.ศ.; `clearable`, `min`, `max` |
 | `RichText` (from `@tungsten/rich-text`) | `value` / `onChange` (HTML), `onUploadImage`, `headings`, `placeholder`, `invalid` — needs the `@tiptap/*` packages |
 | `RichTextView` | `html` — stored rich text, read-only |
+| `PickerDialog` | `open`, `title`, `options` or `url` (+ `queryKey`), `counts` (×qty), `onPick`, `onClose`, `error` — picture-card picker |
 | `FormDialog` | `title`, `processing`, `onSubmit`, `onClose`, `submitLabel` — doesn't close on click-away |
 | `ConfirmDialog` | `open`, `title`, `tone`, `onConfirm` (none = an info box), `onClose` |
 | `Dialog` | `open`, `onClose`, `title`, `footer`, `dismissible` |

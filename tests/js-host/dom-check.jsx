@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 import { act, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
-import { Avatar, Checkbox, Combobox, DataTable, DatePicker, GlobalSearch, NotificationBell, Sortable, DateRangePicker, Facts, Input, RadioGroup, Select, Textarea, getJson, postJson, SearchInput, sendJson, StatsStrip, Thumb, Zoomable } from '@tungsten'
+import { Avatar, Checkbox, Combobox, DataTable, DatePicker, GlobalSearch, NotificationBell, PickerDialog, Sortable, DateRangePicker, Facts, Input, RadioGroup, Select, Textarea, getJson, postJson, SearchInput, sendJson, StatsStrip, Thumb, Zoomable } from '@tungsten'
 import { FlashToastFor } from '@tungsten/components/panel/FlashToast'
 import { RichText } from '@tungsten/rich-text'
 
@@ -540,6 +540,50 @@ Object.assign(checks, {
         await act(async () => document.querySelector('button[aria-label="HTML"]').click())
         await act(() => new Promise((resolve) => setTimeout(resolve, 20)))
         assert.match(document.querySelector('[contenteditable="true"]').innerHTML, /แก้จาก <a[^>]*href="https:\/\/example.com"/, 'back in the editor with the edited source')
+        box.unmount()
+    },
+})
+
+Object.assign(checks, {
+    'PickerDialog: cards with ×qty, filtered as you type, a click picks and stays open, disabled cards do nothing': async () => {
+        const picks = []
+        const options = [
+            { value: 1, title: 'วิตามินซี 1000', subtitle: '30 เม็ด', meta: '฿190' },
+            { value: 2, title: 'คอลลาเจน', subtitle: 'ผง 200 ก.', meta: '฿590', disabled: true },
+            { value: 3, title: 'น้ำมันปลา', meta: '฿350' },
+        ]
+        const box = mount(<PickerDialog title="เพิ่มสินค้า" options={options} counts={{ 1: 2 }} onPick={(option) => picks.push(option.value)} onClose={() => {}} />)
+        const cards = () => [...document.querySelectorAll('[role="dialog"] .grid button')]
+
+        assert.equal(cards().length, 3)
+        assert.match(cards()[0].textContent, /×2/)
+        await act(async () => cards()[0].click())
+        await act(async () => cards()[1].click())
+        assert.deepEqual(picks, [1], 'a disabled card is not picked')
+        assert.ok(document.querySelector('[role="dialog"]'), 'the dialog stays open')
+
+        type(document.querySelector('[role="dialog"] input'), 'น้ำมัน')
+        assert.deepEqual(cards().map((card) => card.textContent.replace(/฿.*/, '')), ['น้ำมันปลา'])
+        box.unmount()
+    },
+
+    'PickerDialog with a url: loads at once without a term, then searches as you type, debounced': async () => {
+        const asked = []
+        globalThis.fetch = async (url) => {
+            const q = new URL(String(url)).searchParams.get('search')
+            asked.push(q)
+
+            return { ok: true, status: 200, json: async () => ({ data: [{ value: q || 'all', title: `ผล ${q || 'ทั้งหมด'}` }] }) }
+        }
+        const box = mount(<PickerDialog title="เลือกสินค้า" url="/admin/variants" onPick={() => {}} onClose={() => {}} />)
+        await act(() => new Promise((resolve) => setTimeout(resolve, 20)))
+        assert.deepEqual(asked, [null], 'the first load sends no term')
+        assert.match(document.querySelector('[role="dialog"] .grid').textContent, /ผล ทั้งหมด/)
+
+        type(document.querySelector('[role="dialog"] input'), 'VC')
+        await act(() => new Promise((resolve) => setTimeout(resolve, 300)))
+        assert.deepEqual(asked, [null, 'VC'])
+        assert.match(document.querySelector('[role="dialog"] .grid').textContent, /ผล VC/)
         box.unmount()
     },
 })

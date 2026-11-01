@@ -579,6 +579,28 @@ const created = await postJson(storeUrl, data)                                  
 `errors` holds a 422's first message per field, ready for `FormField error`; the thrown error carries `message`,
 `status` and `errors`. A GET's data goes in the query string.
 
+### Picking items
+
+`PickerDialog` adds products, rewards or campaign items to a record from picture cards: a search on top, a click adds
+one and the dialog stays open for the next, a card already picked shows ×qty.
+
+```jsx
+<PickerDialog
+    open={adding}
+    title="เพิ่มสินค้า"
+    placeholder="ค้นหาชื่อสินค้าหรือ SKU"
+    url={urls.variants}                                  // or options={[...]} to filter in the browser
+    counts={Object.fromEntries(items.map((item) => [item.variant_id, item.qty]))}
+    onPick={(option) => router.post(urls.items, { variant_id: option.value }, { preserveScroll: true, preserveState: true })}
+    onClose={() => setAdding(false)}
+    error={refusal}
+/>
+```
+
+Options are `{ value, title, subtitle?, image?, meta?, disabled? }` (`meta` is the price / stock line; `thumb`,
+`variant` and `price` work too). With `url` it fetches `?search=` (`queryKey`) as you type — at once on open, then
+debounced — and takes a list or `{ data }`.
+
 ### Rich text
 
 `RichText` is a Tiptap editor (headings, bold, italic, underline, lists, links, images by URL or upload) that reads and
