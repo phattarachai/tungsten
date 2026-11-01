@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Facades\Route;
 use Inertia\Testing\AssertableInertia as Assert;
 use Phattarachai\Tungsten\Http\Middleware\AuthenticatePanel;
 use Phattarachai\Tungsten\Http\Middleware\HandleTungstenRequests;
+use Phattarachai\Tungsten\Pages\HomePage;
 use Phattarachai\Tungsten\Panel;
 use Phattarachai\Tungsten\PanelRegistry;
 use Phattarachai\Tungsten\Tests\Fixtures\Models\Order;
@@ -271,6 +273,16 @@ it('shares the filter layout from config, overridden per panel', function (): vo
 it('refuses an unknown filter layout', function (): void {
     Panel::make('x')->filterLayout('chips');
 })->throws(InvalidArgumentException::class);
+
+it('caps a page\'s content width from the route, merged with the rest of its layout', function (): void {
+    $this->actingAs($this->admin())
+        ->get('/tools/narrow')
+        ->assertInertia(fn (Assert $page): Assert => $page->where('layout', ['sheet' => true, 'mainClassName' => 'tools-main', 'width' => '4xl', 'flush' => false]));
+});
+
+it('refuses an unknown page width', function (): void {
+    Route::get('odd', HomePage::class)->width('wide');
+})->throws(InvalidArgumentException::class, 'Unknown page width [wide]');
 
 it('flashes a sample toast from the UI Kit page', function (): void {
     $this->actingAs($this->admin())

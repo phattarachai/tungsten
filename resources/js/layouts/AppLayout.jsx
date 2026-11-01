@@ -37,14 +37,39 @@ function useHelp() {
  * own padding is the gap on the left, so the sheet takes a left inset only when the rail is closed or hidden, and a
  * top inset only when there is no topbar.
  */
-function Main({ sheet, gutter, top, flush, className, children }) {
+// Written out so Tailwind sees them; the keys are RouteMeta::WIDTHS.
+const WIDTHS = {
+    sm: 'max-w-sm',
+    md: 'max-w-md',
+    lg: 'max-w-lg',
+    xl: 'max-w-xl',
+    '2xl': 'max-w-2xl',
+    '3xl': 'max-w-3xl',
+    '4xl': 'max-w-4xl',
+    '5xl': 'max-w-5xl',
+    '6xl': 'max-w-6xl',
+    '7xl': 'max-w-7xl',
+}
+
+/** The page's content, capped at `width` and left-aligned; the sheet or canvas around it keeps its full size. */
+function Content({ width, children }) {
+    return WIDTHS[width] ? <div className={cn('min-w-0', WIDTHS[width])}>{children}</div> : children
+}
+
+function Main({ sheet, gutter, top, flush, width, className, children }) {
     if (!sheet) {
-        return <main className={cn('panel-main min-w-0 flex-1', !flush && 'p-3 pb-24', className)}>{children}</main>
+        return (
+            <main className={cn('panel-main min-w-0 flex-1', !flush && 'p-3 pb-24', className)}>
+                <Content width={width}>{children}</Content>
+            </main>
+        )
     }
 
     return (
         <div className={cn('flex min-w-0 flex-1 pr-2 pb-2', gutter ? 'pl-2' : 'pl-2 md:pl-0', top && 'pt-2')}>
-            <main className={cn('panel-main min-w-0 flex-1 rounded-lg border border-sheet-line bg-sheet', !flush && 'px-4 pt-3 pb-24', className)}>{children}</main>
+            <main className={cn('panel-main min-w-0 flex-1 rounded-lg border border-sheet-line bg-sheet', !flush && 'px-4 pt-3 pb-24', className)}>
+                <Content width={width}>{children}</Content>
+            </main>
         </div>
     )
 }
@@ -55,6 +80,8 @@ function Main({ sheet, gutter, top, flush, className, children }) {
  *
  * - `flush` drops main's padding (a full-bleed tool page whose panes meet the chrome);
  * - `sheet` draws main as one rounded sheet (`--color-sheet`) inset in the chrome, down to the viewport bottom;
+ * - `width` caps the page's content (`'4xl'`, `'5xl'`, `'7xl'` …, `'full'` by default), left-aligned, inside a
+ *   full-size sheet: a short form stays at its width, a list uses the room (route: `->width('4xl')`);
  * - `sidebar={false}` / `topbar={false}` leave that part out;
  * - `className` / `mainClassName` restyle the frame.
  *
@@ -64,7 +91,7 @@ function Main({ sheet, gutter, top, flush, className, children }) {
  */
 export function AppLayout({ children, toolbar, ...options }) {
     const { layout: routeLayout } = usePage().props
-    const { flush = false, sheet = false, sidebar = true, topbar = true, className, mainClassName } = { ...(routeLayout ?? {}), ...options }
+    const { flush = false, sheet = false, width = 'full', sidebar = true, topbar = true, className, mainClassName } = { ...(routeLayout ?? {}), ...options }
     const [closed, setClosed] = usePersistentState('panel-sidebar-closed', false)
     const [mobileOpen, setMobileOpen] = useState(false)
     const [asideTarget, setAsideTarget] = useState(null)
@@ -89,7 +116,7 @@ export function AppLayout({ children, toolbar, ...options }) {
                     <div className={cn('transition-all', railOpen && 'md:ml-50', sheet && 'flex min-h-screen flex-col')}>
                         {topbar && <Topbar sidebarClosed={!railOpen} onToggleSidebar={sidebar ? toggle : undefined} toolbar={toolbar} />}
                         <div className={cn('flex', sheet ? 'flex-1 items-stretch' : 'items-start')}>
-                            <Main sheet={sheet} gutter={!railOpen} top={!topbar} flush={flush} className={mainClassName}>
+                            <Main sheet={sheet} gutter={!railOpen} top={!topbar} flush={flush} width={width} className={mainClassName}>
                                 <AsideTarget value={asideTarget}>{children}</AsideTarget>
                             </Main>
                             <div ref={setAsideTarget} className="contents" />

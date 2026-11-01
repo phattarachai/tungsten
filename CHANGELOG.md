@@ -7,6 +7,14 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.17 — 2026-11-01
+
+- **Page content width** (Filament's `maxContentWidth`): `->width('4xl')` on a route, `<AppLayout width="4xl">`, or a
+  panel default via `->layout(['width' => '7xl'])`. Caps the content inside the sheet, left-aligned, so the PageHeader's
+  actions sit at the content's edge; the sheet keeps its full size. `sm` … `7xl` or `full` (default). Sizes are rem, so
+  in the shell's 125% base `4xl` is 1120px.
+- `->layout([...])` now merges with earlier layout metadata on the route instead of replacing it.
+
 ## v0.2.16 — 2026-11-01
 
 - **`Sortable`**: a list reordered by drag handles with pointer events (mouse, pen, touch) or ↑ / ↓ on the focused

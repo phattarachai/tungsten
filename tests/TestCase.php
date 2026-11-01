@@ -73,6 +73,7 @@ abstract class TestCase extends Orchestra
         Tungsten::routes('tools', function () use ($router): void {
             $router->get('/', HomePage::class)->name('dashboard');
             $router->get('wide', HomePage::class)->name('wide')->layout(['flush' => true, 'sheet' => false]);
+            $router->get('narrow', HomePage::class)->name('narrow')->width('4xl')->layout(['flush' => false]);
         });
     }
 

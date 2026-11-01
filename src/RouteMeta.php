@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phattarachai\Tungsten;
 
 use Illuminate\Routing\Route;
+use InvalidArgumentException;
 
 /**
  * Panel metadata on plain Laravel routes, stored in the route action under `tungsten` (plain arrays, so
@@ -20,6 +21,9 @@ use Illuminate\Routing\Route;
  */
 class RouteMeta
 {
+    /** The content widths a page may take (Tailwind's max-w steps); `full` leaves it uncapped. */
+    public const array WIDTHS = ['sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl', '5xl', '6xl', '7xl', 'full'];
+
     /**
      * @return array<string, mixed>
      */
@@ -55,10 +59,18 @@ class RouteMeta
             return RouteMeta::put($this, 'help', $url);
         });
 
-        /** Defaults for AppLayout (`sheet`, `flush`, `sidebar`, `topbar`, `className`, `mainClassName`), shared as `layout`. */
+        /** Caps the page's content width inside the sheet (`'4xl'`, `'5xl'`, `'7xl'` … or `'full'`): layout `width`. */
+        Route::macro('width', function (string $width): Route {
+            /** @var Route $this */
+            throw_unless(in_array($width, RouteMeta::WIDTHS, true), InvalidArgumentException::class, "Unknown page width [{$width}]; use one of: ".implode(', ', RouteMeta::WIDTHS).'.');
+
+            return RouteMeta::put($this, 'layout', [...(RouteMeta::of($this)['layout'] ?? []), 'width' => $width]);
+        });
+
+        /** Defaults for AppLayout (`sheet`, `flush`, `width`, `sidebar`, `topbar`, `className`, `mainClassName`), shared as `layout`. */
         Route::macro('layout', function (array $layout): Route {
             /** @var Route $this */
-            return RouteMeta::put($this, 'layout', $layout);
+            return RouteMeta::put($this, 'layout', [...(RouteMeta::of($this)['layout'] ?? []), ...$layout]);
         });
     }
 
