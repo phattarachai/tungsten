@@ -507,6 +507,7 @@ const FILTERS = [
         key: 'date',
         label: 'วันที่สั่ง',
         type: 'dates',
+        default: 'month',
         options: [
             { value: 'today', label: 'วันนี้' },
             { value: 'week', label: '7 วัน' },
@@ -605,7 +606,7 @@ function RecordParts() {
 const REWARDS = [
     { id: 1, title: 'ร่มพับ', points: 500 },
     { id: 2, title: 'ชุดของขวัญปีใหม่ 2569 พร้อมการ์ดอวยพรและกล่องพรีเมียมสำหรับลูกค้าคนสำคัญ', points: 3200 },
-    { id: 3, title: 'แก้วเก็บความเย็น', points: 900 },
+    { id: 3, title: 'แก้วเก็บความเย็น', points: 900, variants: [{ id: 'c1', name: 'สีเขียว', points: 900, stock: 12 }, { id: 'c2', name: 'สีดำ', points: 950, stock: 0 }] },
     { id: 4, title: 'คูปองส่วนลด 10%', points: 300 },
 ]
 
@@ -628,10 +629,12 @@ function Reorder() {
             <DataTable
                 flush
                 columns={[
-                    { key: 'title', label: 'ของรางวัล', wrap: 'w-64', sortable: true },
-                    { key: 'points', label: 'แต้ม', align: 'right', sortable: true },
+                    { key: 'title', label: 'ของรางวัล', wrap: 'w-64', sortable: true, sub: (line) => <span className="pl-3">{line.name}</span> },
+                    { key: 'points', label: 'แต้ม', align: 'right', sortable: true, sub: (line) => line.points },
+                    { key: 'stock', label: 'คงเหลือ', align: 'right', render: (row) => row.variants?.reduce((sum, line) => sum + line.stock, 0) ?? '—', sub: (line) => line.stock },
                 ]}
                 rows={items}
+                subRows={(row) => row.variants}
                 reorderable={sorting ? { onReorder: setItems } : undefined}
             />
             <div className="border-t border-zinc-100 px-2.5 py-1.5">

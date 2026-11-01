@@ -460,6 +460,43 @@ Object.assign(checks, {
     },
 })
 
+Object.assign(checks, {
+    'DataTable subRows: each line is its own row under its parent, every column drawing its own value, and moves with it': async () => {
+        const rows = [
+            { id: 1, title: 'วิตามินซี', variants: [{ id: 'v1', name: '30 เม็ด', sku: 'VC-30', price: '฿190' }, { id: 'v2', name: '60 เม็ด', sku: 'VC-60', price: '฿350' }] },
+            { id: 2, title: 'คอลลาเจน', variants: [] },
+        ]
+        const columns = [
+            { key: 'title', label: 'สินค้า', sub: (line) => line.name },
+            { key: 'sku', label: 'SKU', sub: (line) => line.sku },
+            { key: 'price', label: 'ราคา', align: 'right', sub: (line) => line.price },
+            { key: 'stock', label: 'คงเหลือ' },
+        ]
+        const reports = []
+        const box = mount(<DataTable columns={columns} rows={rows} subRows={(row) => row.variants} />)
+        const body = () => [...document.querySelectorAll('tbody tr')].map((tr) => [...tr.children].map((td) => td.textContent))
+
+        assert.deepEqual(body(), [
+            ['วิตามินซี', '', '', ''],
+            ['30 เม็ด', 'VC-30', '฿190', ''],
+            ['60 เม็ด', 'VC-60', '฿350', ''],
+            ['คอลลาเจน', '', '', ''],
+        ])
+        assert.ok(document.querySelectorAll('tbody tr')[2].children[2].classList.contains('text-right'), 'a sub cell keeps its column alignment')
+
+        box.render(<DataTable columns={columns} rows={rows} subRows={(row) => row.variants} reorderable={{ onReorder: (next) => reports.push(next.map((row) => row.id)) }} />)
+        assert.deepEqual([...document.querySelectorAll('tbody tr')].map((tr) => tr.getAttribute('data-sortable-row')), ['1', '1', '1', '2'], 'sub-lines carry their row')
+
+        const handle = document.querySelector('[data-sortable-handle="1"]')
+        act(() => handle.focus())
+        act(() => handle.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })))
+        await frame()
+        assert.deepEqual(reports, [[2, 1]])
+        assert.deepEqual([...document.querySelectorAll('tbody tr')].map((tr) => tr.getAttribute('data-sortable-row')), ['2', '1', '1', '1'])
+        box.unmount()
+    },
+})
+
 const zIndex = (element) => Number(/(?:^|\s)z-\[?(\d+)\]?(?:\s|$)/.exec(element.className)?.[1] ?? 0)
 
 Object.assign(checks, {

@@ -485,7 +485,7 @@ const filters = [
 | Field | Meaning |
 |---|---|
 | `type` | `select` (`Combobox`, `multiple` for an array), `buttons` (segmented), `pills`, `toggle` (`1` or null), `dates`, `custom` (`render({ value, values, onChange, change, size })`) |
-| `dates` | presets from `options`, with ทั้งหมด first and วันที่กำหนดเอง last; the custom one opens a range picker writing the `from` / `to` keys (rename with `from:` / `to:`). A preset clears the range and the range clears the preset. Goes to row 1. |
+| `dates` | presets from `options`, with ทั้งหมด first and วันที่กำหนดเอง last; the custom one opens a range picker writing the `from` / `to` keys (rename with `from:` / `to:`). A preset clears the range and the range clears the preset. Goes to row 1. With `default` (the server's default preset, e.g. 30 days so the first load doesn't count the whole table), ทั้งหมด and a custom range send `all`, which `TableQuery` reads as "no filter" for a filter that has a `default:`. |
 | `default` | the value that counts as "not filtered" (no chip, no clear) |
 | `row` | `'top'` (row 1), `'below'` (row 3); row 2 when unset (row 1 for `dates`) |
 | `chip(value, values)` | the chip's label, instead of `label: option` |
@@ -518,7 +518,9 @@ Route::post('ui-kit/toast', UiKitToastController::class)->name('ui-kit.toast');
   opens it full screen).
   `DataTable`, `FilterBar`, `TableToolbar` and `Pagination` take `flush` to drop their frame and side padding, for a
   table on a sheet or a bare page. A `DataTable` column takes `valign: 'top'` for multi-line cells (or the table its
-  own `valign`), and `plainLinks` makes `rowHref` render a plain `<a>` for rows that open non-Inertia pages. A long
+  own `valign`), and `plainLinks` makes `rowHref` render a plain `<a>` for rows that open non-Inertia pages. `subRows(row)`
+  lists a row's sub-lines (a product's variants): each is drawn under the row as its own table row where every column
+  renders `sub(line, row)`, so title / SKU / price / stock line up; in reorder mode the lines move with their row. A long
   text column takes `wrap` (`true` for `w-72`, or a width such as `'w-96'`): two lines at that width, the rest in its
   tooltip — cells are `whitespace-nowrap` otherwise.
 - **Forms**: `FormField` (inline label, `hint`, `info`, `error`), `Input`, `Select`, `Textarea`, `Combobox`

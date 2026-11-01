@@ -28,6 +28,9 @@ use Illuminate\Support\Str;
  */
 class TableQuery
 {
+    /** The value that turns a filter with a default off ("ทั้งหมด"), where an empty value would bring the default back. */
+    public const string ALL = 'all';
+
     /**
      * @var array<string, string>
      */
@@ -266,6 +269,10 @@ class TableQuery
 
         $value = is_scalar($raw) ? (string) $raw : '';
 
+        if ($value === self::ALL && $filter['default'] !== null) {
+            return self::ALL;
+        }
+
         return $value !== '' && ($filter['in'] === null || in_array($value, $filter['in'], true)) ? $value : $filter['default'];
     }
 
@@ -305,7 +312,7 @@ class TableQuery
         foreach ($this->filters as $key => $filter) {
             $value = $this->filterValue($filter, $key);
 
-            if ($value === null || $value === '' || $value === []) {
+            if ($value === null || $value === '' || $value === [] || $value === self::ALL) {
                 continue;
             }
 
