@@ -110,7 +110,7 @@ class OrdersSet extends \Phattarachai\Tungsten\PanelSet
 | `->breadcrumbs([...])` | a fixed trail |
 | `->help($url)` | the topbar `?` for this route |
 | `->width('4xl')` | caps the content width inside the sheet (`sm` … `7xl`, `full`), or `fit`: as wide as the widest child (a list with few columns) |
-| `->layout([...])` | AppLayout defaults: `sheet`, `flush`, `width`, `sidebar`, `topbar`, `className`, `mainClassName` |
+| `->layout([...])` | AppLayout defaults: `sheet`, `flush`, `width`, `align` (`start` or `center`: where a capped page sits), `sidebar`, `topbar`, `className`, `mainClassName` |
 
 A route's own `can:x` middleware hides its nav entry from users who fail `x`. Point routes at controllers or page
 classes, never closures (`route:cache`).

@@ -55,17 +55,17 @@ const WIDTHS = {
 
 /**
  * The page's content, capped at `width` (or `fit`: as wide as its widest child, so a table with few columns doesn't
- * stretch) and left-aligned; the sheet or canvas around it keeps its full size.
+ * stretch), left-aligned or with `align="center"` centred; the sheet or canvas around it keeps its full size.
  */
-function Content({ width, children }) {
-    return WIDTHS[width] ? <div className={cn('min-w-0', WIDTHS[width])}>{children}</div> : children
+function Content({ width, align, children }) {
+    return WIDTHS[width] ? <div className={cn('min-w-0', WIDTHS[width], align === 'center' && 'mx-auto')}>{children}</div> : children
 }
 
-function Main({ sheet, gutter, top, flush, width, className, children }) {
+function Main({ sheet, gutter, top, flush, width, align, className, children }) {
     if (!sheet) {
         return (
             <main className={cn('panel-main min-w-0 flex-1', !flush && 'p-3 pb-24', className)}>
-                <Content width={width}>{children}</Content>
+                <Content width={width} align={align}>{children}</Content>
             </main>
         )
     }
@@ -73,7 +73,7 @@ function Main({ sheet, gutter, top, flush, width, className, children }) {
     return (
         <div className={cn('flex min-w-0 flex-1 pr-2 pb-2', gutter ? 'pl-2' : 'pl-2 md:pl-0', top && 'pt-2')}>
             <main className={cn('panel-main min-w-0 flex-1 rounded-lg border border-sheet-line bg-sheet', !flush && 'px-4 pt-3 pb-24', className)}>
-                <Content width={width}>{children}</Content>
+                <Content width={width} align={align}>{children}</Content>
             </main>
         </div>
     )
@@ -88,6 +88,8 @@ function Main({ sheet, gutter, top, flush, width, className, children }) {
  * - `width` caps the page's content (`'4xl'`, `'5xl'`, `'7xl'` …, `'full'` by default), left-aligned, inside a
  *   full-size sheet: a short form stays at its width, a list uses the room (route: `->width('4xl')`); `'fit'`
  *   shrinks it to its widest child, so a list with few columns stays at its natural width;
+ * - `align="center"` centres a capped (or `fit`) page in the sheet instead of left-aligning it (`'start'`, the default);
+ *   a `full` page has nothing to centre;
  * - `sidebar={false}` / `topbar={false}` leave that part out;
  * - `className` / `mainClassName` restyle the frame.
  *
@@ -97,7 +99,7 @@ function Main({ sheet, gutter, top, flush, width, className, children }) {
  */
 export function AppLayout({ children, toolbar, ...options }) {
     const { layout: routeLayout } = usePage().props
-    const { flush = false, sheet = false, width = 'full', sidebar = true, topbar = true, className, mainClassName } = { ...(routeLayout ?? {}), ...options }
+    const { flush = false, sheet = false, width = 'full', align = 'start', sidebar = true, topbar = true, className, mainClassName } = { ...(routeLayout ?? {}), ...options }
     const [closed, setClosed] = usePersistentState('panel-sidebar-closed', false)
     const [mobileOpen, setMobileOpen] = useState(false)
     const [asideTarget, setAsideTarget] = useState(null)
@@ -122,7 +124,7 @@ export function AppLayout({ children, toolbar, ...options }) {
                     <div className={cn('transition-all', railOpen && 'md:ml-50', sheet && 'flex min-h-screen flex-col')}>
                         {topbar && <Topbar sidebarClosed={!railOpen} onToggleSidebar={sidebar ? toggle : undefined} toolbar={toolbar} />}
                         <div className={cn('flex', sheet ? 'flex-1 items-stretch' : 'items-start')}>
-                            <Main sheet={sheet} gutter={!railOpen} top={!topbar} flush={flush} width={width} className={mainClassName}>
+                            <Main sheet={sheet} gutter={!railOpen} top={!topbar} flush={flush} width={width} align={align} className={mainClassName}>
                                 <AsideTarget value={asideTarget}>
                                     <PageWidthContext value={width}>{children}</PageWidthContext>
                                 </AsideTarget>

@@ -12,7 +12,9 @@ export default function Index(props) { … }
 Index.layout = (page) => <AppLayout>{page}</AppLayout>
 ```
 
-`AppLayout` reads `->layout()` / `->width()` metadata from the route; JSX props win (`<AppLayout width="4xl">`).
+`AppLayout` reads `->layout()` / `->width()` metadata from the route, over the panel's `->layout()`; JSX props win
+(`<AppLayout width="4xl">`). `align: 'center'` centres a capped or `fit` page in the sheet; `'start'` (the default) keeps
+it left.
 
 ## List page
 

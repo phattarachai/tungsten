@@ -342,7 +342,7 @@ The metadata a route can carry:
 | `->breadcrumbs([...])` | a fixed trail: `[['label' => 'ตั้งค่า'], ['label' => 'SMS', 'route' => 'admin.settings.sms']]`. |
 | `->help($url)` | the topbar `?` for this route. |
 | `->width('4xl')` | caps the page's content width inside the sheet: `sm` … `7xl` or `full` (the default). A short form keeps its width, a list uses the room. `fit` makes the content as wide as its widest child: a list with few columns hugs them instead of spanning the sheet, and a column's `w-full` (a spacer) is dropped there. |
-| `->layout([...])` | defaults for `AppLayout` (`sheet`, `flush`, `width`, `sidebar`, `topbar`, `className`, `mainClassName`), merged over the panel's `->layout()` (and an earlier `->width()`) and shared as the `layout` prop. |
+| `->layout([...])` | defaults for `AppLayout` (`sheet`, `flush`, `width`, `align`, `sidebar`, `topbar`, `className`, `mainClassName`), merged over the panel's `->layout()` (and an earlier `->width()`) and shared as the `layout` prop. `'align' => 'center'` centres a capped (or `fit`) page in the sheet instead of left-aligning it (`'start'`, the default); set it panel-wide with `Panel::layout(['align' => 'center'])`, and `<AppLayout align="start">` still wins on one page. |
 
 Without metadata a nav route's trail is its group and label. A controller replaces the trail by passing a
 `breadcrumbs` prop; `Tungsten::breadcrumbs($order->number)` gives the parent trail ending in a record name.
