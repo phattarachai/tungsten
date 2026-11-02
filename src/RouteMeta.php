@@ -24,6 +24,9 @@ class RouteMeta
     /** The content widths a page may take (Tailwind's max-w steps); `full` leaves it uncapped, `fit` hugs its widest child. */
     public const array WIDTHS = ['sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl', '5xl', '6xl', '7xl', 'full', 'fit'];
 
+    /** Where a capped page sits in the sheet: `start` (left, the default) or `center`. */
+    public const array ALIGNS = ['start', 'center'];
+
     /**
      * @return array<string, mixed>
      */
@@ -32,6 +35,19 @@ class RouteMeta
         $meta = $route?->getAction('tungsten');
 
         return is_array($meta) ? $meta : [];
+    }
+
+    /**
+     * @param  array<string, mixed>  $layout
+     * @return array<string, mixed>
+     */
+    public static function checkLayout(array $layout): array
+    {
+        $align = $layout['align'] ?? 'start';
+
+        throw_unless(in_array($align, self::ALIGNS, true), InvalidArgumentException::class, "Unknown page align [{$align}]; use one of: ".implode(', ', self::ALIGNS).'.');
+
+        return $layout;
     }
 
     public static function register(): void
@@ -84,10 +100,10 @@ class RouteMeta
             return RouteMeta::put($this, 'layout', [...(RouteMeta::of($this)['layout'] ?? []), 'width' => $width]);
         });
 
-        /** Defaults for AppLayout (`sheet`, `flush`, `width`, `sidebar`, `topbar`, `className`, `mainClassName`), shared as `layout`. */
+        /** Defaults for AppLayout (`sheet`, `flush`, `width`, `align`, `sidebar`, `topbar`, `className`, `mainClassName`), shared as `layout`. */
         Route::macro('layout', function (array $layout): Route {
             /** @var Route $this */
-            return RouteMeta::put($this, 'layout', [...(RouteMeta::of($this)['layout'] ?? []), ...$layout]);
+            return RouteMeta::put($this, 'layout', [...(RouteMeta::of($this)['layout'] ?? []), ...RouteMeta::checkLayout($layout)]);
         });
     }
 

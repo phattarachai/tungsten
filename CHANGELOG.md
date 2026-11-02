@@ -7,6 +7,14 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.33 — 2026-11-02
+
+- **Centred pages**: `align: 'center'` centres a capped page (`'4xl'` … `'7xl'`, or `'fit'`) in the sheet instead of
+  left-aligning it. Set it panel-wide with `Panel::layout(['align' => 'center'])`, per route with
+  `->layout(['align' => 'center'])`, or on one page with `<AppLayout align="center">` (JSX, then the route, then the
+  panel). `'start'` stays the default, so nothing moves for apps that don't set it, and a `full` page is unchanged. An
+  unknown value throws.
+
 ## v0.2.32 — 2026-11-01
 
 - **Fixed**: pressing Enter (or the submit button) in a `FormDialog` opened from inside another `<form>` no longer

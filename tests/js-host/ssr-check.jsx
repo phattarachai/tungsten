@@ -67,6 +67,30 @@ for (const [component, props, expected] of cases) {
     console.log('ssr ok  width fit fits the content inside a full sheet')
 }
 
+// `align: 'center'` centres a capped page, `fit` too; a `full` page has nothing to centre.
+for (const [width, box] of [['4xl', 'min-w-0 max-w-4xl mx-auto'], ['fit', 'min-w-0 w-fit max-w-full mx-auto']]) {
+    const page = { component: 'panel/orders/Index', props: { ...shared, title: 'คำสั่งซื้อ', table, layout: { sheet: true, width, align: 'center' } }, url: '/admin/orders', version: null, clearHistory: false, encryptHistory: false }
+    const { body } = await createTungstenApp({ pages, prefix: './resources/js/pages/', page, render: renderToString })
+    const main = body.slice(body.indexOf('<main'))
+
+    if (!main.includes(`><div class="${box}">`)) {
+        throw new Error(`align center, width ${width}: expected a "${box}" content box`)
+    }
+
+    console.log(`ssr ok  align center centres a ${width} page`)
+}
+
+{
+    const page = { component: 'panel/orders/Index', props: { ...shared, title: 'คำสั่งซื้อ', table, layout: { sheet: true, align: 'center' } }, url: '/admin/orders', version: null, clearHistory: false, encryptHistory: false }
+    const { body } = await createTungstenApp({ pages, prefix: './resources/js/pages/', page, render: renderToString })
+
+    if (body.includes('mx-auto')) {
+        throw new Error('align center on a full page: expected no centred content box')
+    }
+
+    console.log('ssr ok  align center leaves a full page alone')
+}
+
 // The environment leads the tab title on the server too (the browser reads the root view's meta instead).
 {
     const page = { component: 'tungsten::auth/Login', props: { ...shared, ...cases.find(([name]) => name === 'tungsten::auth/Login')[1] }, url: '/admin/login', version: null, clearHistory: false, encryptHistory: false }

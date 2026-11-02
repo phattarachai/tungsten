@@ -194,14 +194,14 @@ class Panel
     }
 
     /**
-     * Panel-wide AppLayout defaults (`sheet`, `flush`, `sidebar`, `topbar`, `className`, `mainClassName`); a route's
-     * `->layout([...])` overrides them key by key, and a page's JSX props override both.
+     * Panel-wide AppLayout defaults (`sheet`, `flush`, `width`, `align`, `sidebar`, `topbar`, `className`,
+     * `mainClassName`); a route's `->layout([...])` overrides them key by key, and a page's JSX props override both.
      *
      * @param  array<string, mixed>  $layout
      */
     public function layout(array $layout): self
     {
-        $this->layout = $layout;
+        $this->layout = RouteMeta::checkLayout($layout);
 
         return $this;
     }

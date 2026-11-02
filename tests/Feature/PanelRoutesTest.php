@@ -353,6 +353,21 @@ it('lets a page fit its content', function (): void {
     expect(RouteMeta::of($route)['layout'])->toBe(['width' => 'fit']);
 });
 
+it('centres a capped page when the panel or the route asks, the route winning', function (): void {
+    $route = Route::get('centred', HomePage::class)->width('4xl')->layout(['align' => 'center']);
+
+    expect(RouteMeta::of($route)['layout'])->toBe(['width' => '4xl', 'align' => 'center'])
+        ->and(Panel::make('x')->layout(['align' => 'center'])->getLayout())->toBe(['align' => 'center']);
+});
+
+it('refuses an unknown page align', function (): void {
+    Route::get('odd', HomePage::class)->layout(['align' => 'centre']);
+})->throws(InvalidArgumentException::class, 'Unknown page align [centre]');
+
+it('refuses an unknown page align on the panel', function (): void {
+    Panel::make('x')->layout(['align' => 'right']);
+})->throws(InvalidArgumentException::class, 'Unknown page align [right]');
+
 it('refuses an unknown page width', function (): void {
     Route::get('odd', HomePage::class)->width('wide');
 })->throws(InvalidArgumentException::class, 'Unknown page width [wide]');
