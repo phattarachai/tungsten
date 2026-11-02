@@ -6,7 +6,7 @@ import { strings } from '../../lib/strings'
 import { linkProps } from '../../lib/href'
 
 function Step({ href, label, icon: Icon, className }) {
-    const base = cn('inline-flex h-[1.4rem] w-6 items-center justify-center', className)
+    const base = cn('inline-flex h-full w-7 items-center justify-center', className)
 
     if (!href) {
         return (
@@ -25,7 +25,7 @@ function Step({ href, label, icon: Icon, className }) {
 
 export function RecordPager({ previousUrl, nextUrl, previousLabel = strings.previous, nextLabel = strings.next }) {
     return (
-        <nav aria-label={strings.recordPager} className="inline-flex shrink-0 divide-x divide-zinc-200 overflow-hidden rounded-md border border-zinc-300 bg-white">
+        <nav aria-label={strings.recordPager} className="inline-flex h-7 shrink-0 divide-x divide-zinc-200 overflow-hidden rounded-md border border-zinc-300 bg-white">
             <Step href={previousUrl} label={previousLabel} icon={ChevronLeft} />
             <Step href={nextUrl} label={nextLabel} icon={ChevronRight} />
         </nav>
