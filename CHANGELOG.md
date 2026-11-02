@@ -7,6 +7,11 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.34 — 2026-11-02
+
+- **Fixed**: `RecordPager` is now 1.75rem tall, border included (`h-7`), the same as the record header's `h-7`
+  buttons beside it; it was about 1.5rem. Its steps fill that height and are 1.75rem wide.
+
 ## v0.2.33 — 2026-11-02
 
 - **Centred pages**: `align: 'center'` centres a capped page (`'4xl'` … `'7xl'`, or `'fit'`) in the sheet instead of
