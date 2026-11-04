@@ -6,10 +6,22 @@ namespace Phattarachai\Tungsten\Http\Requests;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Override;
 
 class UpdateProfileRequest extends FormRequest
 {
+    #[Override]
+    protected function prepareForValidation(): void
+    {
+        $email = $this->input('email');
+
+        if (is_string($email)) {
+            $this->merge(['email' => Str::lower(trim($email))]);
+        }
+    }
+
     /**
      * @return array<string, list<mixed>>
      */

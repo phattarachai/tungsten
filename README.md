@@ -242,11 +242,41 @@ return $panel
 ## Profile page (optional)
 
 `->profile(avatar: 'avatar_path', disk: 'public')` gives the signed-in user a page at `{path}/profile`, linked from the
-user menu: name and email (unique among users), a photo when `avatar` names a column on the user (stored under
-`avatars/` on `disk`, replaced or removed, shown in the topbar), and a password change that asks for the current one
-(`Password::defaults()` applies). Without `avatar` there's no photo part. Labels are `config('tungsten.profile.labels')`,
-overridable per panel with `->profile(labels: [...])`. It sits next to `->login()` but doesn't need it: any auth works.
-Run `php artisan storage:link` for the `public` disk, and keep `APP_URL` right, since photo URLs come from the disk.
+user menu: name and email (unique among users, lowercased and trimmed before validation), a photo when `avatar` names a
+column on the user (stored under `avatars/` on `disk`, replaced or removed, shown in the topbar), and a password change
+that asks for the current one (`Password::defaults()` applies). Without `avatar` there's no photo part, unless the user
+implements `HasPanelAvatar` (below). Labels are `config('tungsten.profile.labels')`, overridable per panel with
+`->profile(labels: [...])`. It sits next to `->login()` but doesn't need it: any auth works. Run
+`php artisan storage:link` for the `public` disk, and keep `APP_URL` right, since photo URLs come from the disk.
+
+An app that keeps photos its own way (Media Library, its own table) implements the contract on its user model instead
+of naming a column. A bare `->profile()` is then enough, and the contract wins if `avatar` is set too:
+
+```php
+use Illuminate\Http\UploadedFile;
+use Phattarachai\Tungsten\Contracts\HasPanelAvatar;
+
+class User extends Authenticatable implements HasPanelAvatar
+{
+    public function getPanelAvatarUrl(): ?string
+    {
+        return $this->getFirstMediaUrl('avatar') ?: null;
+    }
+
+    public function setPanelAvatar(?UploadedFile $file): void
+    {
+        $this->clearMediaCollection('avatar');
+
+        if ($file !== null) {
+            $this->addMedia($file)->toMediaCollection('avatar');
+        }
+    }
+}
+```
+
+The page and the topbar's `auth.user.avatar` read `getPanelAvatarUrl()`; an empty string counts as no photo.
+`setPanelAvatar()` runs after the name and email are saved, only when the form sent a new photo (already validated as an
+image of at most 2 MB) or a removal (`null`). Without `->profile()` there's no page and no photo in the topbar.
 
 ## Global search (optional)
 

@@ -56,6 +56,18 @@ URL), `panel` (id, label, chip, rail, brand, help URL, home, environment), `pane
 `breadcrumbs`, `layout` (the route's `->layout()`) and `flash` (`session('flash')`, a string or `{message, tone}`). React reads them with `usePage()`;
 routes and nav are never hard-coded client-side.
 
+## The profile page
+
+`->profile()` is optional, and `auth.user.avatar` comes from it: no profile, no photo in the topbar. A photo has two
+sources. `avatar: 'column'` is the simple case, where the kit stores the file itself. `HasPanelAvatar` on the user model
+is for apps that keep photos elsewhere, such as Media Library, which a column can't express; it replaces Filament's
+`HasAvatar`. The contract wins when both apply, since it's the more specific statement about where photos live.
+
+`setPanelAvatar()` runs after `$user->save()`, so the app's code sees the saved user and can save it again. A column
+photo goes the other way, set before the save, because it's part of the same row. The kit never deletes or stores files
+for a contract user: the app owns the file's lifecycle. `UpdateProfileRequest` lowercases and trims `email` before
+validating, so the unique rule compares what will be stored.
+
 ## Errors
 
 `Tungsten::handleExceptions()` registers an exception `respond` callback: a 403/404/419/500/503 on a non-JSON

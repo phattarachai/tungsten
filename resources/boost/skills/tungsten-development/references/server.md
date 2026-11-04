@@ -71,6 +71,10 @@ from `toDatabase()`. `icon` is a registered kit icon name.
 `->profile(avatar: 'avatar_path')` adds `{path}/profile` (name, email, photo, password) linked from the user menu; omit
 `avatar` for no photo. Needs `storage:link` for the `public` disk.
 
+When photos live elsewhere (Media Library), use a bare `->profile()` and implement
+`Phattarachai\Tungsten\Contracts\HasPanelAvatar` on the user: `getPanelAvatarUrl(): ?string` and
+`setPanelAvatar(?UploadedFile $file): void` (null clears). It wins over `avatar`, and drives the topbar photo too.
+
 ## Sets and routes
 
 A set is one area of the panel (orders, customers). One file, discovered by `discoverSets()`:

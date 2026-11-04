@@ -12,6 +12,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
+use Phattarachai\Tungsten\Contracts\HasPanelAvatar;
 use Phattarachai\Tungsten\Exceptions\MissingPageClass;
 use Phattarachai\Tungsten\Http\Controllers\GlobalSearchController;
 use Phattarachai\Tungsten\Http\Controllers\NotificationController;
@@ -246,8 +247,9 @@ class Panel
     }
 
     /**
-     * The signed-in user's own profile page at `{path}/profile`: name, email, password and, when `$avatar` names a
-     * column on the user, a photo stored on `$disk`. Linked from the user menu.
+     * The signed-in user's own profile page at `{path}/profile`: name, email, password and a photo, either through
+     * {@see HasPanelAvatar} on the user or, when `$avatar` names a column on the user, stored on `$disk`. Linked from
+     * the user menu.
      *
      * @param  array<string, string>  $labels  overrides for `tungsten.profile.labels`
      */

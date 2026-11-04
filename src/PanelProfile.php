@@ -6,10 +6,11 @@ namespace Phattarachai\Tungsten;
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Storage;
+use Phattarachai\Tungsten\Contracts\HasPanelAvatar;
 
 /**
- * A panel's own profile page, turned on with {@see Panel::profile()}: name, email, password and, when `avatar` names
- * a column, a photo stored on `disk`.
+ * A panel's own profile page, turned on with {@see Panel::profile()}: name, email, password and a photo, either through
+ * {@see HasPanelAvatar} on the user or, when `avatar` names a column, stored on `disk`.
  */
 final readonly class PanelProfile
 {
@@ -32,8 +33,17 @@ final readonly class PanelProfile
         return [...(array) config('tungsten.profile.labels', []), ...$this->labels];
     }
 
+    public function acceptsAvatar(?Authenticatable $user): bool
+    {
+        return $this->avatar !== null || $user instanceof HasPanelAvatar;
+    }
+
     public function avatarUrl(?Authenticatable $user): ?string
     {
+        if ($user instanceof HasPanelAvatar) {
+            return $user->getPanelAvatarUrl() ?: null;
+        }
+
         $path = $this->avatar === null || $user === null ? null : data_get($user, $this->avatar);
 
         return is_string($path) && $path !== '' ? Storage::disk($this->disk)->url($path) : null;

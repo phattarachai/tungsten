@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Phattarachai\Tungsten\Contracts\HasPanelAvatar;
 use Phattarachai\Tungsten\Http\Requests\UpdatePasswordRequest;
 use Phattarachai\Tungsten\Http\Requests\UpdateProfileRequest;
 use Phattarachai\Tungsten\Panel;
@@ -36,7 +37,7 @@ class ProfileController
                 'email' => data_get($request->user(), 'email'),
                 'avatar' => $profile->avatarUrl($request->user()),
             ],
-            'withAvatar' => $profile->avatar !== null,
+            'withAvatar' => $profile->acceptsAvatar($request->user()),
             'updateUrl' => route("{$panel->getId()}.profile.update"),
             'passwordUrl' => route("{$panel->getId()}.profile.password"),
         ]);
@@ -50,11 +51,15 @@ class ProfileController
         $user = $request->user();
         $user->forceFill($request->safe()->only(['name', 'email']));
 
-        if ($profile->avatar !== null) {
+        if ($profile->avatar !== null && ! $user instanceof HasPanelAvatar) {
             $this->storeAvatar($user, $profile, $request->file('avatar'), $request->boolean('remove_avatar'));
         }
 
         $user->save();
+
+        if ($user instanceof HasPanelAvatar) {
+            $this->handOverAvatar($user, $request->file('avatar'), $request->boolean('remove_avatar'));
+        }
 
         return back()->with('flash', ['message' => $profile->labels()['saved'] ?? 'saved', 'tone' => 'success']);
     }
@@ -87,6 +92,16 @@ class ProfileController
         }
 
         $user->setAttribute($column, $file?->store('avatars', $profile->disk) ?: null);
+    }
+
+    /**
+     * The user's own {@see HasPanelAvatar} stores it; a form with no new photo and no removal leaves it alone.
+     */
+    private function handOverAvatar(HasPanelAvatar $user, ?UploadedFile $file, bool $remove): void
+    {
+        if ($file !== null || $remove) {
+            $user->setPanelAvatar($file);
+        }
     }
 
     /**
