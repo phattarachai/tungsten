@@ -7,6 +7,14 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.35 — 2026-11-04
+
+- **Avatar contract**: `Phattarachai\Tungsten\Contracts\HasPanelAvatar` on the user model supplies the profile photo
+  (`getPanelAvatarUrl(): ?string`, `setPanelAvatar(?UploadedFile $file): void`) for apps that don't keep it in a column.
+  The profile page's photo field and the topbar's `auth.user.avatar` follow it, including with a bare `->profile()`, and
+  it wins over `->profile(avatar:)`. Column mode is unchanged.
+- **Fixed**: the profile form lowercases and trims `email` before validating it.
+
 ## v0.2.34 — 2026-11-02
 
 - **Fixed**: `RecordPager` is now 1.75rem tall, border included (`h-7`), the same as the record header's `h-7`
