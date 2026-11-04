@@ -12,8 +12,11 @@ use Illuminate\Http\UploadedFile;
  */
 interface HasPanelAvatar
 {
-    /** The photo's URL; null or an empty string means no photo. */
+    /** The URL to show, which may be a generated placeholder; null or an empty string shows the initial. */
     public function getPanelAvatarUrl(): ?string;
+
+    /** Whether the user has a photo of their own to remove, as opposed to a placeholder. */
+    public function hasPanelAvatar(): bool;
 
     /** Replaces the photo with `$file`, or clears it on null. Called after the user's name and email are saved. */
     public function setPanelAvatar(?UploadedFile $file): void;

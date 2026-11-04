@@ -35,7 +35,7 @@ it('links the profile from the user menu and shows the page with the user\'s det
             ->component('tungsten::auth/Profile', shouldExist: false)
             ->where('auth.profileUrl', url('/admin/profile'))
             ->where('auth.user.avatar', Storage::disk('public')->url('avatars/me.jpg'))
-            ->where('profile', ['name' => 'Staff', 'email' => 'staff@example.com', 'avatar' => Storage::disk('public')->url('avatars/me.jpg')])
+            ->where('profile', ['name' => 'Staff', 'email' => 'staff@example.com', 'avatar' => Storage::disk('public')->url('avatars/me.jpg'), 'hasAvatar' => true])
             ->where('withAvatar', true)
             ->where('labels.title', 'โปรไฟล์')
             ->where('updateUrl', url('/admin/profile')));
@@ -165,6 +165,47 @@ it('refuses a file that is not an image before HasPanelAvatar sees it', function
         ->assertSessionHasErrors('avatar');
 
     expect($user->received)->toBe([]);
+});
+
+it('tells a generated placeholder from the user\'s own photo', function (): void {
+    $placeholder = avatarMember('https://api.example.com/placeholder.svg');
+
+    $this->actingAs($placeholder)->get('/admin/profile')->assertInertia(fn (Assert $page): Assert => $page
+        ->where('profile.avatar', 'https://api.example.com/placeholder.svg')
+        ->where('profile.hasAvatar', false));
+
+    $placeholder->hasPhoto = true;
+
+    $this->actingAs($placeholder)->get('/admin/profile')->assertInertia(fn (Assert $page): Assert => $page->where('profile.hasAvatar', true));
+});
+
+it('has no photo to remove when the panel\'s column is empty', function (): void {
+    $this->actingAs(member())->get('/admin/profile')->assertInertia(fn (Assert $page): Assert => $page->where('profile.hasAvatar', false));
+});
+
+it('takes the photo size limit from config, 2048 KB by default', function (): void {
+    $user = member();
+    $save = fn () => $this->actingAs($user)->from('/admin/profile')->put('/admin/profile', ['name' => 'Staff', 'email' => 'staff@example.com', 'avatar' => UploadedFile::fake()->image('big.jpg')->size(3000)]);
+
+    $save()->assertSessionHasErrors('avatar');
+
+    config(['tungsten.profile.avatar_max' => 10240]);
+    $save()->assertSessionHasNoErrors();
+
+    config(['tungsten.profile' => ['labels' => []]]);
+    $save()->assertSessionHasErrors('avatar');
+});
+
+it('names the photo by its label in validation messages, with the panel\'s override', function (): void {
+    $user = member();
+    $save = fn () => $this->actingAs($user)->from('/admin/profile')->put('/admin/profile', ['name' => 'Staff', 'email' => 'staff@example.com', 'avatar' => UploadedFile::fake()->create('notes.pdf', 10, 'application/pdf')]);
+
+    $save()->assertSessionHasErrors('avatar');
+    expect(session('errors')->first('avatar'))->toContain('รูปโปรไฟล์')->not->toContain('avatar');
+
+    app(PanelRegistry::class)->find('admin')->profile(avatar: 'avatar_path', labels: ['avatar' => 'รูปพนักงาน']);
+    $save()->assertSessionHasErrors('avatar');
+    expect(session('errors')->first('avatar'))->toContain('รูปพนักงาน');
 });
 
 it('changes the password only with the current one, confirmed', function (): void {

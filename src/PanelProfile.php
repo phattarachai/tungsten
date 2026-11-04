@@ -38,6 +38,11 @@ final readonly class PanelProfile
         return $this->avatar !== null || $user instanceof HasPanelAvatar;
     }
 
+    public function hasAvatar(?Authenticatable $user): bool
+    {
+        return $user instanceof HasPanelAvatar ? $user->hasPanelAvatar() : $this->avatarUrl($user) !== null;
+    }
+
     public function avatarUrl(?Authenticatable $user): ?string
     {
         if ($user instanceof HasPanelAvatar) {

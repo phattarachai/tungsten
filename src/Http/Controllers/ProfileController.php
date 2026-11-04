@@ -36,6 +36,7 @@ class ProfileController
                 'name' => data_get($request->user(), 'name'),
                 'email' => data_get($request->user(), 'email'),
                 'avatar' => $profile->avatarUrl($request->user()),
+                'hasAvatar' => $profile->hasAvatar($request->user()),
             ],
             'withAvatar' => $profile->acceptsAvatar($request->user()),
             'updateUrl' => route("{$panel->getId()}.profile.update"),

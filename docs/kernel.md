@@ -63,6 +63,9 @@ sources. `avatar: 'column'` is the simple case, where the kit stores the file it
 is for apps that keep photos elsewhere, such as Media Library, which a column can't express; it replaces Filament's
 `HasAvatar`. The contract wins when both apply, since it's the more specific statement about where photos live.
 
+A URL alone can't say whether to offer removal, because an app may return a generated placeholder for a user with no
+photo. `hasPanelAvatar()` answers that separately, so the page never offers to remove something that isn't there.
+
 `setPanelAvatar()` runs after `$user->save()`, so the app's code sees the saved user and can save it again. A column
 photo goes the other way, set before the save, because it's part of the same row. The kit never deletes or stores files
 for a contract user: the app owns the file's lifecycle. `UpdateProfileRequest` lowercases and trims `email` before

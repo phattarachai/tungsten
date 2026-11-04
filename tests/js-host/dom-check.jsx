@@ -7,6 +7,7 @@ import { createRoot } from 'react-dom/client'
 import { Avatar, Chart, Checkbox, Combobox, CopyButton, DataTable, DatePicker, Launchpad, NotificationBell, PickerDialog, Sortable, DateRangePicker, Facts, FormDialog, Input, RadioGroup, Select, Textarea, getJson, postJson, SearchInput, sendJson, StatsStrip, Thumb, Zoomable } from '@tungsten'
 import { FlashToastFor } from '@tungsten/components/panel/FlashToast'
 import { PageWidthContext } from '@tungsten/lib/pageWidth'
+import { AvatarField } from '@tungsten/pages/auth/Profile'
 import { sameUrl } from '@tungsten/lib/launchpadStore'
 import { useCollapsedGroups } from '@tungsten/lib/useCollapsedGroups'
 import { RichText } from '@tungsten/rich-text'
@@ -773,6 +774,54 @@ Object.assign(checks, {
         assert.ok(second && second !== first, 'a new id starts a new toast')
         assert.equal(document.querySelectorAll('[role="status"]').length, 1)
         box.unmount()
+    },
+
+    'the profile photo offers the trash icon for the user\'s own photo and a picked file, never for a placeholder': () => {
+        const realCreate = URL.createObjectURL
+        const realRevoke = URL.revokeObjectURL
+        URL.createObjectURL = () => 'blob:picked'
+        URL.revokeObjectURL = () => {}
+
+        const labels = { avatar: 'รูปโปรไฟล์', changeAvatar: 'เปลี่ยนรูป', removeAvatar: 'ลบรูป' }
+        let data
+        function Field({ hasAvatar }) {
+            const [state, setState] = useState({ avatar: null, remove_avatar: false })
+            data = state
+
+            return <AvatarField labels={labels} current="https://example.com/photo.svg" hasAvatar={hasAvatar} name="Staff" form={{ data: state, errors: {}, setData: setState }} />
+        }
+        const trash = () => document.querySelector('button[aria-label="ลบรูป"]')
+        const pick = (input) => {
+            Object.defineProperty(input, 'files', { configurable: true, value: [new window.File(['x'], 'a.png', { type: 'image/png' })] })
+            act(() => input.dispatchEvent(new window.Event('change', { bubbles: true })))
+        }
+
+        const placeholder = mount(<Field hasAvatar={false} />)
+        assert.equal(trash(), null, 'a placeholder has nothing to remove')
+
+        pick(placeholder.input)
+        assert.ok(trash(), 'a picked file can be dropped')
+        assert.equal(trash().title, 'ลบรูป')
+
+        act(() => trash().click())
+        assert.deepEqual(data, { avatar: null, remove_avatar: false }, 'dropping it over a placeholder removes nothing on save')
+        assert.equal(trash(), null)
+        placeholder.unmount()
+
+        const own = mount(<Field hasAvatar />)
+        assert.ok(trash(), 'the user\'s own photo can be removed')
+
+        act(() => trash().click())
+        assert.deepEqual(data, { avatar: null, remove_avatar: true })
+        assert.equal(trash(), null, 'nothing left to remove once marked')
+
+        pick(own.input)
+        assert.deepEqual([data.avatar?.name, data.remove_avatar], ['a.png', false], 'a new pick undoes the removal')
+        assert.ok(trash())
+        own.unmount()
+
+        URL.createObjectURL = realCreate
+        URL.revokeObjectURL = realRevoke
     },
 
     'submitting a FormDialog opened inside another form does not submit the outer form (React bubbles portalled events)': () => {

@@ -49,6 +49,7 @@ return [
     | `->profile(labels: [...])`.
     */
     'profile' => [
+        'avatar_max' => 2048,   // the largest photo the profile form accepts, in KB
         'labels' => [
             'title' => 'โปรไฟล์',
             'details' => 'ข้อมูลส่วนตัว',

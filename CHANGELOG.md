@@ -7,6 +7,15 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.2.36 — 2026-11-04
+
+- **Breaking for `HasPanelAvatar` implementers** (it shipped in v0.2.35): add `hasPanelAvatar(): bool`, true when the user
+  has a photo of their own. `getPanelAvatarUrl()` may return a generated placeholder, and the page no longer offers to
+  remove one. The page gets it as `profile.hasAvatar`.
+- **Photo size limit**: `config('tungsten.profile.avatar_max')`, in KB, default 2048.
+- The remove-photo control is a danger trash `IconButton`, titled with `labels.removeAvatar`.
+- **Fixed**: validation messages name the photo by `labels.avatar` instead of `avatar`.
+
 ## v0.2.35 — 2026-11-04
 
 - **Avatar contract**: `Phattarachai\Tungsten\Contracts\HasPanelAvatar` on the user model supplies the profile photo

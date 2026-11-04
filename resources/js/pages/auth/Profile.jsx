@@ -1,15 +1,20 @@
 import { Head, useForm } from '@inertiajs/react'
+import { Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 import { Avatar } from '../../components/panel/Avatar'
 import { Button } from '../../components/ui/Button'
 import { FormField, Input } from '../../components/ui/form'
+import { IconButton } from '../../components/ui/IconButton'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Heading, Rule } from '../../components/ui/RecordParts'
 import { AppLayout } from '../../layouts/AppLayout'
 
-/** The photo with a file picker; the preview is the picked file until it's saved. */
-function AvatarField({ labels, current, name, form }) {
+/**
+ * The photo with a file picker; the preview is the picked file until it's saved. The trash icon drops a picked file and
+ * removes the user's own photo (`hasAvatar`), so a generated placeholder offers nothing to remove.
+ */
+export function AvatarField({ labels, current, hasAvatar, name, form }) {
     const picker = useRef(null)
     const [preview, setPreview] = useState(null)
 
@@ -27,6 +32,12 @@ function AvatarField({ labels, current, name, form }) {
     }, [form.data.avatar])
 
     const shown = form.data.remove_avatar ? null : (preview ?? current)
+    const removable = form.data.avatar || (hasAvatar && !form.data.remove_avatar)
+
+    function remove() {
+        picker.current.value = ''
+        form.setData((data) => ({ ...data, avatar: null, remove_avatar: hasAvatar }))
+    }
 
     return (
         <FormField label={labels.avatar} error={form.errors.avatar}>
@@ -44,11 +55,7 @@ function AvatarField({ labels, current, name, form }) {
                 <Button variant="outline" size="sm" onClick={() => picker.current?.click()}>
                     {labels.changeAvatar}
                 </Button>
-                {shown && (
-                    <Button variant="ghost" tone="danger" size="sm" onClick={() => form.setData((data) => ({ ...data, avatar: null, remove_avatar: true }))}>
-                        {labels.removeAvatar}
-                    </Button>
-                )}
+                {removable && <IconButton icon={Trash2} label={labels.removeAvatar} tone="danger" onClick={remove} />}
             </div>
         </FormField>
     )
@@ -77,7 +84,7 @@ export default function Profile({ labels, profile, withAvatar, updateUrl, passwo
             <PageHeader title={labels.title} />
             <form onSubmit={saveDetails} className="mt-4 space-y-3">
                 <Heading>{labels.details}</Heading>
-                {withAvatar && <AvatarField labels={labels} current={profile.avatar} name={details.data.name} form={details} />}
+                {withAvatar && <AvatarField labels={labels} current={profile.avatar} hasAvatar={profile.hasAvatar} name={details.data.name} form={details} />}
                 <FormField label={labels.name} htmlFor="profile-name" error={details.errors.name}>
                     <Input id="profile-name" value={details.data.name} onChange={(event) => details.setData('name', event.target.value)} autoComplete="name" />
                 </FormField>
