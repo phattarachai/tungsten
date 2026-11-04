@@ -72,8 +72,10 @@ from `toDatabase()`. `icon` is a registered kit icon name.
 `avatar` for no photo. Needs `storage:link` for the `public` disk.
 
 When photos live elsewhere (Media Library), use a bare `->profile()` and implement
-`Phattarachai\Tungsten\Contracts\HasPanelAvatar` on the user: `getPanelAvatarUrl(): ?string` and
+`Phattarachai\Tungsten\Contracts\HasPanelAvatar` on the user: `getPanelAvatarUrl(): ?string` (a placeholder is fine),
+`hasPanelAvatar(): bool` (a photo of their own, which is what the remove icon needs) and
 `setPanelAvatar(?UploadedFile $file): void` (null clears). It wins over `avatar`, and drives the topbar photo too.
+`config('tungsten.profile.avatar_max')` caps the photo, in KB (2048 by default).
 
 ## Sets and routes
 

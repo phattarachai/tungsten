@@ -263,6 +263,11 @@ class User extends Authenticatable implements HasPanelAvatar
         return $this->getFirstMediaUrl('avatar') ?: null;
     }
 
+    public function hasPanelAvatar(): bool
+    {
+        return $this->hasMedia('avatar');
+    }
+
     public function setPanelAvatar(?UploadedFile $file): void
     {
         $this->clearMediaCollection('avatar');
@@ -274,9 +279,14 @@ class User extends Authenticatable implements HasPanelAvatar
 }
 ```
 
-The page and the topbar's `auth.user.avatar` read `getPanelAvatarUrl()`; an empty string counts as no photo.
+The page and the topbar's `auth.user.avatar` read `getPanelAvatarUrl()`, which may return a generated placeholder; an
+empty string shows the initial. `hasPanelAvatar()` says whether there's a photo of the user's own: the remove icon shows
+only then, or for a picked file that isn't saved yet.
 `setPanelAvatar()` runs after the name and email are saved, only when the form sent a new photo (already validated as an
-image of at most 2 MB) or a removal (`null`). Without `->profile()` there's no page and no photo in the topbar.
+image within the limit) or a removal (`null`). Without `->profile()` there's no page and no photo in the topbar.
+
+`config('tungsten.profile.avatar_max')` is the largest photo the form accepts, in KB (2048 by default), in both modes.
+Keep PHP's `upload_max_filesize` and `post_max_size` above it.
 
 ## Global search (optional)
 

@@ -9,6 +9,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Override;
+use Phattarachai\Tungsten\PanelRegistry;
 
 class UpdateProfileRequest extends FormRequest
 {
@@ -33,8 +34,19 @@ class UpdateProfileRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique($user->getTable(), 'email')->ignore($user->getKey(), $user->getKeyName())],
-            'avatar' => ['nullable', 'image', 'max:2048'],
+            'avatar' => ['nullable', 'image', 'max:'.(int) config('tungsten.profile.avatar_max', 2048)],
             'remove_avatar' => ['boolean'],
         ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    #[Override]
+    public function attributes(): array
+    {
+        $labels = resolve(PanelRegistry::class)->forRoute($this->route()?->getName())?->getProfile()?->labels();
+
+        return ['avatar' => $labels['avatar'] ?? 'avatar'];
     }
 }

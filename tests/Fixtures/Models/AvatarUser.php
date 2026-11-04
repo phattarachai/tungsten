@@ -11,6 +11,8 @@ class AvatarUser extends User implements HasPanelAvatar
 {
     public ?string $mediaUrl = null;
 
+    public bool $hasPhoto = false;
+
     /** @var list<UploadedFile|null> */
     public array $received = [];
 
@@ -21,6 +23,11 @@ class AvatarUser extends User implements HasPanelAvatar
     public function getPanelAvatarUrl(): ?string
     {
         return $this->mediaUrl;
+    }
+
+    public function hasPanelAvatar(): bool
+    {
+        return $this->hasPhoto;
     }
 
     public function setPanelAvatar(?UploadedFile $file): void
