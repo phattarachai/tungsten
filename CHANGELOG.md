@@ -7,6 +7,29 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.3.0 — 2026-11-14
+
+Staff sign-in, opt-in per panel: a panel that doesn't ask for them behaves as in 0.2.
+
+- **Password reset**: `->login(passwordReset: true)` (or a broker name) adds `{path}/forgot-password` and
+  `{path}/reset-password/{token}` on Laravel's password broker, with the package's own Thai
+  `PanelResetPasswordNotification` (sent through the broker's callback, so `ResetPassword::createUrlUsing()` and the
+  app's notification are untouched), 5 tries a minute per IP, `Password::defaults()`. The login page links to it.
+  `Tungsten::sendPasswordResetLink($user, 'admin')` lets an admin send the link.
+- **Two-factor (TOTP)**: `->login(twoFactor: true | fn ($user) => bool)`. `HasTwoFactor` + `InteractsWithTwoFactor` on
+  the user model (Fortify's columns, encrypted). An enrolled user gives a code (or a single-use recovery code) after the
+  password before they're signed in; a required user who hasn't enrolled is held at `{path}/two-factor/setup` until they
+  do; the profile page regenerates recovery codes, moves to a new phone and turns it off when not required.
+  `EnsureTwoFactor::for('admin')` (alias `tungsten.two-factor`) guards Filament and other routes on the same guard.
+  `Tungsten::amr($user)` returns the session's `pwd` / `otp`. Config: `tungsten.login.two_factor`.
+- **Migrations**: `vendor:publish --tag=tungsten-migrations` publishes create-if-missing migrations for
+  `password_reset_tokens` and the two-factor columns.
+- New kit pages `auth/ForgotPassword`, `auth/ResetPassword`, `auth/TwoFactorChallenge`, `auth/TwoFactorSetup`; the
+  sign-in pages share `components/panel/AuthCard`.
+- New dependencies: `pragmarx/google2fa` and `bacon/bacon-qr-code`.
+- **Changed**: `LoginRequest::authenticate()` is now `verifiedUserFor()`, which returns the user without signing them in
+  (the controller does that).
+
 ## v0.2.36 — 2026-11-04
 
 - **Breaking for `HasPanelAvatar` implementers** (it shipped in v0.2.35): add `hasPanelAvatar(): bool`, true when the user

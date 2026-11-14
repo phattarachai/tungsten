@@ -32,12 +32,12 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Signs the user in when the credentials are right and the panel lets them in; every refusal counts towards the
-     * throttle, which a success clears.
+     * The user, when the credentials are right and the panel lets them in; every refusal counts towards the throttle,
+     * which a success clears. Nobody is signed in yet: a user with two-factor still owes a code.
      *
      * @throws ValidationException
      */
-    public function authenticate(Panel $panel, PanelLogin $login): void
+    public function verifiedUserFor(Panel $panel, PanelLogin $login): Authenticatable
     {
         $this->ensureIsNotRateLimited($login);
 
@@ -54,8 +54,9 @@ class LoginRequest extends FormRequest
             $this->refuse($refusal);
         }
 
-        $guard->login($user, $this->boolean('remember'));
         RateLimiter::clear($this->throttleKey());
+
+        return $user;
     }
 
     private function guard(PanelLogin $login): StatefulGuard

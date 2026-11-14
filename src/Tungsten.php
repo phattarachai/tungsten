@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Phattarachai\Tungsten;
 
 use Closure;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
 use Inertia\Inertia;
 use InvalidArgumentException;
+use Phattarachai\Tungsten\Auth\AuthSession;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -64,6 +67,35 @@ class Tungsten
             ->middleware($found->routeMiddleware())
             ->name("{$found->getId()}.")
             ->group($routes);
+    }
+
+    /**
+     * Mails `$user` a link to `$panel`'s reset-password page (`->login(passwordReset: true)`), for an admin's "send
+     * reset link" action. Returns the broker's status: `Password::RESET_LINK_SENT` or `Password::RESET_THROTTLED`.
+     */
+    public static function sendPasswordResetLink(CanResetPassword $user, string $panel): string
+    {
+        return self::panel($panel)->sendPasswordResetLink($user);
+    }
+
+    /**
+     * How `$user` (the signed-in user when null) proved who they are this session, as RFC 8176 `amr` values: `pwd`
+     * after a panel password sign-in, `otp` after an authenticator code (or a recovery code). Put it in an OpenID
+     * Connect `id_token` so a client can trust the panel's two-factor. Empty for a user who signed in another way.
+     *
+     * @return list<string>
+     */
+    public static function amr(?Authenticatable $user = null, ?Request $request = null): array
+    {
+        $request ??= request();
+        $user ??= $request->user();
+
+        return $user === null || ! $request->hasSession() ? [] : AuthSession::amr($request->session(), $user);
+    }
+
+    public static function panel(string $panel): Panel
+    {
+        return app(PanelRegistry::class)->find($panel) ?? throw new InvalidArgumentException("Tungsten has no panel [{$panel}].");
     }
 
     /**

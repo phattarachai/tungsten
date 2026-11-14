@@ -12,7 +12,9 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Phattarachai\Tungsten\Auth\AuthSession;
 use Phattarachai\Tungsten\Contracts\HasPanelAvatar;
+use Phattarachai\Tungsten\Contracts\HasTwoFactor;
 use Phattarachai\Tungsten\Http\Requests\UpdatePasswordRequest;
 use Phattarachai\Tungsten\Http\Requests\UpdateProfileRequest;
 use Phattarachai\Tungsten\Panel;
@@ -41,7 +43,43 @@ class ProfileController
             'withAvatar' => $profile->acceptsAvatar($request->user()),
             'updateUrl' => route("{$panel->getId()}.profile.update"),
             'passwordUrl' => route("{$panel->getId()}.profile.password"),
+            'twoFactor' => $this->twoFactor($request, $panel),
         ]);
+    }
+
+    /**
+     * The two-factor section, for a panel with `->login(twoFactor: ...)` and a {@see HasTwoFactor} user; new recovery
+     * codes are shown once, right after they're made.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function twoFactor(Request $request, Panel $panel): ?array
+    {
+        $twoFactor = $panel->getLogin()?->twoFactor;
+        $user = $request->user();
+
+        if ($twoFactor === null || ! $user instanceof HasTwoFactor) {
+            return null;
+        }
+
+        $id = $panel->getId();
+        $codes = $request->session()->get(AuthSession::RECOVERY_CODES);
+        $labels = $panel->getProfile()?->labels() ?? [];
+        $enabled = $user->hasTwoFactorEnabled();
+
+        return [
+            'enabled' => $enabled,
+            'status' => $enabled
+                ? ['label' => $labels['twoFactorEnabled'] ?? 'on', 'tone' => 'done']
+                : ['label' => $labels['twoFactorNotEnabled'] ?? 'off', 'tone' => 'draft'],
+            'required' => $twoFactor->requiredFor($user),
+            'recoveryCodesLeft' => count($user->getTwoFactorRecoveryCodes()),
+            'newRecoveryCodes' => is_array($codes) ? array_values($codes) : null,
+            'setupUrl' => route("{$id}.two-factor.setup"),
+            'renewUrl' => route("{$id}.two-factor.setup", ['renew' => 1]),
+            'regenerateUrl' => route("{$id}.profile.two-factor.recovery-codes"),
+            'disableUrl' => route("{$id}.profile.two-factor.destroy"),
+        ];
     }
 
     public function update(UpdateProfileRequest $request): RedirectResponse

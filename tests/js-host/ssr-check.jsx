@@ -21,6 +21,19 @@ const shared = {
 
 const table = { rows: [{ id: 1, created_at: '2026-10-31' }], pagination: { current_page: 1, last_page: 1, per_page: 25, total: 1, from: 1, to: 1 }, search: '', sort: null, filters: {} }
 
+const authLabels = {
+    email: 'อีเมล', forgotTitle: 'ลืมรหัสผ่าน', forgotIntro: 'กรอกอีเมล', sendLink: 'ส่งลิงก์ตั้งรหัสผ่านใหม่', backToLogin: 'กลับไปหน้าเข้าสู่ระบบ',
+    resetTitle: 'ตั้งรหัสผ่านใหม่', newPassword: 'รหัสผ่านใหม่', confirmPassword: 'ยืนยันรหัสผ่านใหม่', resetSubmit: 'บันทึกรหัสผ่านใหม่',
+    challengeTitle: 'ยืนยันตัวตนสองขั้นตอน', challengeIntro: 'กรอกรหัส 6 หลัก', recoveryIntro: 'กรอกรหัสสำรอง', code: 'รหัส 6 หลัก', recoveryCode: 'รหัสสำรอง',
+    useRecoveryCode: 'ใช้รหัสสำรองแทน', useCode: 'ใช้รหัสจากแอปแทน', verify: 'ยืนยัน', logout: 'ออกจากระบบ', cancel: 'ยกเลิก',
+    setupTitle: 'ตั้งค่า', setupIntro: 'ต้องตั้งค่า', setupRenewIntro: 'สแกนใหม่', setupScan: 'สแกน QR', setupManual: 'กรอกคีย์', setupConfirm: 'กรอกรหัส', setupSubmit: 'ยืนยันและเปิดใช้',
+    recoveryCodesTitle: 'เก็บรหัสสำรองไว้', recoveryCodesIntro: 'รหัสละครั้ง', copyCodes: 'คัดลอกรหัส', continue: 'ไปต่อ',
+    twoFactor: 'ยืนยันตัวตนสองขั้นตอน', twoFactorOn: 'ใช้รหัสจากแอป', twoFactorOff: 'เปิดใช้เพื่อความปลอดภัย', twoFactorRequiredNote: 'ปิดไม่ได้', recoveryCodesLeft: 'เหลือรหัสสำรอง :count ชุด',
+    enableTwoFactor: 'เปิดใช้', renewTwoFactor: 'เปลี่ยนโทรศัพท์', regenerateCodes: 'สร้างรหัสสำรองใหม่', newRecoveryCodes: 'รหัสสำรองชุดใหม่', disableTwoFactor: 'ปิดการใช้', disableConfirm: 'ยืนยันด้วยรหัสผ่าน',
+}
+
+const profileLabels = { title: 'โปรไฟล์', details: 'ข้อมูลส่วนตัว', name: 'ชื่อ', email: 'อีเมล', avatar: 'รูปโปรไฟล์', changeAvatar: 'เปลี่ยนรูป', removeAvatar: 'ลบรูป', save: 'บันทึก', password: 'เปลี่ยนรหัสผ่าน', currentPassword: 'รหัสผ่านปัจจุบัน', newPassword: 'รหัสผ่านใหม่', confirmPassword: 'ยืนยันรหัสผ่านใหม่', savePassword: 'เปลี่ยนรหัสผ่าน' }
+
 const cases = [
     ['tungsten::UiKit', { toastUrl: '/admin/ui-kit/toast' }, 'Metabase'],
     ['tungsten::Home', { title: 'ร้านค้า', description: '' }, 'คำสั่งซื้อ'],
@@ -28,6 +41,12 @@ const cases = [
     ['panel/orders/Index', { title: 'คำสั่งซื้อ', table }, 'คำสั่งซื้อ'],
     ['tungsten::auth/Profile', { labels: { title: 'โปรไฟล์', details: 'ข้อมูลส่วนตัว', name: 'ชื่อ', email: 'อีเมล', avatar: 'รูปโปรไฟล์', changeAvatar: 'เปลี่ยนรูป', removeAvatar: 'ลบรูป', save: 'บันทึก', password: 'เปลี่ยนรหัสผ่าน', currentPassword: 'รหัสผ่านปัจจุบัน', newPassword: 'รหัสผ่านใหม่', confirmPassword: 'ยืนยันรหัสผ่านใหม่', savePassword: 'เปลี่ยนรหัสผ่าน' }, profile: { name: 'Admin', email: 'admin@example.com', avatar: null }, withAvatar: true, updateUrl: '/admin/profile', passwordUrl: '/admin/profile/password' }, 'รหัสผ่านปัจจุบัน'],
     ['tungsten::auth/Login', { labels: { title: 'เข้าสู่ระบบ', intro: '', email: 'อีเมล', password: 'รหัสผ่าน', remember: 'จดจำ', submit: 'เข้าสู่ระบบ', forgot: 'ลืมรหัสผ่าน?' }, action: '/admin/login', forgotPasswordUrl: '/forgot-password' }, 'ลืมรหัสผ่าน?'],
+    ['tungsten::auth/ForgotPassword', { labels: authLabels, action: '/admin/forgot-password', loginUrl: '/admin/login' }, 'ส่งลิงก์ตั้งรหัสผ่านใหม่'],
+    ['tungsten::auth/ResetPassword', { labels: authLabels, action: '/admin/reset-password', token: 't0k3n', email: 'a@example.com', forgotUrl: '/admin/forgot-password' }, 'บันทึกรหัสผ่านใหม่'],
+    ['tungsten::auth/TwoFactorChallenge', { labels: authLabels, action: '/admin/two-factor-challenge', loginUrl: '/admin/login', logoutUrl: null }, 'ใช้รหัสสำรองแทน'],
+    ['tungsten::auth/TwoFactorSetup', { labels: authLabels, renew: false, required: true, qr: '<svg xmlns="http://www.w3.org/2000/svg"></svg>', secret: 'ABCD EFGH', action: '/admin/two-factor/setup', logoutUrl: '/admin/logout', cancelUrl: null }, 'ABCD EFGH'],
+    ['tungsten::auth/TwoFactorSetup', { labels: authLabels, recoveryCodes: ['aaaaa-11111', 'bbbbb-22222'], continueUrl: '/admin' }, 'bbbbb-22222'],
+    ['tungsten::auth/Profile', { labels: { ...profileLabels, ...authLabels }, profile: { name: 'Admin', email: 'admin@example.com', avatar: null }, withAvatar: false, updateUrl: '/admin/profile', passwordUrl: '/admin/profile/password', twoFactor: { enabled: true, required: false, status: { label: 'เปิดใช้อยู่', tone: 'done' }, recoveryCodesLeft: 7, newRecoveryCodes: null, setupUrl: '/s', renewUrl: '/s?renew=1', regenerateUrl: '/r', disableUrl: '/d' } }, 'เหลือรหัสสำรอง 7 ชุด'],
 ]
 
 for (const [component, props, expected] of cases) {

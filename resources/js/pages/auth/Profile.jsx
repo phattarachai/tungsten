@@ -1,9 +1,12 @@
-import { Head, useForm } from '@inertiajs/react'
+import { Head, Link, useForm } from '@inertiajs/react'
 import { Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 import { Avatar } from '../../components/panel/Avatar'
+import { RecoveryCodes } from '../../components/panel/RecoveryCodes'
+import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
+import { FormDialog } from '../../components/ui/FormDialog'
 import { FormField, Input } from '../../components/ui/form'
 import { IconButton } from '../../components/ui/IconButton'
 import { PageHeader } from '../../components/ui/PageHeader'
@@ -62,9 +65,75 @@ export function AvatarField({ labels, current, hasAvatar, name, form }) {
 }
 
 /**
- * The signed-in user's profile (`Panel::profile()`): details (photo, name, email) and the password, each its own form.
+ * Two-factor on the profile (`->login(twoFactor: ...)`): on or off, recovery codes left, and the actions: turn it on,
+ * move to a new phone, new recovery codes (shown once, right here), turn it off (password first; not when required).
  */
-export default function Profile({ labels, profile, withAvatar, updateUrl, passwordUrl }) {
+export function TwoFactorSection({ labels, twoFactor }) {
+    const [disabling, setDisabling] = useState(false)
+    const regenerate = useForm({})
+    const disable = useForm({ _method: 'delete', current_password: '' })
+
+    function submitDisable() {
+        disable.post(twoFactor.disableUrl, { preserveScroll: true, onSuccess: () => setDisabling(false), onFinish: () => disable.reset('current_password') })
+    }
+
+    return (
+        <section className="space-y-3">
+            <Heading>{labels.twoFactor}</Heading>
+            <div className="flex flex-wrap items-center gap-2">
+                <Badge tone={twoFactor.status.tone}>{twoFactor.status.label}</Badge>
+                <span className="text-zinc-600">{twoFactor.enabled ? labels.twoFactorOn : labels.twoFactorOff}</span>
+            </div>
+            {twoFactor.enabled && (
+                <p className="text-zinc-500">
+                    {labels.recoveryCodesLeft.replace(':count', twoFactor.recoveryCodesLeft)}
+                    {twoFactor.required && ` · ${labels.twoFactorRequiredNote}`}
+                </p>
+            )}
+            {twoFactor.newRecoveryCodes && (
+                <div className="space-y-1">
+                    <p className="text-xs font-medium text-zinc-600">{labels.newRecoveryCodes}</p>
+                    <RecoveryCodes codes={twoFactor.newRecoveryCodes} copyLabel={labels.copyCodes} />
+                </div>
+            )}
+            <div className="flex flex-wrap justify-end gap-2">
+                {twoFactor.enabled ? (
+                    <>
+                        {!twoFactor.required && (
+                            <Button variant="outline" tone="danger" onClick={() => setDisabling(true)}>
+                                {labels.disableTwoFactor}
+                            </Button>
+                        )}
+                        <Button variant="outline" disabled={regenerate.processing} onClick={() => regenerate.post(twoFactor.regenerateUrl, { preserveScroll: true })}>
+                            {labels.regenerateCodes}
+                        </Button>
+                        <Link href={twoFactor.renewUrl} className="inline-flex items-center rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-[0.8125rem] font-medium text-zinc-700 hover:bg-zinc-50">
+                            {labels.renewTwoFactor}
+                        </Link>
+                    </>
+                ) : (
+                    <Link href={twoFactor.setupUrl} className="inline-flex items-center rounded-md bg-brand px-3 py-1.5 text-[0.8125rem] font-medium text-white hover:bg-brand-600">
+                        {labels.enableTwoFactor}
+                    </Link>
+                )}
+            </div>
+            {disabling && (
+                <FormDialog title={labels.disableTwoFactor} submitLabel={labels.disableTwoFactor} processing={disable.processing} onSubmit={submitDisable} onClose={() => setDisabling(false)}>
+                    <p className="text-zinc-600">{labels.disableConfirm}</p>
+                    <FormField stacked label={labels.currentPassword} htmlFor="two-factor-password" error={disable.errors.current_password}>
+                        <Input id="two-factor-password" type="password" autoFocus autoComplete="current-password" value={disable.data.current_password} onChange={(event) => disable.setData('current_password', event.target.value)} />
+                    </FormField>
+                </FormDialog>
+            )}
+        </section>
+    )
+}
+
+/**
+ * The signed-in user's profile (`Panel::profile()`): details (photo, name, email), the password and, with
+ * `->login(twoFactor: ...)`, two-factor; each its own form.
+ */
+export default function Profile({ labels, profile, withAvatar, updateUrl, passwordUrl, twoFactor }) {
     const details = useForm({ _method: 'put', name: profile.name ?? '', email: profile.email ?? '', avatar: null, remove_avatar: false })
     const password = useForm({ current_password: '', password: '', password_confirmation: '' })
 
@@ -115,6 +184,12 @@ export default function Profile({ labels, profile, withAvatar, updateUrl, passwo
                     </Button>
                 </div>
             </form>
+            {twoFactor && (
+                <>
+                    <Rule />
+                    <TwoFactorSection labels={labels} twoFactor={twoFactor} />
+                </>
+            )}
         </>
     )
 }

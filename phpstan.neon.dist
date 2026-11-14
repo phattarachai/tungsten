@@ -9,3 +9,7 @@ parameters:
         - src
 
     checkModelProperties: true
+
+    ignoreErrors:
+        # InteractsWithTwoFactor is for the app's user model; the package's own code never uses it (the tests do).
+        - identifier: trait.unused

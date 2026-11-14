@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Phattarachai\Tungsten\Http\Controllers;
 
+use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
+use Phattarachai\Tungsten\Auth\AuthSession;
 use Phattarachai\Tungsten\Http\Requests\LoginRequest;
 use Phattarachai\Tungsten\Panel;
 use Phattarachai\Tungsten\PanelLogin;
@@ -35,16 +37,34 @@ class LoginController
         return Inertia::render('tungsten::auth/Login', [
             'labels' => $login->labels(),
             'action' => route("{$panel->getId()}.login.attempt"),
-            'forgotPasswordUrl' => $login->forgotPasswordUrl(),
+            'forgotPasswordUrl' => $login->forgotPasswordUrl($panel),
         ]);
     }
 
+    /**
+     * A correct password signs the user in, recording `pwd`; an enrolled two-factor user is held for their code
+     * instead, not signed in yet.
+     */
     public function store(LoginRequest $request): HttpResponse
     {
         [$panel, $login] = $this->panelLogin($request);
 
-        $request->authenticate($panel, $login);
-        $request->session()->regenerate();
+        $user = $request->verifiedUserFor($panel, $login);
+        $session = $request->session();
+
+        if ($login->twoFactor?->challenges($user)) {
+            $session->regenerate();
+            AuthSession::startChallenge($session, $panel->getId(), $user, $request->boolean('remember'));
+
+            return Inertia::location(route("{$panel->getId()}.two-factor.challenge"));
+        }
+
+        /** @var StatefulGuard $guard */
+        $guard = Auth::guard($login->guard);
+        $guard->login($user, $request->boolean('remember'));
+        $session->regenerate();
+        AuthSession::forgetChallenge($session);
+        AuthSession::record($session, $user, ['pwd']);
 
         return Inertia::location(redirect()->intended($panel->homeUrl())->getTargetUrl());
     }

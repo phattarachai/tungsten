@@ -28,6 +28,11 @@ class AdminPanelProvider extends \Phattarachai\Tungsten\PanelProvider
 
 `->login(guard:, labels:, forgotPasswordUrl:, authorize: fn ($user, $panel) => true|false|'message')` adds
 `{path}/login` and `{path}/logout`; guests on the panel go there. Without it, the app's own auth applies.
+`passwordReset: true` adds `{path}/forgot-password` and `{path}/reset-password/{token}` (the package's own Thai mail;
+`Tungsten::sendPasswordResetLink($user, 'admin')` for an admin action). `twoFactor: true|fn ($user) => bool` adds
+authenticator codes: the user model implements `HasTwoFactor` (trait `InteractsWithTwoFactor`, Fortify's columns from
+`vendor:publish --tag=tungsten-migrations`); required users enrol at their next sign-in; routes outside the panel on
+the same guard (Filament, dev tools) add `EnsureTwoFactor::for('admin')`; `Tungsten::amr($user)` gives `pwd` / `otp`.
 
 Switcher rows for things that aren't panels and footer links go in a provider's `boot()`:
 
