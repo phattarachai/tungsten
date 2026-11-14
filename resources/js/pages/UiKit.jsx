@@ -36,6 +36,7 @@ import {
     GroupedNav,
     IconButton,
     Input,
+    PasswordInput,
     PageHeader,
     PickerDialog,
     RadioGroup,
@@ -376,6 +377,9 @@ function Forms() {
             <div className="space-y-2.5">
                 <FormField label="ชื่อสินค้า" htmlFor="kit-name">
                     <Input id="kit-name" defaultValue="วิตามินซี 1000" />
+                </FormField>
+                <FormField label="รหัสผ่าน" htmlFor="kit-password" hint="ปุ่มรูปตาแสดง / ซ่อนรหัสผ่าน">
+                    <PasswordInput id="kit-password" defaultValue="secret-password" autoComplete="off" />
                 </FormField>
                 <FormField label="ราคา" hint="บาท" info="ราคาที่ลูกค้าเห็นก่อนส่วนลด">
                     <Input defaultValue="390.00" className="tabular-nums" />

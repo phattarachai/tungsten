@@ -7,6 +7,14 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.3.2 — 2026-11-14
+
+- **Added**: `PasswordInput`, an `Input` with a show / hide button inside it (eye icon, `aria-label` from
+  `strings.showPassword` / `strings.hidePassword`, `type="button"` so it never submits). Every password field in the
+  sign-in pages uses it: login, reset password, and the profile's password change and two-factor turn-off.
+- The setup page's code field gets `autoFocus` (it already had `inputMode="numeric"` and
+  `autoComplete="one-time-code"`, as the challenge did).
+
 ## v0.3.1 — 2026-11-14
 
 Hardening of the 0.3.0 staff sign-in.

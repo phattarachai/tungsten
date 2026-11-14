@@ -1,7 +1,8 @@
-import { ChevronDown, Info } from 'lucide-react'
-import { useEffect, useId, useRef } from 'react'
+import { ChevronDown, Eye, EyeOff, Info } from 'lucide-react'
+import { useEffect, useId, useRef, useState } from 'react'
 
 import { cn, widthUnless } from '../../lib/cn'
+import { strings } from '../../lib/strings'
 
 const CONTROL =
     'rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-[0.8125rem] text-zinc-900 transition placeholder:text-zinc-400 focus:border-brand focus:outline-none disabled:opacity-50'
@@ -57,6 +58,30 @@ export function FormField({ label, error, hint, info, htmlFor, stacked = false, 
 
 export function Input({ className, ...props }) {
     return <input className={cn(CONTROL, widthUnless(className), className)} {...props} />
+}
+
+/**
+ * A password `<Input>` with a show / hide button inside it (`strings.showPassword` / `strings.hidePassword`). The button
+ * is `type="button"`, so it never submits the form, and it is a real button, so Tab and Enter / Space reach it.
+ */
+export function PasswordInput({ className, ...props }) {
+    const [shown, setShown] = useState(false)
+
+    return (
+        <span className={cn('relative', widthUnless(className) ? 'flex w-full' : 'inline-flex')}>
+            <input {...props} type={shown ? 'text' : 'password'} className={cn(CONTROL, widthUnless(className), 'pr-9', className)} />
+            <button
+                type="button"
+                onClick={() => setShown((current) => !current)}
+                aria-label={shown ? strings.hidePassword : strings.showPassword}
+                aria-controls={props.id}
+                title={shown ? strings.hidePassword : strings.showPassword}
+                className="absolute inset-y-0 right-0 flex w-8 items-center justify-center rounded-r-md text-zinc-400 transition hover:text-zinc-700 focus-visible:text-zinc-700 focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:outline-none"
+            >
+                {shown ? <EyeOff className="size-3.5" aria-hidden="true" /> : <Eye className="size-3.5" aria-hidden="true" />}
+            </button>
+        </span>
+    )
 }
 
 export function Textarea({ className, ...props }) {

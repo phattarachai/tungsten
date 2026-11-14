@@ -57,6 +57,7 @@ export default function TwoFactorSetup({ labels, recoveryCodes, continueUrl, ren
                     id="setup-code"
                     inputMode="numeric"
                     autoComplete="one-time-code"
+                    autoFocus
                     maxLength={6}
                     value={form.data.code}
                     onChange={(event) => form.setData('code', event.target.value.replace(/\D/g, ''))}

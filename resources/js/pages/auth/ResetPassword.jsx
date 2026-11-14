@@ -2,7 +2,7 @@ import { useForm } from '@inertiajs/react'
 
 import { AuthCard, AuthLink } from '../../components/panel/AuthCard'
 import { Button } from '../../components/ui/Button'
-import { FormField, Input } from '../../components/ui/form'
+import { FormField, Input, PasswordInput } from '../../components/ui/form'
 import { urlOf } from '../../lib/href'
 
 /**
@@ -23,9 +23,8 @@ export default function ResetPassword({ labels, action, token, email, forgotUrl 
                 <Input id="reset-email" type="email" autoComplete="username" value={form.data.email} onChange={(event) => form.setData('email', event.target.value)} aria-invalid={Boolean(form.errors.email)} />
             </FormField>
             <FormField stacked label={labels.newPassword} htmlFor="reset-password" error={form.errors.password}>
-                <Input
+                <PasswordInput
                     id="reset-password"
-                    type="password"
                     autoComplete="new-password"
                     autoFocus
                     value={form.data.password}
@@ -34,7 +33,7 @@ export default function ResetPassword({ labels, action, token, email, forgotUrl 
                 />
             </FormField>
             <FormField stacked label={labels.confirmPassword} htmlFor="reset-confirm">
-                <Input id="reset-confirm" type="password" autoComplete="new-password" value={form.data.password_confirmation} onChange={(event) => form.setData('password_confirmation', event.target.value)} />
+                <PasswordInput id="reset-confirm" autoComplete="new-password" value={form.data.password_confirmation} onChange={(event) => form.setData('password_confirmation', event.target.value)} />
             </FormField>
             <Button type="submit" variant="brand" className="w-full" disabled={form.processing}>
                 {labels.resetSubmit}

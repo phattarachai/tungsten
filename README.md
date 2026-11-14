@@ -674,7 +674,7 @@ Route::post('ui-kit/toast', UiKitToastController::class)->name('ui-kit.toast');
   text column takes `wrap` (`true` for `w-72`, or a width such as `'w-96'`): two lines at that width, the rest in its
   tooltip — cells are `whitespace-nowrap` otherwise. `fit` sizes a table to its columns on a full-width page (on a
   `fit` page it needs nothing: the box around it is already as wide as its content).
-- **Forms**: `FormField` (inline label, `hint`, `info`, `error`), `Input`, `Select`, `Textarea`, `Combobox`
+- **Forms**: `FormField` (inline label, `hint`, `info`, `error`), `Input`, `PasswordInput` (show / hide button), `Select`, `Textarea`, `Combobox`
   (searchable, multiple; `size="sm"` + `label` for a filter bar; an option's `avatar` — a URL, or null for the
   initial — draws a small round photo before its label), `ButtonGroup` (`size="sm"` for toolbar presets), `RadioGroup` (options `{ value, label, description?, disabled? }` as
   native radios — arrow keys move within the group; `layout` `list` / `cards` / `inline`; `invalid` for the red frame),

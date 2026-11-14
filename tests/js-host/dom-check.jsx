@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 import { act, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
-import { Avatar, Chart, Checkbox, Combobox, CopyButton, DataTable, DatePicker, Launchpad, NotificationBell, PickerDialog, Sortable, DateRangePicker, Facts, FormDialog, Input, RadioGroup, Select, Textarea, getJson, postJson, SearchInput, sendJson, StatsStrip, Thumb, Zoomable } from '@tungsten'
+import { Avatar, Chart, Checkbox, Combobox, CopyButton, DataTable, DatePicker, Launchpad, NotificationBell, PickerDialog, Sortable, DateRangePicker, Facts, FormDialog, Input, PasswordInput, RadioGroup, Select, Textarea, getJson, postJson, SearchInput, sendJson, StatsStrip, Thumb, Zoomable } from '@tungsten'
 import { FlashToastFor } from '@tungsten/components/panel/FlashToast'
 import { PageWidthContext } from '@tungsten/lib/pageWidth'
 import { AvatarField } from '@tungsten/pages/auth/Profile'
@@ -32,6 +32,36 @@ function type(input, text) {
 }
 
 const checks = {
+    'PasswordInput shows and hides the password with a labelled button that never submits the form': () => {
+        let submitted = 0
+        const host = document.createElement('div')
+        document.body.append(host)
+        const root = createRoot(host)
+        act(() =>
+            root.render(
+                <form onSubmit={(event) => { event.preventDefault(); submitted++ }}>
+                    <PasswordInput id="pw" defaultValue="secret" />
+                </form>,
+            ),
+        )
+        const input = host.querySelector('input')
+        const button = host.querySelector('button')
+
+        assert.equal(input.type, 'password')
+        assert.equal(button.type, 'button')
+        assert.equal(button.getAttribute('aria-label'), 'แสดงรหัสผ่าน')
+        assert.equal(button.getAttribute('aria-controls'), 'pw')
+
+        act(() => button.click())
+        assert.equal(input.type, 'text')
+        assert.equal(button.getAttribute('aria-label'), 'ซ่อนรหัสผ่าน')
+        assert.equal(input.value, 'secret')
+
+        act(() => button.click())
+        assert.equal(input.type, 'password')
+        assert.equal(submitted, 0)
+        act(() => root.unmount())
+    },
     'SearchInput follows `value` when it changes from outside (a clear-all), while the box is not focused': () => {
         const box = mount(<SearchInput value="web" onSearch={() => {}} />)
         assert.equal(box.input.value, 'web')
