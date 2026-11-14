@@ -44,6 +44,7 @@ const cases = [
     ['tungsten::auth/Login', { labels: { title: 'เข้าสู่ระบบ', intro: '', email: 'อีเมล', password: 'รหัสผ่าน', remember: 'จดจำ', submit: 'เข้าสู่ระบบ', forgot: 'ลืมรหัสผ่าน?' }, action: '/admin/login', forgotPasswordUrl: '/forgot-password' }, 'ลืมรหัสผ่าน?'],
     ['tungsten::auth/ForgotPassword', { labels: authLabels, action: '/admin/forgot-password', loginUrl: '/admin/login' }, 'ส่งลิงก์ตั้งรหัสผ่านใหม่'],
     ['tungsten::auth/ResetPassword', { labels: authLabels, action: '/admin/reset-password', token: 't0k3n', email: 'a@example.com', forgotUrl: '/admin/forgot-password' }, 'บันทึกรหัสผ่านใหม่'],
+    ['tungsten::auth/ResetPassword', { labels: authLabels, action: '/admin/reset-password', token: 't0k3n', email: 'a@example.com', forgotUrl: '/admin/forgot-password' }, 'aria-label="แสดงรหัสผ่าน"'],
     ['tungsten::auth/TwoFactorChallenge', { labels: authLabels, action: '/admin/two-factor-challenge', loginUrl: '/admin/login', logoutUrl: null }, 'ใช้รหัสสำรองแทน'],
     ['tungsten::auth/TwoFactorSetup', { labels: authLabels, renew: false, required: true, qr: '<svg xmlns="http://www.w3.org/2000/svg"></svg>', secret: 'ABCD EFGH', action: '/admin/two-factor/setup', logoutUrl: '/admin/logout', cancelUrl: null }, 'ABCD EFGH'],
     ['tungsten::auth/TwoFactorSetup', { labels: authLabels, recoveryCodes: ['aaaaa-11111', 'bbbbb-22222'], continueUrl: '/admin' }, 'bbbbb-22222'],

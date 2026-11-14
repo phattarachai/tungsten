@@ -55,6 +55,7 @@ before relying on a prop not listed here.
 |---|---|
 | `FormField` | `label`, `error`, `hint`, `info` (ⓘ tooltip), `stacked`, `htmlFor` |
 | `Input`, `Textarea`, `Select` (`size="sm"`) | native props; a width class replaces their full width |
+| `PasswordInput` | an `Input` for passwords with a show / hide eye button inside (`strings.showPassword` / `hidePassword`); use it for every password field |
 | `Combobox` | `options` (`value`, `label`, `meta`, `avatar`), `value`, `onChange`, `multiple`, `clearable`, `size`, `label`, `onSearch` |
 | `RadioGroup` | `options` (`value`, `label`, `description`, `disabled`), `value`, `onChange`, `layout` (`list`/`cards`/`inline`), `invalid` |
 | `Checkbox` | `checked`, `onChange(checked)`, `label`, `hint`, `error`, `indeterminate` |

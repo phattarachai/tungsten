@@ -2,7 +2,7 @@ import { useForm } from '@inertiajs/react'
 
 import { AuthCard, AuthLink } from '../../components/panel/AuthCard'
 import { Button } from '../../components/ui/Button'
-import { FormField, Input } from '../../components/ui/form'
+import { FormField, Input, PasswordInput } from '../../components/ui/form'
 import { urlOf } from '../../lib/href'
 
 /**
@@ -31,9 +31,8 @@ export default function Login({ labels, action, forgotPasswordUrl }) {
                 />
             </FormField>
             <FormField stacked label={labels.password} htmlFor="login-password" error={form.errors.password}>
-                <Input
+                <PasswordInput
                     id="login-password"
-                    type="password"
                     autoComplete="current-password"
                     value={form.data.password}
                     onChange={(event) => form.setData('password', event.target.value)}

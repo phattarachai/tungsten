@@ -7,7 +7,7 @@ import { RecoveryCodes } from '../../components/panel/RecoveryCodes'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { FormDialog } from '../../components/ui/FormDialog'
-import { FormField, Input } from '../../components/ui/form'
+import { FormField, Input, PasswordInput } from '../../components/ui/form'
 import { IconButton } from '../../components/ui/IconButton'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { Heading, Rule } from '../../components/ui/RecordParts'
@@ -121,7 +121,7 @@ export function TwoFactorSection({ labels, twoFactor }) {
                 <FormDialog title={labels.disableTwoFactor} submitLabel={labels.disableTwoFactor} processing={disable.processing} onSubmit={submitDisable} onClose={() => setDisabling(false)}>
                     <p className="text-zinc-600">{labels.disableConfirm}</p>
                     <FormField stacked label={labels.currentPassword} htmlFor="two-factor-password" error={disable.errors.current_password}>
-                        <Input id="two-factor-password" type="password" autoFocus autoComplete="current-password" value={disable.data.current_password} onChange={(event) => disable.setData('current_password', event.target.value)} />
+                        <PasswordInput id="two-factor-password" autoFocus autoComplete="current-password" value={disable.data.current_password} onChange={(event) => disable.setData('current_password', event.target.value)} />
                     </FormField>
                 </FormDialog>
             )}
@@ -170,13 +170,13 @@ export default function Profile({ labels, profile, withAvatar, emailEditable = t
             <form onSubmit={savePassword} className="space-y-3">
                 <Heading>{labels.password}</Heading>
                 <FormField label={labels.currentPassword} htmlFor="profile-current" error={password.errors.current_password}>
-                    <Input id="profile-current" type="password" value={password.data.current_password} onChange={(event) => password.setData('current_password', event.target.value)} autoComplete="current-password" />
+                    <PasswordInput id="profile-current" value={password.data.current_password} onChange={(event) => password.setData('current_password', event.target.value)} autoComplete="current-password" />
                 </FormField>
                 <FormField label={labels.newPassword} htmlFor="profile-password" error={password.errors.password}>
-                    <Input id="profile-password" type="password" value={password.data.password} onChange={(event) => password.setData('password', event.target.value)} autoComplete="new-password" />
+                    <PasswordInput id="profile-password" value={password.data.password} onChange={(event) => password.setData('password', event.target.value)} autoComplete="new-password" />
                 </FormField>
                 <FormField label={labels.confirmPassword} htmlFor="profile-confirm">
-                    <Input id="profile-confirm" type="password" value={password.data.password_confirmation} onChange={(event) => password.setData('password_confirmation', event.target.value)} autoComplete="new-password" />
+                    <PasswordInput id="profile-confirm" value={password.data.password_confirmation} onChange={(event) => password.setData('password_confirmation', event.target.value)} autoComplete="new-password" />
                 </FormField>
                 <div className="flex justify-end">
                     <Button type="submit" disabled={password.processing}>

@@ -5,6 +5,8 @@
  */
 export const strings = {
     close: 'ปิด',
+    showPassword: 'แสดงรหัสผ่าน',
+    hidePassword: 'ซ่อนรหัสผ่าน',
     copy: 'คัดลอก',
     copied: 'คัดลอกแล้ว',
     pickerDone: 'เสร็จ',
