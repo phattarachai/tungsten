@@ -7,6 +7,12 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.3.4 — 2026-11-14
+
+- **Fixed**: two-factor accepts any valid base32 secret, not only one whose length is a multiple of 8, so a secret
+  imported from another app (Better Auth's 32 random bytes are 52 characters) verifies and gets a working QR. Secrets
+  Tungsten generates are unchanged. A malformed secret is now a wrong code ("รหัสไม่ถูกต้อง"), never an exception.
+
 ## v0.3.3 — 2026-11-14
 
 - `login.labels.setupIntro` no longer promises how long setup takes ("ใช้เวลาไม่ถึงนาที" is gone).

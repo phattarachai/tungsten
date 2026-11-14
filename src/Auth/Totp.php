@@ -18,10 +18,16 @@ use PragmaRX\Google2FA\Google2FA;
 /**
  * Authenticator-app codes (RFC 6238, 30-second steps, 6 digits) and the QR that enrols an app. A code is accepted once:
  * the last step a user used is cached, so a code read over a shoulder can't be replayed in the same window.
+ *
+ * Any valid base32 secret works, not only Google2FA's "length a multiple of 8": a secret imported from another app
+ * (Better Auth's 32 random bytes are 52 characters) verifies too. Secrets Tungsten generates are unchanged.
  */
 class Totp
 {
-    public function __construct(private readonly Google2FA $engine, private readonly Cache $cache) {}
+    public function __construct(private readonly Google2FA $engine, private readonly Cache $cache)
+    {
+        $this->engine->setEnforceGoogleAuthenticatorCompatibility(false);
+    }
 
     public function generateSecret(): string
     {
@@ -46,9 +52,7 @@ class Totp
 
     /**
      * Whether `$code` is the current code for `$secret` (within `tungsten.login.two_factor.window` steps), and newer
-     * than the last code `$key` (the user) used.
-     *
-     * @throws Google2FAException on a malformed secret
+     * than the last code `$key` (the user) used. A malformed secret is a wrong code, never an exception.
      */
     public function verify(string $secret, string $code, string|int $key): bool
     {
@@ -61,7 +65,12 @@ class Totp
         $cacheKey = "tungsten.totp.{$key}";
         $window = (int) config('tungsten.login.two_factor.window', 1);
         $last = $this->cache->get($cacheKey);
-        $step = $this->engine->verifyKeyNewer($secret, $code, is_int($last) ? $last : 0, $window);
+
+        try {
+            $step = $this->engine->verifyKeyNewer($secret, $code, is_int($last) ? $last : 0, $window);
+        } catch (Google2FAException) {
+            return false;
+        }
 
         if (! is_int($step)) {
             return false;
