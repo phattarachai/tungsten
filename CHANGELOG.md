@@ -7,6 +7,10 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.3.3 — 2026-11-14
+
+- `login.labels.setupIntro` no longer promises how long setup takes ("ใช้เวลาไม่ถึงนาที" is gone).
+
 ## v0.3.2 — 2026-11-14
 
 - **Added**: `PasswordInput`, an `Input` with a show / hide button inside it (eye icon, `aria-label` from
