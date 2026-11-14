@@ -6,9 +6,12 @@ namespace Phattarachai\Tungsten\Tests\Fixtures\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Phattarachai\Tungsten\Concerns\InteractsWithTwoFactor;
+use Phattarachai\Tungsten\Contracts\HasTwoFactor;
 
-class User extends Authenticatable
+class User extends Authenticatable implements HasTwoFactor
 {
+    use InteractsWithTwoFactor;
     use Notifiable;
 
     protected $guarded = [];

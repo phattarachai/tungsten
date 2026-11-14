@@ -6,18 +6,22 @@ namespace Phattarachai\Tungsten;
 
 use Closure;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
+use Phattarachai\Tungsten\Auth\PanelPasswordReset;
 use Phattarachai\Tungsten\Contracts\HasPanelAvatar;
 use Phattarachai\Tungsten\Exceptions\MissingPageClass;
 use Phattarachai\Tungsten\Http\Controllers\GlobalSearchController;
 use Phattarachai\Tungsten\Http\Controllers\NotificationController;
 use Phattarachai\Tungsten\Http\Controllers\ProfileController;
+use Phattarachai\Tungsten\Http\Controllers\TwoFactorProfileController;
 use Phattarachai\Tungsten\Http\Middleware\AuthenticatePanel;
+use Phattarachai\Tungsten\Http\Middleware\EnsureTwoFactor;
 use Phattarachai\Tungsten\Http\Middleware\HandleTungstenRequests;
 use Phattarachai\Tungsten\Search\GlobalSearch;
 use Symfony\Component\Finder\Finder;
@@ -212,12 +216,31 @@ class Panel
      * guard when null) and its user provider. Guests on the panel's routes are sent there instead of the app's login.
      * A user must also pass the panel's ability and `$authorize` (false or a message string refuses them).
      *
+     * `$passwordReset` adds the panel's own forgot / reset password pages (`true` on the default password broker, a
+     * string names another). `$twoFactor` adds authenticator-app codes: `true` makes every user enrol at their next
+     * sign-in, a closure decides per user, and anyone who isn't required may still turn it on from the profile page.
+     *
      * @param  array<string, string>  $labels  overrides for `tungsten.login.labels`
      * @param  (Closure(Authenticatable, Panel): (bool|string|null))|null  $authorize
+     * @param  bool|(Closure(Authenticatable): bool)  $twoFactor
      */
-    public function login(?string $guard = null, array $labels = [], string|Closure|null $forgotPasswordUrl = null, ?Closure $authorize = null): self
-    {
-        $this->login = new PanelLogin($guard, $labels, $forgotPasswordUrl, $authorize);
+    public function login(
+        ?string $guard = null,
+        array $labels = [],
+        string|Closure|null $forgotPasswordUrl = null,
+        ?Closure $authorize = null,
+        bool|string $passwordReset = false,
+        bool|Closure $twoFactor = false,
+    ): self {
+        $this->login = new PanelLogin(
+            $guard,
+            $labels,
+            $forgotPasswordUrl,
+            $authorize,
+            passwordReset: $passwordReset !== false && $passwordReset !== '',
+            passwordBroker: is_string($passwordReset) && $passwordReset !== '' ? $passwordReset : null,
+            twoFactor: $twoFactor === false ? null : new PanelTwoFactor($twoFactor),
+        );
 
         return $this;
     }
@@ -547,6 +570,16 @@ class Panel
         return $this->login;
     }
 
+    /**
+     * Mails `$user` a link to this panel's reset-password page, e.g. from an admin's "send reset link" action. Needs
+     * `->login(passwordReset: true)`. Returns the broker's status: `Password::RESET_LINK_SENT`, or `RESET_THROTTLED`
+     * when a link went out within the broker's throttle (60 seconds by default).
+     */
+    public function sendPasswordResetLink(CanResetPassword $user): string
+    {
+        return new PanelPasswordReset($this)->sendLink(['email' => $user->getEmailForPasswordReset()]);
+    }
+
     public function loginUrl(): ?string
     {
         return $this->login === null ? null : route("{$this->id}.login");
@@ -582,6 +615,7 @@ class Panel
     {
         return array_values(array_filter([
             ...$this->withPanelLogin((array) config('tungsten.middleware', ['web', 'auth'])),
+            $this->login?->twoFactor === null ? null : EnsureTwoFactor::class,
             ...$this->middleware,
             $this->ability === null ? null : "can:{$this->ability}",
             HandleTungstenRequests::class,
@@ -624,6 +658,11 @@ class Panel
             app('router')->get('profile', [ProfileController::class, 'show'])->name('profile');
             app('router')->put('profile', [ProfileController::class, 'update'])->name('profile.update');
             app('router')->put('profile/password', [ProfileController::class, 'password'])->name('profile.password');
+
+            if ($this->login?->twoFactor !== null) {
+                app('router')->post('profile/two-factor/recovery-codes', [TwoFactorProfileController::class, 'regenerate'])->name('profile.two-factor.recovery-codes');
+                app('router')->delete('profile/two-factor', [TwoFactorProfileController::class, 'destroy'])->name('profile.two-factor.destroy');
+            }
         }
 
         if ($this->notificationPoll !== null) {

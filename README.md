@@ -126,7 +126,7 @@ Tungsten is a kit, helpers and conventions — not a framework that owns your pa
 - **Pages are JSX you write.** The shell (`AppLayout`) is opt-in per page, every part of it can be dropped, and any
   page can be plain JSX + Tailwind with only the kit pieces it wants.
 - **Auth is yours.** Panels run behind `config('tungsten.middleware')` (default `['web', 'auth']`) and a gate; any
-  login works — Laravel's, Filament's, Google SSO. Tungsten's own login and profile pages (v0.3) are optional.
+  login works — Laravel's, Filament's, Google SSO. Tungsten's own login (with password reset and two-factor) and profile pages are optional.
 
 ## Register a panel
 
@@ -238,6 +238,80 @@ return $panel
 - The user menu's sign-out points at `{path}/logout` unless `->logoutUrl()` says otherwise.
 - Every word on the page is a label in `config('tungsten.login.labels')` (Thai by default): `title`, `intro`,
   `email`, `password`, `remember`, `submit`, `forgot`, `failed`, `denied`, `throttled` (`:seconds`, `:minutes`).
+
+Both of the following are opt-in per panel; a panel that leaves them out behaves exactly as before.
+
+### Password reset
+
+```php
+->login(passwordReset: true)        // or a broker name: passwordReset: 'staff'
+```
+
+- Routes, for guests: `GET`/`POST {path}/forgot-password` (`admin.password.request`, `admin.password.email`) and
+  `GET {path}/reset-password/{token}` + `POST {path}/reset-password` (`admin.password.reset`, `admin.password.update`).
+  The login page's "ลืมรหัสผ่าน?" links to the panel's own page unless `forgotPasswordUrl` says otherwise.
+- It runs on Laravel's password broker (`auth.passwords.*`: token table, `expire`, `throttle`). The link goes out as
+  `PanelResetPasswordNotification`, a Thai mail in the login's labels (`mailSubject`, `mailIntro` …), sent through the
+  broker's callback, so the app's own `ResetPassword` notification and `ResetPassword::createUrlUsing()` (Filament sets
+  it) are untouched. The user model needs `Notifiable` and `CanResetPassword` (Laravel's `User` has both).
+- The forgot page answers the same whether or not the email has an account. Both forms allow 5 tries a minute per IP.
+  The new password follows `Password::defaults()`. A reset changes the password and the remember token, then sends
+  the user to the login page, which asks for their code if they have two-factor.
+- No `password_reset_tokens` table? `php artisan vendor:publish --tag=tungsten-migrations` publishes a migration that
+  creates it when it's missing (and the two-factor one below).
+- An admin can send a staff member the link: `Tungsten::sendPasswordResetLink($user, 'admin')` (or
+  `$panel->sendPasswordResetLink($user)`) returns the broker's status, `Password::RESET_LINK_SENT` or
+  `Password::RESET_THROTTLED` when one went out within the broker's throttle (60 seconds by default).
+
+### Two-factor (authenticator app)
+
+```php
+->login(twoFactor: true)                                        // everyone must enrol
+->login(twoFactor: fn (User $user) => $user->isStaff())         // per user; the rest may turn it on themselves
+```
+
+The user model implements the contract; the trait stores it in Fortify's columns, so an app that used Fortify keeps its
+enrolments. `php artisan vendor:publish --tag=tungsten-migrations` adds the columns (each skipped when it exists):
+
+```php
+use Phattarachai\Tungsten\Concerns\InteractsWithTwoFactor;
+use Phattarachai\Tungsten\Contracts\HasTwoFactor;
+
+class User extends Authenticatable implements HasTwoFactor
+{
+    use InteractsWithTwoFactor;   // two_factor_secret, two_factor_recovery_codes (encrypted), two_factor_confirmed_at
+}
+```
+
+- **Sign-in.** After a correct password an enrolled user is *not* signed in yet: the session holds them (with
+  "remember me") for `tungsten.login.two_factor.challenge_minutes` (10) at `{path}/two-factor-challenge`, which takes the
+  6-digit code or a recovery code. Codes are accepted once (a used code is refused for the rest of its window);
+  recovery codes are single-use. 5 tries a minute per user.
+- **Set up at first sign-in.** A user who must use two-factor and hasn't enrolled is signed in, but every panel route
+  sends them to `{path}/two-factor/setup` (QR, the key to type, a code to confirm, then the recovery codes, shown once)
+  until they finish. The page offers only sign-out.
+- **Profile.** With `->profile()`, the page shows the state and recovery codes left: turn it on, move to a new phone
+  (the old app keeps working until the new code confirms), new recovery codes, and turn it off (current password
+  first; not offered when it's required).
+- **`EnsureTwoFactor`.** Every route of the panel runs it. It also holds a signed-in user whose session hasn't given a
+  code, so a login that skips Tungsten's (Filament's, on the same guard) can't get round it. Put it on everything
+  else that signs into that guard, naming the panel:
+
+  ```php
+  use Phattarachai\Tungsten\Http\Middleware\EnsureTwoFactor;
+
+  // Filament: ->authMiddleware([Authenticate::class, EnsureTwoFactor::for('admin')])
+  // Horizon, Log Viewer, Pulse …: add EnsureTwoFactor::for('admin') (or 'tungsten.two-factor:admin') to their middleware
+  ```
+
+  A `GET` is redirected (and comes back after the code); an Inertia request gets a location visit; anything else a 403.
+- **`amr`.** `Tungsten::amr($user)` returns how the user proved who they are this session, as RFC 8176 values:
+  `['pwd']` after the panel's password, `['pwd', 'otp']` after the code (`['otp']` when the code followed another
+  login). Put it in an OpenID Connect `id_token` so a client trusts the panel's two-factor only when it has `otp`.
+  A new session from the remember-me cookie has no `amr`, so an enrolled user gives their code again.
+- `config('tungsten.login.two_factor')`: `issuer` (the name the app lists, `app.name` when null), `recovery_codes` (8),
+  `window` (steps either side, 1), `challenge_minutes` (10). Every word is a label in `tungsten.login.labels` and
+  `tungsten.profile.labels`.
 
 ## Profile page (optional)
 

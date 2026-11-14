@@ -13,11 +13,13 @@ use Inertia\ServiceProvider as InertiaServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Override;
 use Phattarachai\Tungsten\Http\Controllers\UiKitToastController;
+use Phattarachai\Tungsten\Http\Middleware\EnsureTwoFactor;
 use Phattarachai\Tungsten\Pages\HomePage;
 use Phattarachai\Tungsten\Pages\UiKitPage;
 use Phattarachai\Tungsten\Tests\Fixtures\AdminPanelProvider;
 use Phattarachai\Tungsten\Tests\Fixtures\Http\ClashingPropsController;
 use Phattarachai\Tungsten\Tests\Fixtures\Models\User;
+use Phattarachai\Tungsten\Tests\Fixtures\StaffPanelProvider;
 use Phattarachai\Tungsten\Tests\Fixtures\ToolsPanelProvider;
 use Phattarachai\Tungsten\Tungsten;
 use Phattarachai\Tungsten\TungstenServiceProvider;
@@ -33,6 +35,7 @@ abstract class TestCase extends Orchestra
 
         Gate::define('accessAdmin', fn (Authenticatable $user): bool => $user->getAuthIdentifier() < 100);
         Gate::define('accessTools', fn (Authenticatable $user): bool => $user->getAuthIdentifier() === 1);
+        Gate::define('accessStaff', fn (Authenticatable $user): bool => $user instanceof User);
         Gate::define('viewReports', fn (Authenticatable $user): bool => $user->getAuthIdentifier() === 1);
     }
 
@@ -44,6 +47,7 @@ abstract class TestCase extends Orchestra
             TungstenServiceProvider::class,
             AdminPanelProvider::class,
             ToolsPanelProvider::class,
+            StaffPanelProvider::class,
         ];
     }
 
@@ -70,6 +74,12 @@ abstract class TestCase extends Orchestra
             $router->get('clashing-props', ClashingPropsController::class)->name('clashing-props');
         });
 
+        Tungsten::routes('staff', function () use ($router): void {
+            $router->get('/', HomePage::class)->name('dashboard');
+        });
+
+        $router->middleware(['web', 'auth', EnsureTwoFactor::for('staff')])->get('outside/tools', fn (): string => 'dev tools')->name('outside.tools');
+
         Tungsten::routes('tools', function () use ($router): void {
             $router->get('/', HomePage::class)->name('dashboard');
             $router->get('wide', HomePage::class)->name('wide')->layout(['flush' => true, 'sheet' => false]);
@@ -90,6 +100,8 @@ abstract class TestCase extends Orchestra
             $table->rememberToken();
             $table->timestamps();
         });
+
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
         Schema::create('notifications', function (Blueprint $table): void {
             $table->uuid('id')->primary();

@@ -25,8 +25,9 @@ return [
 
     /*
     | A panel's own sign-in page, on for panels that call `->login()` (else the app's login, via `auth`). Its routes run
-    | behind `middleware` only — not the panel's auth or gate. `labels` are the page's words and messages; a panel
-    | overrides any of them with `->login(labels: [...])`. `:seconds` / `:minutes` fill in the throttle wait.
+    | behind `middleware` only — not the panel's auth or gate. `labels` are the words and messages of the login, password
+    | reset and two-factor pages and the reset mail; a panel overrides any of them with `->login(labels: [...])`.
+    | `:seconds` / `:minutes` fill in a throttle wait.
     */
     'login' => [
         'middleware' => ['web'],
@@ -41,6 +42,65 @@ return [
             'failed' => 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
             'denied' => 'บัญชีนี้ไม่มีสิทธิ์เข้าใช้ระบบนี้',
             'throttled' => 'ลองเข้าสู่ระบบหลายครั้งเกินไป ลองใหม่ในอีก :seconds วินาที',
+
+            // ->login(passwordReset: true)
+            'forgotTitle' => 'ลืมรหัสผ่าน',
+            'forgotIntro' => 'กรอกอีเมลของบัญชี เราจะส่งลิงก์สำหรับตั้งรหัสผ่านใหม่ไปให้',
+            'sendLink' => 'ส่งลิงก์ตั้งรหัสผ่านใหม่',
+            'linkSent' => 'ถ้าอีเมลนี้มีบัญชีอยู่ เราได้ส่งลิงก์ตั้งรหัสผ่านใหม่ไปแล้ว กรุณาตรวจสอบอีเมล',
+            'backToLogin' => 'กลับไปหน้าเข้าสู่ระบบ',
+            'resetTitle' => 'ตั้งรหัสผ่านใหม่',
+            'newPassword' => 'รหัสผ่านใหม่',
+            'confirmPassword' => 'ยืนยันรหัสผ่านใหม่',
+            'resetSubmit' => 'บันทึกรหัสผ่านใหม่',
+            'passwordReset' => 'ตั้งรหัสผ่านใหม่แล้ว เข้าสู่ระบบด้วยรหัสผ่านใหม่ได้เลย',
+            'resetInvalid' => 'ลิงก์นี้หมดอายุหรือใช้ไปแล้ว ขอลิงก์ใหม่ได้ที่หน้าลืมรหัสผ่าน',
+            'resetThrottled' => 'ขอหลายครั้งเกินไป ลองใหม่ในอีก :seconds วินาที',
+            'mailSubject' => 'ตั้งรหัสผ่านใหม่',
+            'mailGreeting' => 'สวัสดีคุณ :name',
+            'mailIntro' => 'เราได้รับคำขอตั้งรหัสผ่านใหม่สำหรับบัญชีของคุณใน :app',
+            'mailAction' => 'ตั้งรหัสผ่านใหม่',
+            'mailExpire' => 'ลิงก์นี้ใช้ได้ :count นาที และใช้ได้ครั้งเดียว',
+            'mailIgnore' => 'ถ้าคุณไม่ได้ขอ ไม่ต้องทำอะไร รหัสผ่านเดิมยังใช้ได้ตามปกติ',
+
+            // ->login(twoFactor: ...)
+            'challengeTitle' => 'ยืนยันตัวตนสองขั้นตอน',
+            'challengeIntro' => 'กรอกรหัส 6 หลักจากแอป Authenticator ในโทรศัพท์ของคุณ',
+            'recoveryIntro' => 'กรอกรหัสสำรองหนึ่งชุด แต่ละชุดใช้ได้ครั้งเดียว',
+            'code' => 'รหัส 6 หลัก',
+            'recoveryCode' => 'รหัสสำรอง',
+            'useRecoveryCode' => 'ใช้รหัสสำรองแทน',
+            'useCode' => 'ใช้รหัสจากแอปแทน',
+            'verify' => 'ยืนยัน',
+            'invalidCode' => 'รหัสไม่ถูกต้อง',
+            'invalidRecoveryCode' => 'รหัสสำรองไม่ถูกต้องหรือใช้ไปแล้ว',
+            'challengeExpired' => 'หมดเวลายืนยันตัวตน กรุณาเข้าสู่ระบบอีกครั้ง',
+            'challengeThrottled' => 'ลองหลายครั้งเกินไป ลองใหม่ในอีก :seconds วินาที',
+            'setupTitle' => 'ตั้งค่ายืนยันตัวตนสองขั้นตอน',
+            'setupIntro' => 'บัญชีนี้ต้องยืนยันตัวตนสองขั้นตอนก่อนเข้าใช้ระบบ ตั้งค่าครั้งเดียว ใช้เวลาไม่ถึงนาที',
+            'setupRenewIntro' => 'สแกน QR ใหม่ด้วยแอป Authenticator แล้วกรอกรหัสเพื่อยืนยัน รหัสจากแอปเดิมจะใช้ไม่ได้อีก',
+            'setupScan' => 'สแกน QR นี้ด้วยแอป Authenticator เช่น Google Authenticator หรือ Microsoft Authenticator',
+            'setupManual' => 'สแกนไม่ได้? กรอกคีย์นี้ในแอปแทน',
+            'setupConfirm' => 'กรอกรหัส 6 หลักที่แอปแสดง เพื่อยืนยันว่าตั้งค่าถูกต้อง',
+            'setupSubmit' => 'ยืนยันและเปิดใช้',
+            'recoveryCodesTitle' => 'เก็บรหัสสำรองไว้',
+            'recoveryCodesIntro' => 'ถ้าโทรศัพท์หาย ใช้รหัสเหล่านี้เข้าสู่ระบบแทนได้ รหัสละครั้ง เก็บไว้ในที่ปลอดภัย ระบบจะไม่แสดงรหัสชุดนี้อีก',
+            'copyCodes' => 'คัดลอกรหัส',
+            'continue' => 'ไปต่อ',
+            'logout' => 'ออกจากระบบ',
+            'cancel' => 'ยกเลิก',
+            'twoFactorRequired' => 'ต้องยืนยันตัวตนสองขั้นตอนก่อนใช้งานส่วนนี้',
+        ],
+
+        /*
+        | Authenticator-app (TOTP) sign-in, on for panels that call `->login(twoFactor: ...)`. `issuer` is the name the
+        | app lists the account under (null: `app.name`); `window` is how many 30-second steps either side still pass.
+        */
+        'two_factor' => [
+            'issuer' => null,
+            'recovery_codes' => 8,
+            'window' => 1,
+            'challenge_minutes' => 10,   // how long a correct password waits for its code before signing in again
         ],
     ],
 
@@ -66,6 +126,25 @@ return [
             'confirmPassword' => 'ยืนยันรหัสผ่านใหม่',
             'savePassword' => 'เปลี่ยนรหัสผ่าน',
             'passwordSaved' => 'เปลี่ยนรหัสผ่านแล้ว',
+
+            // with ->login(twoFactor: ...)
+            'twoFactor' => 'ยืนยันตัวตนสองขั้นตอน',
+            'twoFactorEnabled' => 'เปิดใช้อยู่',
+            'twoFactorNotEnabled' => 'ยังไม่เปิด',
+            'twoFactorOn' => 'ใช้รหัสจากแอป Authenticator ทุกครั้งที่เข้าสู่ระบบ',
+            'twoFactorOff' => 'เปิดใช้เพื่อให้บัญชีปลอดภัยขึ้น',
+            'twoFactorRequiredNote' => 'บัญชีนี้ต้องเปิดใช้ ปิดไม่ได้',
+            'recoveryCodesLeft' => 'เหลือรหัสสำรอง :count ชุด',
+            'enableTwoFactor' => 'เปิดใช้',
+            'renewTwoFactor' => 'เปลี่ยนโทรศัพท์',
+            'regenerateCodes' => 'สร้างรหัสสำรองใหม่',
+            'codesRegenerated' => 'สร้างรหัสสำรองชุดใหม่แล้ว ชุดเดิมใช้ไม่ได้อีก',
+            'newRecoveryCodes' => 'รหัสสำรองชุดใหม่',
+            'copyCodes' => 'คัดลอกรหัส',
+            'disableTwoFactor' => 'ปิดการใช้',
+            'disableConfirm' => 'ยืนยันด้วยรหัสผ่านปัจจุบันเพื่อปิดการยืนยันตัวตนสองขั้นตอน',
+            'twoFactorDisabled' => 'ปิดการยืนยันตัวตนสองขั้นตอนแล้ว',
+            'cancel' => 'ยกเลิก',
         ],
     ],
 

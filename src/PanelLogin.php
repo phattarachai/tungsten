@@ -10,7 +10,8 @@ use Illuminate\Support\Facades\Gate;
 
 /**
  * A panel's own sign-in, turned on with {@see Panel::login()}: the guard it signs into, the page's labels, an optional
- * forgot-password link and the checks a user must pass after the password does.
+ * forgot-password link (or the panel's own password reset), the checks a user must pass after the password does and,
+ * optionally, an authenticator-app code.
  */
 final readonly class PanelLogin
 {
@@ -23,6 +24,9 @@ final readonly class PanelLogin
         private array $labels = [],
         private string|Closure|null $forgotPasswordUrl = null,
         private ?Closure $authorize = null,
+        public bool $passwordReset = false,
+        public ?string $passwordBroker = null,
+        public ?PanelTwoFactor $twoFactor = null,
     ) {}
 
     /**
@@ -40,11 +44,15 @@ final readonly class PanelLogin
         return $this->labels()[$key] ?? $key;
     }
 
-    public function forgotPasswordUrl(): ?string
+    /**
+     * The login page's forgot-password link: the one given, else the panel's own reset page when it has one.
+     */
+    public function forgotPasswordUrl(?Panel $panel = null): ?string
     {
         $url = $this->forgotPasswordUrl instanceof Closure ? ($this->forgotPasswordUrl)() : $this->forgotPasswordUrl;
 
         return match (true) {
+            (! is_string($url) || $url === '') && $this->passwordReset && $panel instanceof Panel => route("{$panel->getId()}.password.request"),
             ! is_string($url) || $url === '' => null,
             app('router')->has($url) => route($url),
             default => url($url),
