@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\RateLimiter;
 use Inertia\Testing\AssertableInertia as Assert;
 use Phattarachai\Tungsten\Auth\AuthSession;
+use Phattarachai\Tungsten\Auth\Totp;
 use Phattarachai\Tungsten\Tests\Fixtures\Models\User;
 use Phattarachai\Tungsten\Tungsten;
 use PragmaRX\Google2FA\Google2FA;
@@ -26,6 +27,26 @@ function twoFactorUser(array $attributes = [], bool $enrolled = false): User
 function currentCode(string $secret = SECRET): string
 {
     return app(Google2FA::class)->getCurrentOtp($secret);
+}
+
+/** RFC 4648 base32, no padding: how Better Auth stores its 32-byte secrets (52 characters). */
+function base32Unpadded(string $bytes): string
+{
+    $bits = implode('', array_map(fn (string $byte): string => str_pad(decbin(ord($byte)), 8, '0', STR_PAD_LEFT), str_split($bytes)));
+
+    return implode('', array_map(fn (string $chunk): string => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'[bindec(str_pad($chunk, 5, '0'))], str_split($bits, 5)));
+}
+
+/** An RFC 6238 code (SHA-1, 30 s, 6 digits) worked out here, independent of the package's engine. */
+function rfcCode(string $secret, ?int $time = null): string
+{
+    $bits = implode('', array_map(fn (string $char): string => str_pad(decbin(strpos('ABCDEFGHIJKLMNOPQRSTUVWXYZ234567', $char)), 5, '0', STR_PAD_LEFT), str_split($secret)));
+    $key = implode('', array_map(fn (string $byte): string => chr(bindec($byte)), array_filter(str_split($bits, 8), fn (string $byte): bool => strlen($byte) === 8)));
+    $hash = hash_hmac('sha1', pack('J', intdiv($time ?? time(), 30)), $key, true);
+    $offset = ord($hash[19]) & 0x0F;
+    $value = ((ord($hash[$offset]) & 0x7F) << 24) | (ord($hash[$offset + 1]) << 16) | (ord($hash[$offset + 2]) << 8) | ord($hash[$offset + 3]);
+
+    return str_pad((string) ($value % 1_000_000), 6, '0', STR_PAD_LEFT);
 }
 
 /** A session that has already given a code, the way a full sign-in leaves it. */
@@ -293,4 +314,33 @@ it('leaves a panel without twoFactor as it was, even for an enrolled user', func
     $this->assertAuthenticatedAs($user);
     expect(Tungsten::amr($user))->toBe(['pwd']);
     $this->get('/admin/profile')->assertInertia(fn (Assert $page): Assert => $page->where('twoFactor', null));
+});
+
+it('works out RFC 6238 codes the way the RFC does (its SHA-1 test vector)', function (): void {
+    expect(rfcCode(base32Unpadded('12345678901234567890'), 59))->toBe('287082');
+});
+
+it('signs in with a 52-character secret imported from another app', function (): void {
+    $secret = base32Unpadded(random_bytes(32));
+    expect(strlen($secret))->toBe(52);
+
+    $user = twoFactorUser();
+    $user->enableTwoFactor($secret, ['aaaaa-11111']);
+
+    $this->post('/staff/login', ['email' => 'staff@example.com', 'password' => 'secret-password']);
+    $this->post('/staff/two-factor-challenge', ['code' => rfcCode($secret)])->assertRedirect();
+
+    $this->assertAuthenticatedAs($user);
+    expect(Tungsten::amr($user))->toBe(['pwd', 'otp'])
+        ->and(app(Totp::class)->provisioningUrl('staff@example.com', $secret))->toContain("secret={$secret}");
+});
+
+it('treats a malformed secret as a wrong code, not an error', function (): void {
+    $user = twoFactorUser();
+    $user->enableTwoFactor('NOT-BASE32!', ['aaaaa-11111']);
+
+    $this->post('/staff/login', ['email' => 'staff@example.com', 'password' => 'secret-password']);
+    $this->post('/staff/two-factor-challenge', ['code' => '123456'])->assertSessionHasErrors(['code' => 'รหัสไม่ถูกต้อง']);
+
+    $this->assertGuest();
 });
