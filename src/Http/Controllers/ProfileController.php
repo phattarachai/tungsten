@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phattarachai\Tungsten\Http\Controllers;
 
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,6 +16,7 @@ use Inertia\Response;
 use Phattarachai\Tungsten\Auth\AuthSession;
 use Phattarachai\Tungsten\Contracts\HasPanelAvatar;
 use Phattarachai\Tungsten\Contracts\HasTwoFactor;
+use Phattarachai\Tungsten\Events\PanelUserEmailChanged;
 use Phattarachai\Tungsten\Http\Requests\UpdatePasswordRequest;
 use Phattarachai\Tungsten\Http\Requests\UpdateProfileRequest;
 use Phattarachai\Tungsten\Panel;
@@ -41,6 +43,7 @@ class ProfileController
                 'hasAvatar' => $profile->hasAvatar($request->user()),
             ],
             'withAvatar' => $profile->acceptsAvatar($request->user()),
+            'emailEditable' => $profile->emailEditable,
             'updateUrl' => route("{$panel->getId()}.profile.update"),
             'passwordUrl' => route("{$panel->getId()}.profile.password"),
             'twoFactor' => $this->twoFactor($request, $panel),
@@ -84,17 +87,22 @@ class ProfileController
 
     public function update(UpdateProfileRequest $request): RedirectResponse
     {
-        [, $profile] = $this->panelProfile($request);
+        [$panel, $profile] = $this->panelProfile($request);
 
         /** @var Model $user */
         $user = $request->user();
-        $user->forceFill($request->safe()->only(['name', 'email']));
+        $oldEmail = (string) $user->getAttribute('email');
+        $user->forceFill($request->safe()->only($profile->emailEditable ? ['name', 'email'] : ['name']));
 
         if ($profile->avatar !== null && ! $user instanceof HasPanelAvatar) {
             $this->storeAvatar($user, $profile, $request->file('avatar'), $request->boolean('remove_avatar'));
         }
 
         $user->save();
+
+        if ($user->wasChanged('email') && $user instanceof Authenticatable) {
+            PanelUserEmailChanged::dispatch($user, $oldEmail, (string) $user->getAttribute('email'), $panel->getId());
+        }
 
         if ($user instanceof HasPanelAvatar) {
             $this->handOverAvatar($user, $request->file('avatar'), $request->boolean('remove_avatar'));

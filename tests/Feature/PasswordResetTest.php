@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
@@ -28,7 +29,7 @@ function mailedToken(User $user): string
         preg_match('#/staff/reset-password/([^?]+)\?email=#', $notification->url, $matches);
         $token = $matches[1] ?? null;
 
-        return $token !== null;
+        return $token !== null && $notification instanceof ShouldQueue;
     });
 
     return (string) $token;

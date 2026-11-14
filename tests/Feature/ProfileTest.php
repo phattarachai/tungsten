@@ -3,9 +3,11 @@
 declare(strict_types=1);
 
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
+use Phattarachai\Tungsten\Events\PanelUserEmailChanged;
 use Phattarachai\Tungsten\PanelRegistry;
 use Phattarachai\Tungsten\Tests\Fixtures\Models\AvatarUser;
 use Phattarachai\Tungsten\Tests\Fixtures\Models\User;
@@ -60,6 +62,39 @@ it('updates the name and email, keeping emails unique', function (): void {
         ->assertSessionHas('flash', ['message' => 'บันทึกโปรไฟล์แล้ว', 'tone' => 'success']);
 
     expect($user->fresh()->only('name', 'email'))->toBe(['name' => 'สมชาย', 'email' => 'somchai@example.com']);
+});
+
+it('fires PanelUserEmailChanged with the old and new email, and only when the email changed', function (): void {
+    Event::fake([PanelUserEmailChanged::class]);
+    $user = member();
+
+    $this->actingAs($user)->put('/admin/profile', ['name' => 'สมชาย', 'email' => 'staff@example.com']);
+    Event::assertNotDispatched(PanelUserEmailChanged::class);
+
+    $this->actingAs($user)->put('/admin/profile', ['name' => 'สมชาย', 'email' => 'somchai@example.com']);
+    Event::assertDispatchedTimes(PanelUserEmailChanged::class, 1);
+    Event::assertDispatched(PanelUserEmailChanged::class, fn (PanelUserEmailChanged $event): bool => $event->user->is($user)
+        && $event->oldEmail === 'staff@example.com'
+        && $event->newEmail === 'somchai@example.com'
+        && $event->panel === 'admin');
+});
+
+it('keeps the email as it is on a panel with emailEditable: false, whatever the form sends', function (): void {
+    Event::fake([PanelUserEmailChanged::class]);
+    $user = member();
+
+    $this->actingAs($user)->get('/staff/profile')->assertInertia(fn (Assert $page): Assert => $page
+        ->where('emailEditable', false)
+        ->where('labels.emailLocked', 'เปลี่ยนอีเมลเองไม่ได้ ติดต่อผู้ดูแลระบบ'));
+    $this->actingAs($user)->get('/admin/profile')->assertInertia(fn (Assert $page): Assert => $page->where('emailEditable', true));
+
+    $this->actingAs($user)->from('/staff/profile')
+        ->put('/staff/profile', ['name' => 'สมชาย', 'email' => 'attacker@example.com'])
+        ->assertRedirect('/staff/profile')
+        ->assertSessionHasNoErrors();
+
+    expect($user->fresh()->only('name', 'email'))->toBe(['name' => 'สมชาย', 'email' => 'staff@example.com']);
+    Event::assertNotDispatched(PanelUserEmailChanged::class);
 });
 
 it('stores, replaces and removes the photo on the panel\'s disk', function (): void {

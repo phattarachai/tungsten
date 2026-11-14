@@ -289,7 +289,9 @@ class User extends Authenticatable implements HasTwoFactor
   recovery codes are single-use. 5 tries a minute per user.
 - **Set up at first sign-in.** A user who must use two-factor and hasn't enrolled is signed in, but every panel route
   sends them to `{path}/two-factor/setup` (QR, the key to type, a code to confirm, then the recovery codes, shown once)
-  until they finish. The page offers only sign-out.
+  until they finish. The page offers only sign-out. Setup needs the password typed in this session: a session restored
+  from the remember-me cookie, or signed in through another form, is signed out and sent to the panel's login first, so
+  a stolen cookie can't tie the attacker's phone to the account.
 - **Profile.** With `->profile()`, the page shows the state and recovery codes left: turn it on, move to a new phone
   (the old app keeps working until the new code confirms), new recovery codes, and turn it off (current password
   first; not offered when it's required).
@@ -322,6 +324,11 @@ that asks for the current one (`Password::defaults()` applies). Without `avatar`
 implements `HasPanelAvatar` (below). Labels are `config('tungsten.profile.labels')`, overridable per panel with
 `->profile(labels: [...])`. It sits next to `->login()` but doesn't need it: any auth works. Run
 `php artisan storage:link` for the `public` disk, and keep `APP_URL` right, since photo URLs come from the disk.
+
+When something else trusts the email (an OpenID Connect `id_token`, a client that links accounts by email), lock it:
+`->profile(emailEditable: false)` shows the email read-only and never saves one the form sends. Whenever the profile
+does change a user's email, Tungsten fires `Phattarachai\Tungsten\Events\PanelUserEmailChanged` (`user`, `oldEmail`,
+`newEmail`, `panel`), so the app can revoke tokens or tell the old address.
 
 An app that keeps photos its own way (Media Library, its own table) implements the contract on its user model instead
 of naming a column. A bare `->profile()` is then enough, and the contract wins if `avatar` is set too:

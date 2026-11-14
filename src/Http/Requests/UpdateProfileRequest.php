@@ -9,6 +9,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Override;
+use Phattarachai\Tungsten\PanelProfile;
 use Phattarachai\Tungsten\PanelRegistry;
 
 class UpdateProfileRequest extends FormRequest
@@ -33,7 +34,9 @@ class UpdateProfileRequest extends FormRequest
 
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique($user->getTable(), 'email')->ignore($user->getKey(), $user->getKeyName())],
+            'email' => $this->profile()?->emailEditable === false
+                ? ['exclude']
+                : ['required', 'string', 'email', 'max:255', Rule::unique($user->getTable(), 'email')->ignore($user->getKey(), $user->getKeyName())],
             'avatar' => ['nullable', 'image', 'max:'.(int) config('tungsten.profile.avatar_max', 2048)],
             'remove_avatar' => ['boolean'],
         ];
@@ -45,8 +48,13 @@ class UpdateProfileRequest extends FormRequest
     #[Override]
     public function attributes(): array
     {
-        $labels = resolve(PanelRegistry::class)->forRoute($this->route()?->getName())?->getProfile()?->labels();
+        $labels = $this->profile()?->labels();
 
         return ['avatar' => $labels['avatar'] ?? 'avatar'];
+    }
+
+    private function profile(): ?PanelProfile
+    {
+        return resolve(PanelRegistry::class)->forRoute($this->route()?->getName())?->getProfile();
     }
 }

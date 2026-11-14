@@ -10,7 +10,8 @@ use Phattarachai\Tungsten\Contracts\HasPanelAvatar;
 
 /**
  * A panel's own profile page, turned on with {@see Panel::profile()}: name, email, password and a photo, either through
- * {@see HasPanelAvatar} on the user or, when `avatar` names a column, stored on `disk`.
+ * {@see HasPanelAvatar} on the user or, when `avatar` names a column, stored on `disk`. With `emailEditable: false` the
+ * email is shown but not saved (an app whose sign-in elsewhere trusts the email, e.g. an OIDC id_token).
  */
 final readonly class PanelProfile
 {
@@ -21,6 +22,7 @@ final readonly class PanelProfile
         public ?string $avatar = null,
         public string $disk = 'public',
         private array $labels = [],
+        public bool $emailEditable = true,
     ) {}
 
     /**

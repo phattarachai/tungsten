@@ -106,17 +106,31 @@ class TwoFactorSetupController
     }
 
     /**
-     * An enrolled user who hasn't given a code this session goes to the challenge (re-enrolling must not get round
-     * it); one who has, and didn't ask to renew, has nothing to set up.
+     * An enrolled user who hasn't given a code this session goes to the challenge first (re-enrolling must not get
+     * round it). Enrolling ties a phone to the account, so it also needs the password typed in this session: a session
+     * restored from a remember-me cookie, or one signed in elsewhere (Filament's own form), is signed out and sent to
+     * the panel's login. An enrolled user who didn't ask to renew has nothing to set up.
      */
     private function blocked(Request $request, Panel $panel, PanelTwoFactor $twoFactor, HasTwoFactor&Authenticatable $user): ?RedirectResponse
     {
-        if (! $user->hasTwoFactorEnabled()) {
-            return null;
+        $session = $request->session();
+
+        if ($user->hasTwoFactorEnabled() && $twoFactor->outstandingStep($user, $session) === PanelTwoFactor::CHALLENGE) {
+            return redirect()->route("{$panel->getId()}.two-factor.challenge");
         }
 
-        if ($twoFactor->outstandingStep($user, $request->session()) === PanelTwoFactor::CHALLENGE) {
-            return redirect()->route("{$panel->getId()}.two-factor.challenge");
+        if (! AuthSession::passed($session, $user, 'pwd')) {
+            $login = $panel->getLogin();
+
+            Auth::guard($login?->guard)->logout();
+            $session->invalidate();
+            $session->regenerateToken();
+
+            return redirect()->to((string) $panel->loginUrl())->with('status', $login?->label('setupNeedsPassword'));
+        }
+
+        if (! $user->hasTwoFactorEnabled()) {
+            return null;
         }
 
         return $request->boolean('renew') || $request->isMethod('POST') ? null : redirect()->to($this->afterUrl($panel));

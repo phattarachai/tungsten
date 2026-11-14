@@ -74,7 +74,8 @@ from `toDatabase()`. `icon` is a registered kit icon name.
 ## Profile page
 
 `->profile(avatar: 'avatar_path')` adds `{path}/profile` (name, email, photo, password) linked from the user menu; omit
-`avatar` for no photo. Needs `storage:link` for the `public` disk.
+`avatar` for no photo. Needs `storage:link` for the `public` disk. `->profile(emailEditable: false)` makes the email
+read-only (when an id_token or another app trusts it); a change through the profile fires `PanelUserEmailChanged`.
 
 When photos live elsewhere (Media Library), use a bare `->profile()` and implement
 `Phattarachai\Tungsten\Contracts\HasPanelAvatar` on the user: `getPanelAvatarUrl(): ?string` (a placeholder is fine),

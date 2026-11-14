@@ -7,6 +7,20 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.3.1 — 2026-11-14
+
+Hardening of the 0.3.0 staff sign-in.
+
+- **Fixed**: two-factor setup needs the password typed in this session. A session restored from the remember-me cookie
+  (or signed in through another form) is signed out and sent to the panel's login instead of being able to enrol a
+  phone. An enrolled user still gives their code first, as before.
+- **Added**: `->profile(emailEditable: false)` shows the email read-only and ignores one the form sends (default
+  unchanged), and `Events\PanelUserEmailChanged` (`user`, `oldEmail`, `newEmail`, `panel`) fires whenever the profile
+  changes a user's email.
+- **Changed**: `PanelResetPasswordNotification` is queued (`ShouldQueue`), so the forgot-password answer takes the same
+  time whether or not the email has an account. Run a queue worker, or the sync driver.
+- New labels: `login.labels.setupNeedsPassword`, `profile.labels.emailLocked`.
+
 ## v0.3.0 — 2026-11-14
 
 Staff sign-in, opt-in per panel: a panel that doesn't ask for them behaves as in 0.2.

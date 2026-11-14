@@ -133,7 +133,7 @@ export function TwoFactorSection({ labels, twoFactor }) {
  * The signed-in user's profile (`Panel::profile()`): details (photo, name, email), the password and, with
  * `->login(twoFactor: ...)`, two-factor; each its own form.
  */
-export default function Profile({ labels, profile, withAvatar, updateUrl, passwordUrl, twoFactor }) {
+export default function Profile({ labels, profile, withAvatar, emailEditable = true, updateUrl, passwordUrl, twoFactor }) {
     const details = useForm({ _method: 'put', name: profile.name ?? '', email: profile.email ?? '', avatar: null, remove_avatar: false })
     const password = useForm({ current_password: '', password: '', password_confirmation: '' })
 
@@ -157,8 +157,8 @@ export default function Profile({ labels, profile, withAvatar, updateUrl, passwo
                 <FormField label={labels.name} htmlFor="profile-name" error={details.errors.name}>
                     <Input id="profile-name" value={details.data.name} onChange={(event) => details.setData('name', event.target.value)} autoComplete="name" />
                 </FormField>
-                <FormField label={labels.email} htmlFor="profile-email" error={details.errors.email}>
-                    <Input id="profile-email" type="email" value={details.data.email} onChange={(event) => details.setData('email', event.target.value)} autoComplete="email" />
+                <FormField label={labels.email} htmlFor="profile-email" error={details.errors.email} hint={emailEditable ? null : labels.emailLocked}>
+                    <Input id="profile-email" type="email" value={details.data.email} onChange={(event) => details.setData('email', event.target.value)} autoComplete="email" readOnly={!emailEditable} disabled={!emailEditable} />
                 </FormField>
                 <div className="flex justify-end">
                     <Button type="submit" disabled={details.processing}>
