@@ -23,7 +23,7 @@ class StaffPanelProvider extends PanelProvider
         return $panel
             ->path('staff')
             ->label('Staff')
-            ->profile()
+            ->profile(emailEditable: false)
             ->login(
                 passwordReset: true,
                 twoFactor: fn (Authenticatable $user): bool => ($user->role ?? null) === 'manager',

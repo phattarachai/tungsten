@@ -276,9 +276,9 @@ class Panel
      *
      * @param  array<string, string>  $labels  overrides for `tungsten.profile.labels`
      */
-    public function profile(?string $avatar = null, string $disk = 'public', array $labels = []): self
+    public function profile(?string $avatar = null, string $disk = 'public', array $labels = [], bool $emailEditable = true): self
     {
-        $this->profile = new PanelProfile($avatar, $disk, $labels);
+        $this->profile = new PanelProfile($avatar, $disk, $labels, $emailEditable);
 
         return $this;
     }

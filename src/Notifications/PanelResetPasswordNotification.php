@@ -4,16 +4,21 @@ declare(strict_types=1);
 
 namespace Phattarachai\Tungsten\Notifications;
 
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
  * The panel's reset-password mail, in the login's labels (`mailSubject`, `mailIntro` …). Tungsten sends it through the
  * password broker's callback, so the app's own `ResetPassword` notification and `ResetPassword::createUrlUsing()` (which
- * Filament sets) are left alone.
+ * Filament sets) are left alone. It is queued, so the forgot-password answer takes as long for an unknown email as for a
+ * known one.
  */
-class PanelResetPasswordNotification extends Notification
+class PanelResetPasswordNotification extends Notification implements ShouldQueue
 {
+    use Queueable;
+
     /**
      * @param  array<string, string>  $labels
      */

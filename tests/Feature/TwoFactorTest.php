@@ -167,6 +167,28 @@ it('holds a user who must use two-factor at setup from their first sign-in until
     $this->get('/outside/tools')->assertOk()->assertSee('dev tools');
 });
 
+it('signs out a session that did not type the password before it can enrol a phone', function (): void {
+    $user = twoFactorUser(['role' => 'manager']);
+
+    // A session restored from a remember-me cookie, or signed in by another form: no `pwd` recorded.
+    $this->actingAs($user)->get('/staff')->assertRedirect(url('/staff/two-factor/setup'));
+    $this->get('/staff/two-factor/setup')
+        ->assertRedirect(url('/staff/login'))
+        ->assertSessionHas('status', 'กรุณาเข้าสู่ระบบด้วยรหัสผ่านอีกครั้ง ก่อนตั้งค่าการยืนยันตัวตนสองขั้นตอน');
+    $this->assertGuest();
+
+    $this->actingAs($user)->post('/staff/two-factor/setup', ['code' => currentCode()])->assertRedirect(url('/staff/login'));
+    $this->assertGuest();
+    expect($user->fresh()->hasTwoFactorEnabled())->toBeFalse();
+
+    // An enrolled user who only gave a code this session can't move to a new phone either.
+    $user->enableTwoFactor(SECRET, ['aaaaa-11111']);
+    $this->actingAs($user)->withSession([AuthSession::AMR => ['user' => (string) $user->getKey(), 'methods' => ['otp']]])
+        ->get('/staff/two-factor/setup?renew=1')
+        ->assertRedirect(url('/staff/login'));
+    $this->assertGuest();
+});
+
 it('lets a user who is not required pass without enrolling, and enrol from the profile', function (): void {
     $user = twoFactorUser();
 
