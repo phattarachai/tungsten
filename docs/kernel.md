@@ -82,6 +82,8 @@ gate aborts before the panel's shared props exist. A 500 keeps Laravel's page wh
 `AppLayout` holds the sidebar (fully collapsible on desktop, a drawer on mobile, state in `localStorage`), the
 topbar (breadcrumbs, a page's `toolbar`, the help `?`, the user menu), `main`, and an `Aside` slot beside `main`
 that pushes the page narrower and resizes from its left edge (`DockResize`).
+The topbar stays one line at any width: below `xl` the breadcrumbs show only the current page (truncated, full
+label on hover), and below `lg` the global search is an icon button.
 
 ## Client-side rules
 
