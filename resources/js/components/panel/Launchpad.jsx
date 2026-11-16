@@ -404,14 +404,15 @@ export function Launchpad({ url, nav, scope, placeholder, className }) {
                 type="button"
                 onClick={() => setOpen(true)}
                 aria-haspopup="dialog"
+                aria-label={strings.globalSearch}
                 className={cn(
-                    'group flex h-7 w-44 items-center gap-1.5 rounded-md border border-zinc-300 bg-white px-2 text-xs text-zinc-400 hover:border-zinc-400 hover:text-zinc-600 focus-visible:border-brand focus-visible:outline-none md:w-56',
+                    'group flex h-7 w-7 shrink-0 items-center justify-center gap-1.5 rounded-md border border-zinc-300 bg-white text-xs text-zinc-400 hover:border-zinc-400 hover:text-zinc-600 focus-visible:border-brand focus-visible:outline-none lg:w-44 lg:justify-start lg:px-2 xl:w-56',
                     className,
                 )}
             >
-                <Search className="size-3.5 group-hover:text-brand" />
-                {strings.globalSearch}
-                <span className="ml-auto hidden md:block">
+                <Search className="size-3.5 shrink-0 group-hover:text-brand" />
+                <span className="hidden truncate lg:inline">{strings.globalSearch}</span>
+                <span className="ml-auto hidden xl:block">
                     <Kbd>{mac ? '⌘K' : 'Ctrl K'}</Kbd>
                 </span>
             </button>

@@ -17,16 +17,16 @@ function Breadcrumbs({ items }) {
     }
 
     return (
-        <nav className="hidden items-center gap-1.5 text-xs text-zinc-400 md:flex">
+        <nav className="hidden min-w-0 items-center gap-1.5 whitespace-nowrap text-xs text-zinc-400 md:flex">
             {items.map((item, index) => (
-                <span key={item.label} className="flex items-center gap-1.5">
-                    {index > 0 && <span className="text-zinc-300">/</span>}
+                <span key={item.label} className={cn('min-w-0 items-center gap-1.5', index === items.length - 1 ? 'flex' : 'hidden shrink-0 xl:flex')}>
+                    {index > 0 && <span className="hidden text-zinc-300 xl:inline">/</span>}
                     {item.url ? (
-                        <Link href={urlOf(item.url)} prefetch className="hover:text-zinc-700">
+                        <Link href={urlOf(item.url)} prefetch className="truncate hover:text-zinc-700">
                             {item.label}
                         </Link>
                     ) : (
-                        <span className={index === items.length - 1 ? 'text-zinc-700' : undefined}>{item.label}</span>
+                        <span className={cn('truncate', index === items.length - 1 && 'text-zinc-700')} title={item.label}>{item.label}</span>
                     )}
                 </span>
             ))}
