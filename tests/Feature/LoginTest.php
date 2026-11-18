@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Inertia\Testing\AssertableInertia as Assert;
+use Phattarachai\Tungsten\Http\Requests\LoginRequest;
 use Phattarachai\Tungsten\Tests\Fixtures\Models\User;
 
 function staff(array $attributes = []): User
@@ -16,7 +18,19 @@ function staff(array $attributes = []): User
     ]);
 }
 
-beforeEach(fn () => RateLimiter::clear('staff@example.com|127.0.0.1'));
+beforeEach(function (): void {
+    RateLimiter::clear('staff@example.com|127.0.0.1');
+    RateLimiter::clear(LoginRequest::accountThrottleKey('staff@example.com'));
+});
+
+function failLoginFromIps(int $times, string $email = 'staff@example.com'): void
+{
+    foreach (range(1, $times) as $attempt) {
+        test()->withServerVariables(['REMOTE_ADDR' => "10.0.0.{$attempt}"])
+            ->post('/admin/login', ['email' => $email, 'password' => "wrong-{$attempt}"])
+            ->assertSessionHasErrors(['email' => 'อีเมลหรือรหัสผ่านไม่ถูกต้อง']);
+    }
+}
 
 it('shows the panel login page with the labels, the brand and the forgot-password link', function (): void {
     $this->get('/admin/login')
@@ -82,6 +96,69 @@ it('throttles after five failed attempts', function (): void {
 
     expect(session('errors')->first('email'))->toStartWith('ลองเข้าสู่ระบบหลายครั้งเกินไป');
     $this->assertGuest();
+});
+
+it('locks an account after ten failed attempts from different IPs, even against the right password', function (): void {
+    staff();
+    Log::spy();
+
+    failLoginFromIps(10);
+
+    Log::shouldHaveReceived('warning')->once()->with('Tungsten panel login locked after repeated failures', ['ip' => '10.0.0.10']);
+
+    $this->withServerVariables(['REMOTE_ADDR' => '10.0.1.1'])
+        ->post('/admin/login', ['email' => ' Staff@Example.com ', 'password' => 'secret-password'])
+        ->assertSessionHasErrors('email');
+
+    expect(session('errors')->first('email'))
+        ->toBe('บัญชีนี้ถูกล็อกชั่วคราวเพราะใส่รหัสผิดหลายครั้ง ลองใหม่ในอีก 15 นาที หรือกด "ลืมรหัสผ่าน?"');
+    $this->assertGuest();
+});
+
+it('lets the account in again once the lock expires', function (): void {
+    staff();
+
+    failLoginFromIps(10);
+
+    $this->travel(15)->minutes();
+
+    $this->withServerVariables(['REMOTE_ADDR' => '10.0.1.1'])
+        ->post('/admin/login', ['email' => 'staff@example.com', 'password' => 'secret-password'])
+        ->assertSessionHasNoErrors();
+
+    $this->assertAuthenticated();
+});
+
+it('clears the account count on a successful sign-in below the limit', function (): void {
+    staff();
+
+    failLoginFromIps(9);
+
+    $this->withServerVariables(['REMOTE_ADDR' => '10.0.1.1'])
+        ->post('/admin/login', ['email' => 'staff@example.com', 'password' => 'secret-password'])
+        ->assertSessionHasNoErrors();
+
+    expect(RateLimiter::attempts(LoginRequest::accountThrottleKey('staff@example.com')))->toBe(0);
+});
+
+it('locks only the email that failed, and not at all when the lock is turned off', function (): void {
+    staff();
+    staff(['email' => 'other@example.com']);
+
+    failLoginFromIps(10);
+
+    $this->withServerVariables(['REMOTE_ADDR' => '10.0.1.1'])
+        ->post('/admin/login', ['email' => 'other@example.com', 'password' => 'secret-password'])
+        ->assertSessionHasNoErrors();
+
+    auth()->logout();
+    config(['tungsten.login.lockout.max_attempts' => null]);
+
+    $this->withServerVariables(['REMOTE_ADDR' => '10.0.1.2'])
+        ->post('/admin/login', ['email' => 'staff@example.com', 'password' => 'secret-password'])
+        ->assertSessionHasNoErrors();
+
+    $this->assertAuthenticated();
 });
 
 it('refuses a user who fails the panel ability, even with the right password', function (): void {

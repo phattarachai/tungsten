@@ -7,6 +7,14 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## v0.3.6 — 2026-11-18
+
+- **Added**: a per-account lock on the panel login. 10 refused sign-ins for one email within 15 minutes, from any IP,
+  lock that email until the window passes, checked before the password (the right one included). The `locked` label
+  names the wait (`:minutes`) and points to "ลืมรหัสผ่าน?"; a lock writes a `warning` log line with the IP. Configure
+  it in `login.lockout` (`max_attempts`, `decay_minutes`; null turns it off). The 5-a-minute throttle per email and
+  IP is unchanged.
+
 ## v0.3.4 — 2026-11-14
 
 - **Fixed**: two-factor accepts any valid base32 secret, not only one whose length is a multiple of 8, so a secret

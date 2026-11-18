@@ -42,6 +42,7 @@ return [
             'failed' => 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
             'denied' => 'บัญชีนี้ไม่มีสิทธิ์เข้าใช้ระบบนี้',
             'throttled' => 'ลองเข้าสู่ระบบหลายครั้งเกินไป ลองใหม่ในอีก :seconds วินาที',
+            'locked' => 'บัญชีนี้ถูกล็อกชั่วคราวเพราะใส่รหัสผิดหลายครั้ง ลองใหม่ในอีก :minutes นาที หรือกด "ลืมรหัสผ่าน?"',
 
             // ->login(passwordReset: true)
             'forgotTitle' => 'ลืมรหัสผ่าน',
@@ -91,6 +92,16 @@ return [
             'cancel' => 'ยกเลิก',
             'twoFactorRequired' => 'ต้องยืนยันตัวตนสองขั้นตอนก่อนใช้งานส่วนนี้',
             'setupNeedsPassword' => 'กรุณาเข้าสู่ระบบด้วยรหัสผ่านอีกครั้ง ก่อนตั้งค่าการยืนยันตัวตนสองขั้นตอน',
+        ],
+
+        /*
+        | The account lock: after `max_attempts` refused sign-ins for one email within `decay_minutes`, from any IP, that
+        | email is refused (the `locked` label) before its password is checked, until the window passes. It is on top of
+        | the 5-a-minute throttle per email and IP. A successful sign-in clears the count; null turns the lock off.
+        */
+        'lockout' => [
+            'max_attempts' => 10,
+            'decay_minutes' => 15,
         ],
 
         /*

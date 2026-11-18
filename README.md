@@ -233,11 +233,18 @@ return $panel
   asked for, or the panel home.
 - It checks email + password against the guard's user provider, with "remember me" and a throttle (5 tries a
   minute per email and IP). There is no registration.
+- An account lock stops guessing from many IPs: 10 refused sign-ins for one email within 15 minutes, from any IP, lock
+  that email until the window passes (`config('tungsten.login.lockout')`: `max_attempts`, `decay_minutes`; null
+  `max_attempts` turns it off). A locked email is refused with the `locked` label before its password is checked, so
+  the right password does not get through either; emails with no account lock the same way, so the lock does not
+  reveal which exist. A success clears the count. The lock writes one `warning` log line with the IP (no email).
+  Anyone can lock an account for 15 minutes this way; point staff to the forgot-password link meanwhile.
 - After the password, the user must pass the panel's ability (`accessAdmin`), then `authorize`: `true`/`null` lets
   them in, `false` shows the `denied` label, a string is shown as the message.
 - The user menu's sign-out points at `{path}/logout` unless `->logoutUrl()` says otherwise.
 - Every word on the page is a label in `config('tungsten.login.labels')` (Thai by default): `title`, `intro`,
-  `email`, `password`, `remember`, `submit`, `forgot`, `failed`, `denied`, `throttled` (`:seconds`, `:minutes`).
+  `email`, `password`, `remember`, `submit`, `forgot`, `failed`, `denied`, `throttled` and `locked` (`:seconds`,
+  `:minutes`).
 
 Both of the following are opt-in per panel; a panel that leaves them out behaves exactly as before.
 
