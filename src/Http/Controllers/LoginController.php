@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 use Phattarachai\Tungsten\Auth\AuthSession;
+use Phattarachai\Tungsten\Auth\RememberedDevice;
 use Phattarachai\Tungsten\Http\Requests\LoginRequest;
 use Phattarachai\Tungsten\Panel;
 use Phattarachai\Tungsten\PanelLogin;
@@ -43,7 +44,7 @@ class LoginController
 
     /**
      * A correct password signs the user in, recording `pwd`; an enrolled two-factor user is held for their code
-     * instead, not signed in yet.
+     * instead, not signed in yet, unless this browser is one they asked to remember (then `otp` is recorded too).
      */
     public function store(LoginRequest $request): HttpResponse
     {
@@ -52,7 +53,9 @@ class LoginController
         $user = $request->verifiedUserFor($panel, $login);
         $session = $request->session();
 
-        if ($login->twoFactor?->challenges($user)) {
+        $remembered = $login->twoFactor?->challenges($user) && RememberedDevice::recognizes($request, $user);
+
+        if ($login->twoFactor?->challenges($user) && ! $remembered) {
             $session->regenerate();
             AuthSession::startChallenge($session, $panel->getId(), $user, $request->boolean('remember'));
 
@@ -64,7 +67,7 @@ class LoginController
         $guard->login($user, $request->boolean('remember'));
         $session->regenerate();
         AuthSession::forgetChallenge($session);
-        AuthSession::record($session, $user, ['pwd']);
+        AuthSession::record($session, $user, $remembered ? ['pwd', 'otp'] : ['pwd']);
 
         return Inertia::location(redirect()->intended($panel->homeUrl())->getTargetUrl());
     }

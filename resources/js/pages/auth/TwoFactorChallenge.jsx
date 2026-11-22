@@ -9,11 +9,12 @@ import { urlOf } from '../../lib/href'
 /**
  * `{path}/two-factor-challenge` (`->login(twoFactor: ...)`): the 6-digit code from the authenticator app, or a recovery
  * code instead. `logoutUrl` is set when someone is already signed in (another login on the same guard), so they can
- * leave; otherwise the way back is the login page.
+ * leave; otherwise the way back is the login page. `rememberDays` (`->login(twoFactorRememberDays: n)`) adds "don't ask
+ * again on this device", which skips the code here for that many days.
  */
-export default function TwoFactorChallenge({ labels, action, loginUrl, logoutUrl }) {
+export default function TwoFactorChallenge({ labels, action, loginUrl, logoutUrl, rememberDays = 0 }) {
     const [recovery, setRecovery] = useState(false)
-    const form = useForm({ code: '', recovery_code: '' })
+    const form = useForm({ code: '', recovery_code: '', remember_device: false })
 
     function submit(event) {
         event.preventDefault()
@@ -64,6 +65,17 @@ export default function TwoFactorChallenge({ labels, action, loginUrl, logoutUrl
                         className="text-center font-mono text-base tracking-[0.4em]"
                     />
                 </FormField>
+            )}
+            {rememberDays > 0 && (
+                <label className="inline-flex items-center gap-1.5 text-zinc-600">
+                    <input
+                        type="checkbox"
+                        checked={form.data.remember_device}
+                        onChange={(event) => form.setData('remember_device', event.target.checked)}
+                        className="accent-brand"
+                    />
+                    {labels.rememberDevice.replace(':days', rememberDays)}
+                </label>
             )}
             <Button type="submit" variant="brand" className="w-full" disabled={form.processing}>
                 {labels.verify}

@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Phattarachai\Tungsten\Auth\PanelPasswordReset;
+use Phattarachai\Tungsten\Auth\RememberedDevice;
 use Phattarachai\Tungsten\Contracts\HasPanelAvatar;
 use Phattarachai\Tungsten\Exceptions\MissingPageClass;
 use Phattarachai\Tungsten\Http\Controllers\GlobalSearchController;
@@ -219,6 +220,8 @@ class Panel
      * `$passwordReset` adds the panel's own forgot / reset password pages (`true` on the default password broker, a
      * string names another). `$twoFactor` adds authenticator-app codes: `true` makes every user enrol at their next
      * sign-in, a closure decides per user, and anyone who isn't required may still turn it on from the profile page.
+     * `$twoFactorRememberDays` adds "don't ask again on this device" to the code page: a browser that ticks it skips the
+     * code (not the password) for that many days, until the password or the phone changes ({@see RememberedDevice}).
      *
      * @param  array<string, string>  $labels  overrides for `tungsten.login.labels`
      * @param  (Closure(Authenticatable, Panel): (bool|string|null))|null  $authorize
@@ -231,6 +234,7 @@ class Panel
         ?Closure $authorize = null,
         bool|string $passwordReset = false,
         bool|Closure $twoFactor = false,
+        int $twoFactorRememberDays = 0,
     ): self {
         $this->login = new PanelLogin(
             $guard,
@@ -239,7 +243,7 @@ class Panel
             $authorize,
             passwordReset: $passwordReset !== false && $passwordReset !== '',
             passwordBroker: is_string($passwordReset) && $passwordReset !== '' ? $passwordReset : null,
-            twoFactor: $twoFactor === false ? null : new PanelTwoFactor($twoFactor),
+            twoFactor: $twoFactor === false ? null : new PanelTwoFactor($twoFactor, max(0, $twoFactorRememberDays)),
         );
 
         return $this;

@@ -14,6 +14,7 @@ use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Phattarachai\Tungsten\Auth\AuthSession;
+use Phattarachai\Tungsten\Auth\RememberedDevice;
 use Phattarachai\Tungsten\Auth\Totp;
 use Phattarachai\Tungsten\Contracts\HasTwoFactor;
 use Phattarachai\Tungsten\Panel;
@@ -47,6 +48,7 @@ class TwoFactorChallengeController
             'action' => route("{$panel->getId()}.two-factor.attempt"),
             'loginUrl' => $panel->loginUrl(),
             'logoutUrl' => $challenged['pending'] ? null : route("{$panel->getId()}.logout"),
+            'rememberDays' => $login->twoFactor->rememberDays,
         ]);
     }
 
@@ -59,7 +61,7 @@ class TwoFactorChallengeController
             return $this->nothingToChallenge($request, $panel, $login);
         }
 
-        $request->validate(['code' => ['nullable', 'string'], 'recovery_code' => ['nullable', 'string']]);
+        $request->validate(['code' => ['nullable', 'string'], 'recovery_code' => ['nullable', 'string'], 'remember_device' => ['nullable', 'boolean']]);
 
         $user = $challenged['user'];
         $key = "tungsten-two-factor|{$panel->getId()}|".AuthSession::id($user);
@@ -90,6 +92,11 @@ class TwoFactorChallengeController
 
         $session->regenerate();
         AuthSession::record($session, $user, ['otp']);
+        $rememberDays = $login->twoFactor->rememberDays;
+
+        if ($rememberDays > 0 && $request->boolean('remember_device')) {
+            RememberedDevice::remember($user, $rememberDays);
+        }
 
         return Inertia::location(redirect()->intended($panel->homeUrl())->getTargetUrl());
     }

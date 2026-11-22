@@ -73,6 +73,7 @@ return [
             'useRecoveryCode' => 'ใช้รหัสสำรองแทน',
             'useCode' => 'ใช้รหัสจากแอปแทน',
             'verify' => 'ยืนยัน',
+            'rememberDevice' => 'ไม่ต้องถามรหัสในเครื่องนี้อีก :days วัน',
             'invalidCode' => 'รหัสไม่ถูกต้อง',
             'invalidRecoveryCode' => 'รหัสสำรองไม่ถูกต้องหรือใช้ไปแล้ว',
             'challengeExpired' => 'หมดเวลายืนยันตัวตน กรุณาเข้าสู่ระบบอีกครั้ง',
