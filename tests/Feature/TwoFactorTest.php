@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\RateLimiter;
 use Inertia\Testing\AssertableInertia as Assert;
 use Phattarachai\Tungsten\Auth\AuthSession;
+use Phattarachai\Tungsten\Auth\RememberedDevice;
 use Phattarachai\Tungsten\Auth\Totp;
 use Phattarachai\Tungsten\Tests\Fixtures\Models\User;
 use Phattarachai\Tungsten\Tungsten;
@@ -130,6 +131,67 @@ it('takes each recovery code once', function (): void {
     $this->post('/staff/two-factor-challenge', ['recovery_code' => 'aaaaa-11111'])
         ->assertSessionHasErrors(['recovery_code' => 'รหัสสำรองไม่ถูกต้องหรือใช้ไปแล้ว']);
     $this->assertGuest();
+});
+
+/** Signs in with the password and a code, ticking "don't ask again on this device"; returns the cookie it set. */
+function rememberThisDevice(): string
+{
+    test()->post('/staff/login', ['email' => 'staff@example.com', 'password' => 'secret-password']);
+    $response = test()->post('/staff/two-factor-challenge', ['code' => currentCode(), 'remember_device' => true]);
+    $response->assertCookie(RememberedDevice::COOKIE);
+    test()->post('/staff/logout');
+
+    return (string) $response->getCookie(RememberedDevice::COOKIE)?->getValue();
+}
+
+it('offers to remember the device, and a remembered browser skips the code but not the password', function (): void {
+    $user = twoFactorUser(enrolled: true);
+    $this->post('/staff/login', ['email' => 'staff@example.com', 'password' => 'secret-password']);
+    $this->get('/staff/two-factor-challenge')->assertInertia(fn (Assert $page): Assert => $page
+        ->where('rememberDays', 30)
+        ->where('labels.rememberDevice', 'ไม่ต้องถามรหัสในเครื่องนี้อีก :days วัน'));
+    $this->post('/staff/two-factor-challenge', ['recovery_code' => 'aaaaa-11111'])->assertCookieMissing(RememberedDevice::COOKIE);
+    $this->post('/staff/logout');
+
+    $cookie = rememberThisDevice();
+
+    $this->withCookie(RememberedDevice::COOKIE, $cookie)->post('/staff/login', ['email' => 'staff@example.com', 'password' => 'wrong-password']);
+    $this->assertGuest();
+
+    $this->withCookie(RememberedDevice::COOKIE, $cookie)
+        ->post('/staff/login', ['email' => 'staff@example.com', 'password' => 'secret-password'])
+        ->assertRedirect(url('/staff'));
+    $this->assertAuthenticatedAs($user);
+    expect(Tungsten::amr($user))->toBe(['pwd', 'otp']);
+});
+
+it('lets a remembered browser back in without a code when remember-me restores an expired session', function (): void {
+    $user = twoFactorUser(enrolled: true);
+    $cookie = rememberThisDevice();
+
+    $this->actingAs($user)->withCookie(RememberedDevice::COOKIE, $cookie)->get('/staff')->assertOk();
+    expect(Tungsten::amr($user))->toBe(['otp']);
+});
+
+it('forgets a remembered browser after 30 days, a new password or a new phone, and never lends it to another user', function (): void {
+    $user = twoFactorUser(enrolled: true);
+    $other = User::query()->create(['name' => 'Other', 'email' => 'other@example.com', 'password' => 'secret-password']);
+    $other->enableTwoFactor(SECRET, []);
+    $cookie = rememberThisDevice();
+    $challenged = fn (User $who) => $this->actingAs($who)->withCookie(RememberedDevice::COOKIE, $cookie)->get('/staff')->assertRedirect(url('/staff/two-factor-challenge'));
+
+    $challenged($other);
+
+    $this->travel(31)->days();
+    $challenged($user);
+    $this->travelBack();
+
+    $user->forceFill(['password' => 'another-password'])->save();
+    $challenged($user->fresh());
+
+    $user->forceFill(['password' => 'secret-password'])->save();
+    $user->fresh()->enableTwoFactor('KRSXG5CTMVRXEZLUKRSXG5CTMVRXEZLU', []);
+    $challenged($user->fresh());
 });
 
 it('sends a challenge with nothing waiting back to the login', function (): void {

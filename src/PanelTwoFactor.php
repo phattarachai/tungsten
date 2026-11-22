@@ -23,8 +23,9 @@ final readonly class PanelTwoFactor
 
     /**
      * @param  bool|(Closure(Authenticatable): bool)  $required
+     * @param  int  $rememberDays  how long "don't ask again on this device" skips the code; 0 hides the choice
      */
-    public function __construct(private bool|Closure $required) {}
+    public function __construct(private bool|Closure $required, public int $rememberDays = 0) {}
 
     public function requiredFor(Authenticatable $user): bool
     {

@@ -8,6 +8,8 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use Phattarachai\Tungsten\Auth\AuthSession;
+use Phattarachai\Tungsten\Auth\RememberedDevice;
 use Phattarachai\Tungsten\Panel;
 use Phattarachai\Tungsten\PanelLogin;
 use Phattarachai\Tungsten\PanelRegistry;
@@ -18,7 +20,8 @@ use Symfony\Component\HttpFoundation\Response;
  * Holds a signed-in user at the panel's two-factor pages until this session has given a code: an enrolled user goes to
  * the challenge, a user who must enrol goes to setup. Every route of a panel with `->login(twoFactor: ...)` runs it;
  * routes outside the panel that sign into the same guard (Filament, Horizon, Log Viewer …) name the panel:
- * `EnsureTwoFactor::for('admin')`.
+ * `EnsureTwoFactor::for('admin')`. A browser the user asked to remember counts as having given the code: a session the
+ * remember-me cookie brought back in after it expired passes without a challenge.
  */
 class EnsureTwoFactor
 {
@@ -44,6 +47,11 @@ class EnsureTwoFactor
 
         $user = Auth::guard($login->guard)->user();
         $step = $user === null ? null : $twoFactor->outstandingStep($user, $request->session());
+
+        if ($step === PanelTwoFactor::CHALLENGE && RememberedDevice::recognizes($request, $user)) {
+            AuthSession::record($request->session(), $user, ['otp']);
+            $step = null;
+        }
 
         if ($step === null) {
             return $next($request);

@@ -27,6 +27,7 @@ class StaffPanelProvider extends PanelProvider
             ->login(
                 passwordReset: true,
                 twoFactor: fn (Authenticatable $user): bool => ($user->role ?? null) === 'manager',
+                twoFactorRememberDays: 30,
             );
     }
 }

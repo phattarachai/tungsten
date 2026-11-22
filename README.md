@@ -275,6 +275,7 @@ Both of the following are opt-in per panel; a panel that leaves them out behaves
 ```php
 ->login(twoFactor: true)                                        // everyone must enrol
 ->login(twoFactor: fn (User $user) => $user->isStaff())         // per user; the rest may turn it on themselves
+->login(twoFactor: true, twoFactorRememberDays: 30)             // "don't ask again on this device" for 30 days
 ```
 
 The user model implements the contract; the trait stores it in Fortify's columns, so an app that used Fortify keeps its
@@ -294,6 +295,12 @@ class User extends Authenticatable implements HasTwoFactor
   "remember me") for `tungsten.login.two_factor.challenge_minutes` (10) at `{path}/two-factor-challenge`, which takes the
   6-digit code or a recovery code. Codes are accepted once (a used code is refused for the rest of its window);
   recovery codes are single-use. 5 tries a minute per user.
+- **Remember this device.** With `twoFactorRememberDays: n` the code page shows "ไม่ต้องถามรหัสในเครื่องนี้อีก n วัน"
+  (`login.labels.rememberDevice`). A browser that ticks it gets a cookie (`tungsten_remembered_device`) that skips the
+  code, never the password, for n days: at sign-in, and when the remember-me cookie restores an expired session. The
+  session's `amr` still records `otp`, since this browser gave a code within n days. The cookie carries the user's id
+  and expiry, signed with the app key over the password hash and the two-factor secret, so a new password or a new
+  phone forgets every device; nothing is stored on the server. 0 (the default) hides the choice.
 - **Set up at first sign-in.** A user who must use two-factor and hasn't enrolled is signed in, but every panel route
   sends them to `{path}/two-factor/setup` (QR, the key to type, a code to confirm, then the recovery codes, shown once)
   until they finish. The page offers only sign-out. Setup needs the password typed in this session: a session restored
