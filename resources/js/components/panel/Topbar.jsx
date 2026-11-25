@@ -117,7 +117,7 @@ export function Topbar({ sidebarClosed, onToggleSidebar, toolbar, search }) {
             <div className="flex shrink-0 items-center gap-2">
                 {search ?? (panel.search && <GlobalSearch url={panel.search} />)}
                 {toolbar}
-                {panel.notifications && <NotificationBell url={panel.notifications.url} poll={panel.notifications.poll} />}
+                {panel.notifications && <NotificationBell {...panel.notifications} user={auth?.user?.id} />}
                 <HelpButton url={panel.help} />
                 {auth?.user && <UserMenu user={{ ...auth.user, logoutUrl: auth.logoutUrl, profileUrl: auth.profileUrl }} />}
             </div>

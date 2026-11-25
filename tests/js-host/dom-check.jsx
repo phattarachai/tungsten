@@ -871,6 +871,251 @@ Object.assign(checks, {
     },
 })
 
+const wait = (ms = 20) => act(() => new Promise((resolve) => setTimeout(resolve, ms)))
+const json = (body, status = 200, more = {}) => ({ ok: status < 400, status, json: async () => body, ...more })
+const bellAnswer = (items) => json({ unread: items.filter((item) => !item.read).length, items })
+const bellItem = (id, more = {}) => ({ id, title: `เรื่อง ${id}`, body: null, url: null, tone: null, icon: null, read: false, at: '2026-11-25T10:00:00+07:00', ...more })
+const toasts = () => [...document.querySelectorAll('[role="status"]')].map((toast) => toast.textContent)
+const bellButton = () => document.querySelector('button[aria-expanded]')
+
+/** Sets `document.visibilityState` and says so. */
+async function visibility(value) {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => value })
+    await act(async () => document.dispatchEvent(new window.Event('visibilitychange')))
+}
+
+Object.assign(checks, {
+    'live bell: a toast per arrival, none for what was there, none again after a remount or an edit; at most three and a count': async () => {
+        let items = [bellItem('a')]
+        globalThis.fetch = async () => bellAnswer(items)
+
+        const live = <NotificationBell url="/admin/live-1" poll={0.03} live user={1} />
+        const box = mount(live)
+        await wait(80)
+        assert.deepEqual(toasts(), [])
+
+        items = [bellItem('b', { body: 'บรรทัดแรก\nบรรทัดสอง' }), ...items]
+        await wait(80)
+        assert.deepEqual(toasts(), ['เรื่อง bบรรทัดแรก\nบรรทัดสอง'])
+        assert.ok(document.querySelector('[role="status"] .whitespace-pre-line'))
+
+        box.unmount()
+        const again = mount(live)
+        await wait(80)
+        assert.equal(toasts().length, 1, 'still the one toast after a remount')
+
+        await act(async () => document.querySelector('[role="status"] button[aria-label="ปิด"]').click())
+        await wait(320)
+        items = [bellItem('b', { title: 'แก้แล้ว' }), bellItem('a')]
+        await wait(80)
+        assert.deepEqual(toasts(), [], 'an edit is not news')
+
+        items = [...['g', 'f', 'e', 'd', 'c'].map((id) => bellItem(id)), ...items]
+        await wait(80)
+        assert.deepEqual(toasts(), ['เรื่อง g', 'เรื่อง f', 'เรื่อง e', 'อีก 2 รายการ'])
+        again.unmount()
+
+        const other = mount(<NotificationBell url="/admin/live-1" poll={0.03} live user={2} />)
+        await wait(80)
+        assert.deepEqual(toasts(), [], 'the next user starts from their own first load')
+        other.unmount()
+    },
+
+    'live bell: opening a toast marks it read and takes it away': async () => {
+        let items = []
+        const calls = []
+        globalThis.fetch = async (url, init) => {
+            calls.push(`${init.method} ${url}`)
+
+            if (init.method === 'POST') {
+                items = items.map((item) => ({ ...item, read: true }))
+            }
+
+            return bellAnswer(items)
+        }
+        const box = mount(<NotificationBell url="/admin/live-2" poll={0.03} live user={1} />)
+        await wait()
+        items = [bellItem('a')]
+        await wait(80)
+        await act(async () => document.querySelector('[role="status"] button').click())
+        await wait(320)
+        assert.ok(calls.includes('POST /admin/live-2/a/read'))
+        assert.deepEqual(toasts(), [])
+        box.unmount()
+    },
+
+    'live bell: the unread count leads the tab title, over a title Inertia changes, and leaves at 0 and with the bell': async () => {
+        document.title = 'คำสั่งซื้อ'
+        let items = [bellItem('a'), bellItem('b')]
+        globalThis.fetch = async () => bellAnswer(items)
+        const box = mount(<NotificationBell url="/admin/live-3" poll={0.03} live user={1} />)
+        await wait(50)
+        assert.equal(document.title, '(2) คำสั่งซื้อ')
+
+        document.title = 'ลูกค้า'
+        await wait(5)
+        assert.equal(document.title, '(2) ลูกค้า')
+
+        items = items.map((item) => ({ ...item, read: true }))
+        await wait(80)
+        assert.equal(document.title, 'ลูกค้า')
+
+        items = [bellItem('c'), ...items]
+        await wait(80)
+        assert.equal(document.title, '(1) ลูกค้า')
+        box.unmount()
+        assert.equal(document.title, 'ลูกค้า')
+    },
+
+    'a plain bell is as before: no toast, no title, no switches, no link, no polling behind another tab': async () => {
+        document.title = 'คำสั่งซื้อ'
+        let calls = 0
+        let items = [bellItem('a')]
+        globalThis.fetch = async () => (calls++, bellAnswer(items))
+        const box = mount(<NotificationBell url="/admin/plain" poll={0.03} />)
+        await wait()
+        items = [bellItem('b'), ...items]
+        await wait(80)
+        assert.deepEqual(toasts(), [])
+        assert.equal(document.title, 'คำสั่งซื้อ')
+        assert.equal(bellButton().textContent, '2')
+
+        await act(async () => bellButton().click())
+        await wait()
+        assert.equal(document.querySelectorAll('[role="switch"]').length, 0)
+        assert.doesNotMatch(document.body.textContent, /ดูทั้งหมด/)
+
+        await visibility('hidden')
+        const before = calls
+        await wait(120)
+        assert.equal(calls, before)
+        await visibility('visible')
+        await wait()
+        assert.ok(calls > before)
+        box.unmount()
+    },
+
+    'the bell links to every notice and closes its menu on Escape, focus back on the bell': async () => {
+        globalThis.fetch = async () => bellAnswer([bellItem('a')])
+        const box = mount(<NotificationBell url="/admin/all" poll={60} all="/admin/inbox" />)
+        await wait()
+        await act(async () => bellButton().click())
+        const link = [...document.querySelectorAll('a')].find((a) => a.textContent === 'ดูทั้งหมด')
+        assert.equal(link.getAttribute('href'), '/admin/inbox')
+
+        link.focus()
+        await act(async () => document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })))
+        assert.equal(bellButton().getAttribute('aria-expanded'), 'false')
+        assert.equal(document.activeElement, bellButton())
+        box.unmount()
+    },
+
+    'a signed-out answer stops the poll and offers the sign-in; a failed one is silent and waits longer': async () => {
+        let calls = 0
+        let answer = () => bellAnswer([bellItem('a')])
+        globalThis.fetch = async () => (calls++, answer())
+
+        for (const [name, signedOut] of [['401', () => json({}, 401)], ['419', () => json({}, 419)], ['redirect', () => json({}, 200, { redirected: true })]]) {
+            answer = () => bellAnswer([bellItem('a')])
+            const box = mount(<NotificationBell url={`/admin/out-${name}`} poll={0.03} live user={1} />)
+            await wait(50)
+            answer = signedOut
+            await wait(80)
+            const before = calls
+            await wait(100)
+            assert.equal(calls, before, `${name} stops the poll`)
+            assert.equal(bellButton().getAttribute('aria-label'), 'หมดเวลาเข้าใช้แล้ว')
+            assert.equal(bellButton().textContent, '')
+
+            await act(async () => bellButton().click())
+            await visibility('visible')
+            assert.equal(calls, before)
+            assert.match(document.body.textContent, /เข้าสู่ระบบใหม่/)
+            box.unmount()
+        }
+
+        answer = () => bellAnswer([bellItem('a')])
+        const box = mount(<NotificationBell url="/admin/net" poll={0.05} live user={1} />)
+        await wait(20)
+        answer = () => Promise.reject(new TypeError('Failed to fetch'))
+        const before = calls
+        await wait(500)
+        assert.ok(calls - before >= 2 && calls - before <= 5, `backs off (${calls - before} tries in 10 polls' time)`)
+        assert.equal(bellButton().textContent, '1', 'what it knew stays')
+        box.unmount()
+    },
+
+    'desktop notices: asked from the switch only, shown once behind the tab, opening one focuses the page': async () => {
+        window.localStorage.clear()
+        const shown = []
+        let asked = 0
+        window.Notification = class {
+            static permission = 'default'
+
+            static async requestPermission() {
+                asked++
+                window.Notification.permission = 'granted'
+            }
+
+            constructor(title, options) {
+                Object.assign(this, { title, ...options })
+                shown.push(this)
+            }
+
+            close() {
+                this.onclose?.()
+            }
+        }
+        let items = [bellItem('a')]
+        const calls = []
+        globalThis.fetch = async (url, init) => (calls.push(`${init.method} ${url}`), bellAnswer(items))
+        const box = mount(<NotificationBell url="/admin/desk" poll={0.03} live user={1} />)
+        await wait()
+        assert.equal(asked, 0)
+
+        await act(async () => bellButton().click())
+        const control = () => document.querySelector('[role="switch"][aria-label="แจ้งบนเดสก์ท็อป"]')
+        assert.equal(control().getAttribute('aria-checked'), 'false')
+        await act(async () => control().click())
+        await wait()
+        assert.equal(asked, 1)
+        assert.equal(control().getAttribute('aria-checked'), 'true')
+
+        items = [bellItem('b'), ...items]
+        await wait(80)
+        assert.equal(shown.length, 0, 'a toast is enough while the page is in front')
+
+        // Another tab has claimed `c`; the poll that brings `c` and `d` runs behind.
+        window.localStorage.setItem('panel-bell-claims', JSON.stringify({ c: Date.now() }))
+        let arrive
+        globalThis.fetch = () => new Promise((resolve) => (arrive = () => resolve(bellAnswer(items))))
+        await wait(60)
+        items = [bellItem('d', { body: 'x\r\ny' }), bellItem('c'), ...items]
+        await visibility('hidden')
+        await act(async () => arrive())
+        await wait()
+        assert.deepEqual(shown.map(({ title, body, tag }) => [title, body, tag]), [['เรื่อง d', 'x\ny', 'panel-bell-d']])
+
+        globalThis.fetch = async (url, init) => (calls.push(`${init.method} ${url}`), bellAnswer(items))
+        let focused = 0
+        window.focus = () => focused++
+        await act(async () => shown[0].onclick())
+        await wait()
+        assert.equal(focused, 1)
+        assert.ok(calls.includes('POST /admin/desk/d/read'))
+        await visibility('visible')
+        box.unmount()
+        delete window.Notification
+    },
+
+    'the bell toasts stand on top of the flash toast': async () => {
+        const box = mount(<FlashToastFor flash={{ message: 'บันทึกแล้ว', id: 'f' }} />)
+        assert.match(document.documentElement.style.getPropertyValue('--flash-toast'), /^calc\(/)
+        box.unmount()
+        assert.equal(document.documentElement.style.getPropertyValue('--flash-toast'), '')
+    },
+})
+
 for (const [name, check] of Object.entries(checks)) {
     await check()
     console.log(`ok  ${name}`)

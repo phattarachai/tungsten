@@ -69,7 +69,8 @@ or on the panel (`->globalSearch([...])`). `ability()` hides a kind from users w
 
 `->notifications(poll: 30)` on the panel; notifications use Laravel's `database` channel and store the panel's fields:
 `return PanelNotification::make('ชำระเงินแล้ว')->body(…)->url(route(…))->tone('done')->icon('truck')->toArray();`
-from `toDatabase()`. `icon` is a registered kit icon name.
+from `toDatabase()`. `icon` is a registered kit icon name. `live: true` adds toasts, the count in the tab title and the
+desktop / sound switches; `all: 'admin.inbox'` (a route name) adds "ดูทั้งหมด".
 
 ## Profile page
 
