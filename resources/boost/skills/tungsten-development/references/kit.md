@@ -15,7 +15,7 @@ before relying on a prop not listed here.
 | `Sidebar`, `Topbar`, `PanelSwitcher`, `FlashToast`, `TooltipLayer` | parts of `AppLayout`, for a layout of your own |
 | `GlobalSearch`, `Launchpad` | `url` — the topbar box that opens the launchpad (menus from `nav`, records from `url`, pinned and recent per panel); `Topbar` shows it when the panel has searches |
 | `useRememberRecord` | `{ title, subtitle, url, icon, image }` — a show page lists its record under the launchpad's เปิดล่าสุด |
-| `NotificationBell` | `url`, `poll` — the topbar bell (shown by `Topbar` when the panel has `notifications()`) |
+| `NotificationBell` | `url`, `poll`, `live`, `all`, `user` (the signed-in user's id, for `live`) — the topbar bell (shown by `Topbar` when the panel has `notifications()`) |
 
 ## Lists
 

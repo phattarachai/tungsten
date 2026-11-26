@@ -3,6 +3,8 @@ import { CalendarDays, Download, Filter, Plus, Printer, RefreshCw, SquarePen, Tr
 import { useState } from 'react'
 
 import { LastEdited } from '../components/panel/LastEdited'
+import { NoticeToasts } from '../components/panel/NoticeToasts'
+import { dismissToast, NO_TOASTS, pushToasts } from '../lib/notices'
 import {
     ActionMenu,
     AvatarStack,
@@ -835,10 +837,26 @@ function Progress() {
     )
 }
 
+const NOTICES = [
+    { title: 'ชำระเงินแล้ว', body: 'คำสั่งซื้อ SO-2611-0042\nร้านยาบ้านสวน\n฿1,290', url: null, tone: 'done', icon: 'wallet' },
+    { title: 'สลิปรอตรวจ', body: 'คำสั่งซื้อ SO-2611-0041', url: null, tone: 'todo', icon: 'file-text' },
+    { title: 'สำรองข้อมูลไม่สำเร็จ', body: null, url: null, tone: 'failed', icon: 'database' },
+    { title: 'ส่งสินค้าแล้ว', body: null, url: null, tone: 'active', icon: 'truck' },
+    { title: 'ลูกค้าใหม่', body: null, url: null, tone: null, icon: null },
+]
+
 function Overlays({ toastUrl }) {
     const [picking, setPicking] = useState(false)
     const [picked, setPicked] = useState({ 1: 2 })
     const [open, setOpen] = useState(null)
+    const [notices, setNotices] = useState(NO_TOASTS)
+
+    function arrive(count) {
+        const now = Date.now()
+        const items = NOTICES.slice(0, count).map((item, index) => ({ ...item, id: `${now}-${index}`, read: false, at: new Date(now).toISOString() }))
+
+        setNotices((stack) => pushToasts(stack, items, now))
+    }
 
     function toast(tone) {
         router.post(toastUrl, { tone }, { preserveScroll: true, preserveState: true })
@@ -885,6 +903,15 @@ function Overlays({ toastUrl }) {
                     </Button>
                 </Row>
             )}
+            <Row label="NotificationBell live">
+                <Button size="sm" variant="outline" onClick={() => arrive(1)}>
+                    1 รายการ
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => arrive(5)}>
+                    5 รายการ
+                </Button>
+            </Row>
+            <NoticeToasts stack={notices} onChange={setNotices} onOpen={(item) => setNotices((stack) => dismissToast(stack, item.id))} onMore={() => {}} />
             <Dialog open={open === 'dialog'} onClose={() => setOpen(null)} title="สินค้าในคำสั่งซื้อ (4)">
                 <p className="text-zinc-600">Dialog อ่านอย่างเดียว ปิดได้ด้วยการคลิกนอกกล่อง</p>
             </Dialog>

@@ -448,7 +448,32 @@ public function toDatabase(object $notifiable): array
 ```
 
 The routes are `GET {path}/notifications`, `POST {path}/notifications/{id}/read` and `POST {path}/notifications/read`,
-behind the panel's auth and gate; a user only ever sees and marks their own.
+behind the panel's auth and gate; a user only ever sees and marks their own. Line breaks in a body are kept.
+
+`all` names the route that lists every notification; the menu's foot links to it ("ดูทั้งหมด"). A name with no route
+shows no link.
+
+`live: true` announces what arrives while a page is open, over the same polling (no WebSocket):
+
+```php
+->notifications(poll: 10, live: true, all: 'admin.inbox')
+```
+
+- A toast for each new unread item, bottom right on top of the flash toast, at most three and the count of the rest. What
+  was there at load is never new, nor is an item whose text changed under its id. Clicking opens it and marks it read.
+- The unread count in the tab title: `(2) คำสั่งซื้อ`.
+- Two switches in the menu, remembered per browser and off at first: a desktop notification for what arrives while the
+  tab is behind (the browser is asked for permission on that click; several tabs show it once; the tab then polls once a
+  minute instead of stopping), and a short sound.
+
+A bell that polls gets 401, 403, 419 or a redirect to a page when the sign-in has run out: it stops and links to signing
+in again. Network errors and 5xx are silent and back off, up to 5 minutes.
+
+**Session lifetime.** Each poll is a request, so Laravel's `StartSession` saves the session, which keeps it alive as long
+as a tab is open and ages flash data. The bell's `GET` writes nothing to the session itself, so an app with a session that
+must run out can answer the route `{id}.notifications` without saving it: a `StartSession` subclass whose `saveSession()`
+and `addCookieToResponse()` do nothing for that route. Such a panel signs in without "remember me": a remember cookie
+signs the user in again on every unsaved poll (a `Login` event each time) and the bell never sees a 401.
 
 ## Declare routes
 

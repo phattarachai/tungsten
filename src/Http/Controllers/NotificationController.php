@@ -11,10 +11,12 @@ use Illuminate\Notifications\HasDatabaseNotifications;
 
 /**
  * The topbar bell: the signed-in user's latest database notifications and how many are unread; marking one or all
- * read. Users without Laravel's `Notifiable` get an empty bell.
+ * read. Users without Laravel's `Notifiable` get an empty bell. `index` reads the session and writes nothing to it, so a
+ * host may answer it without saving the session (README, "Notification bell").
  */
 class NotificationController
 {
+    /** As `WINDOW` in resources/js/lib/notices.js. */
     private const int LATEST = 20;
 
     public function index(Request $request): JsonResponse

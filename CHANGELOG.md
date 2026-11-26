@@ -7,6 +7,20 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
+## Unreleased
+
+- **Added**: `->notifications(poll: 10, live: true, all: 'admin.inbox')`. `live` announces new notifications while a page
+  is open: toasts, the unread count in the tab title, and from switches in the menu a desktop notification while the tab
+  is behind and a sound. `all` is the route name behind "ดูทั้งหมด" in the menu. The defaults (`poll: 30`, not live, no
+  link) and their `panel.notifications` prop are unchanged. A custom topbar passes the whole prop and the user:
+  `<NotificationBell {...panel.notifications} user={auth.user.id} />`.
+- **Changed**, for every bell: a poll answered 401, 403, 419 or by a redirect to a page stops, and the bell shows
+  "หมดเวลาเข้าใช้แล้ว" with a link to sign in; a network error or 5xx backs off (up to 5 minutes) instead of retrying at
+  the same pace; line breaks in a body show as lines (up to 6); the menu fits a phone's width; Escape returns the focus to
+  the bell.
+- `sendJson` also resolves `redirected`. New strings: `allNotifications`, `moreNotifications`, `desktopNotifications`,
+  `desktopBlocked`, `notificationSound`, `signedOut`, `signInAgain`.
+
 ## v0.3.6 — 2026-11-18
 
 - **Added**: a per-account lock on the panel login. 10 refused sign-ins for one email within 15 minutes, from any IP,

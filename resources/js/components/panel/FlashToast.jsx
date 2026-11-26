@@ -1,6 +1,6 @@
 import { usePage } from '@inertiajs/react'
 import { CircleAlert, CircleCheck, Info, TriangleAlert, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { inBrowser } from '../../lib/browser'
@@ -38,6 +38,7 @@ export function FlashToast() {
 /** FlashToast for a given `flash` prop (`{ message, id }`), outside an Inertia page. */
 export function FlashToastFor({ flash }) {
     const [toast, setToast] = useState(null)
+    const box = useRef(null)
 
     const patch = (id, changes) => setToast((current) => (current?.id === id ? { ...current, ...changes } : current))
 
@@ -74,6 +75,17 @@ export function FlashToastFor({ flash }) {
         return () => clearTimeout(timer)
     }, [toast?.leaving])
 
+    // The bell's toasts stand on top of this one (NoticeToasts).
+    useEffect(() => {
+        if (!toast?.id || toast.leaving) {
+            return undefined
+        }
+
+        document.documentElement.style.setProperty('--flash-toast', `calc(${box.current?.offsetHeight ?? 0}px + 0.5rem)`)
+
+        return () => document.documentElement.style.removeProperty('--flash-toast')
+    }, [toast?.id, toast?.leaving])
+
     if (!toast || !inBrowser) {
         return null
     }
@@ -85,6 +97,7 @@ export function FlashToastFor({ flash }) {
     return createPortal(
         <div
             key={toast.id}
+            ref={box}
             role="status"
             className={cn(
                 'fixed right-3 bottom-3 z-[70] flex max-w-sm items-start gap-2.5 overflow-hidden rounded-lg bg-zinc-900 py-2.5 pr-2 pl-3 text-xs text-zinc-50 shadow-xl ring-1 ring-black/10 transition duration-250 ease-out motion-reduce:transition-none',

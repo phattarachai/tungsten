@@ -20,7 +20,7 @@ function withQuery(url, query) {
 
 /**
  * A JSON call to the app with Laravel's XSRF cookie, for what isn't an Inertia visit (a dialog's lookup, a quick
- * save). Resolves `{ ok, status, body, errors, message }`: `errors` holds a 422's first message per field, so a form
+ * save). Resolves `{ ok, status, redirected, body, errors, message }`: `errors` holds a 422's first message per field, so a form
  * can show them beside its inputs; `message` is the server's, or a generic one when it failed without one. A GET's
  * `data` goes in the query string. Never rejects for an HTTP error, only for a network one.
  */
@@ -40,7 +40,7 @@ export async function sendJson(url, method = 'GET', data = null) {
     const body = await response.json().catch(() => ({}))
     const errors = response.status === 422 ? Object.fromEntries(Object.entries(body.errors ?? {}).map(([field, messages]) => [field, [messages].flat()[0]])) : {}
 
-    return { ok: response.ok, status: response.status, body, errors, message: body.message ?? (response.ok ? null : strings.requestFailed) }
+    return { ok: response.ok, status: response.status, redirected: response.redirected ?? false, body, errors, message: body.message ?? (response.ok ? null : strings.requestFailed) }
 }
 
 async function orThrow(call) {

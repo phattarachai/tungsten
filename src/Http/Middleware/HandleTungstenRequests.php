@@ -133,11 +133,31 @@ class HandleTungstenRequests extends Middleware
             'environment' => app()->environment(),
             'env' => Tungsten::environment(),
             'search' => $panel->getGlobalSearches() === [] ? null : route("{$panel->getId()}.search"),
-            'notifications' => $panel->getNotificationPoll() === null ? null : [
-                'url' => route("{$panel->getId()}.notifications"),
-                'poll' => $panel->getNotificationPoll(),
-            ],
+            'notifications' => $this->notifications($panel),
             'filterLayout' => $panel->getFilterLayout(),
+        ];
+    }
+
+    /**
+     * The bell's props; `live` and `all` are there only when the panel sets them.
+     *
+     * @return array{url: string, poll: int, live?: true, all?: string}|null
+     */
+    private function notifications(Panel $panel): ?array
+    {
+        $poll = $panel->getNotificationPoll();
+
+        if ($poll === null) {
+            return null;
+        }
+
+        $all = $panel->allNotificationsUrl();
+
+        return [
+            'url' => route("{$panel->getId()}.notifications"),
+            'poll' => $poll,
+            ...($panel->hasLiveNotifications() ? ['live' => true] : []),
+            ...($all === null ? [] : ['all' => $all]),
         ];
     }
 }
