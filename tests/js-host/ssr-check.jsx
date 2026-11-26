@@ -50,6 +50,7 @@ const cases = [
     ['tungsten::auth/TwoFactorSetup', { labels: authLabels, renew: false, required: true, qr: '<svg xmlns="http://www.w3.org/2000/svg"></svg>', secret: 'ABCD EFGH', action: '/admin/two-factor/setup', logoutUrl: '/admin/logout', cancelUrl: null }, 'ABCD EFGH'],
     ['tungsten::auth/TwoFactorSetup', { labels: authLabels, recoveryCodes: ['aaaaa-11111', 'bbbbb-22222'], continueUrl: '/admin' }, 'bbbbb-22222'],
     ['tungsten::auth/Profile', { labels: { ...profileLabels, ...authLabels }, profile: { name: 'Admin', email: 'admin@example.com', avatar: null }, withAvatar: false, updateUrl: '/admin/profile', passwordUrl: '/admin/profile/password', twoFactor: { enabled: true, required: false, status: { label: 'เปิดใช้อยู่', tone: 'done' }, recoveryCodesLeft: 7, newRecoveryCodes: null, setupUrl: '/s', renewUrl: '/s?renew=1', regenerateUrl: '/r', disableUrl: '/d' } }, 'เหลือรหัสสำรอง 7 ชุด'],
+    ['tungsten::auth/Profile', { labels: profileLabels, profile: { name: 'Admin', email: 'admin@example.com', avatar: null }, withAvatar: false, updateUrl: '/admin/profile', passwordUrl: '/admin/profile/password', panel: { notifications: { url: '/admin/notifications', poll: 10, live: true } }, auth: { user: { id: 1 } } }, 'ใช้กับเบราว์เซอร์นี้เท่านั้น'],
 ]
 
 for (const [component, props, expected] of cases) {

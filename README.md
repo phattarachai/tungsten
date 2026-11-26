@@ -462,9 +462,10 @@ shows no link.
 - A toast for each new unread item, bottom right on top of the flash toast, at most three and the count of the rest. What
   was there at load is never new, nor is an item whose text changed under its id. Clicking opens it and marks it read.
 - The unread count in the tab title: `(2) คำสั่งซื้อ`.
-- Two switches in the menu, remembered per browser and off at first: a desktop notification for what arrives while the
-  tab is behind (the browser is asked for permission on that click; several tabs show it once; the tab then polls once a
-  minute instead of stopping), and a short sound.
+- Two switches on the profile page (`NotificationPreferences`, under การแจ้งเตือน), remembered per browser and off at
+  first: a desktop notification for what arrives while the tab is behind (the browser is asked for permission on that
+  click; several tabs show it once; the tab then polls once a minute instead of stopping), and a short sound. The menu
+  itself stays a list and ดูทั้งหมด.
 
 A bell that polls gets 401, 403, 419 or a redirect to a page when the sign-in has run out: it stops and links to signing
 in again. Network errors and 5xx are silent and back off, up to 5 minutes.

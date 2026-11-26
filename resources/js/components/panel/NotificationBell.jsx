@@ -3,7 +3,6 @@ import { Bell, BellOff } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 
 import { Icon } from '../ui/Icon'
-import { Switch } from '../ui/Switch'
 import { cn } from '../../lib/cn'
 import { bodyText, NO_TOASTS } from '../../lib/notices'
 import { noticeStore, serverSnapshot } from '../../lib/noticeStore'
@@ -57,43 +56,17 @@ function SignedOut() {
     )
 }
 
-function Preference({ label, note, ...control }) {
-    return (
-        <span className="flex items-center gap-1.5">
-            <span>{label}</span>
-            {note && <span className="text-zinc-400">{note}</span>}
-            <Switch label={label} {...control} />
-        </span>
-    )
-}
-
-/** The menu's foot: the link to every notice, and with `live` the desktop and sound switches. */
-function Footer({ all, live, desktop, sound, store, onLeave }) {
-    if (!all && !live) {
+/** The menu's foot: the link to every notice. */
+function Footer({ all, onLeave }) {
+    if (!all) {
         return null
     }
 
     return (
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-zinc-100 px-3 py-2 text-[0.6875rem] text-zinc-500">
-            {all && (
-                <Link href={all} onClick={onLeave} className="font-medium text-zinc-700 hover:text-brand">
-                    {strings.allNotifications}
-                </Link>
-            )}
-            {live && (
-                <span className="ml-auto flex flex-wrap items-center gap-x-4 gap-y-1.5">
-                    {desktop !== 'unsupported' && (
-                        <Preference
-                            label={strings.desktopNotifications}
-                            note={desktop === 'blocked' ? strings.desktopBlocked : null}
-                            checked={desktop === 'on'}
-                            disabled={desktop === 'blocked'}
-                            onChange={store.setDesktop}
-                        />
-                    )}
-                    <Preference label={strings.notificationSound} checked={sound} onChange={store.setSound} />
-                </span>
-            )}
+        <div className="border-t border-zinc-100 px-3 py-2 text-[0.6875rem]">
+            <Link href={all} onClick={onLeave} className="font-medium text-zinc-700 hover:text-brand">
+                {strings.allNotifications}
+            </Link>
         </div>
     )
 }
@@ -103,11 +76,11 @@ function Footer({ all, live, desktop, sound, store, onLeave }) {
  * one marks it read and follows its link; "อ่านทั้งหมดแล้ว" clears the count. `all` is the link to every notice.
  *
  * `live` announces what arrives while the page is open: a toast, the count in the tab title, and where the user turned
- * them on in the menu, a desktop notification while the tab is behind and a beep. `user` (the signed-in user's id)
+ * them on (`NotificationPreferences`, on the profile page), a desktop notification while the tab is behind and a beep. `user` (the signed-in user's id)
  * keeps what was already announced across page visits, for that user only.
  */
 export function NotificationBell({ url, poll = 30, live = false, all = null, user }) {
-    const [{ unread, items, signedOut, toasts, desktop, sound }, store] = useNotifications(url, { poll, live, user })
+    const [{ unread, items, signedOut, toasts }, store] = useNotifications(url, { poll, live, user })
     const [open, setOpen] = useState(false)
     const root = useRef(null)
     const button = useRef(null)
@@ -189,7 +162,7 @@ export function NotificationBell({ url, poll = 30, live = false, all = null, use
                             {items.length === 0 && <p className="px-3 py-6 text-center text-xs text-zinc-400">{strings.noNotifications}</p>}
                         </div>
                     )}
-                    {!signedOut && <Footer all={all} live={live} desktop={desktop} sound={sound} store={store} onLeave={() => setOpen(false)} />}
+                    {!signedOut && <Footer all={all} onLeave={() => setOpen(false)} />}
                 </div>
             )}
             {live && <NoticeToasts stack={toasts} onChange={store.setToasts} onOpen={store.open} onMore={show} />}
