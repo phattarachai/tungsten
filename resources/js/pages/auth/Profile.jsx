@@ -1,8 +1,9 @@
-import { Head, Link, useForm } from '@inertiajs/react'
+import { Head, Link, useForm, usePage } from '@inertiajs/react'
 import { Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 import { Avatar } from '../../components/panel/Avatar'
+import { NotificationPreferences } from '../../components/panel/NotificationPreferences'
 import { RecoveryCodes } from '../../components/panel/RecoveryCodes'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
@@ -130,12 +131,13 @@ export function TwoFactorSection({ labels, twoFactor }) {
 }
 
 /**
- * The signed-in user's profile (`Panel::profile()`): details (photo, name, email), the password and, with
- * `->login(twoFactor: ...)`, two-factor; each its own form.
+ * The signed-in user's profile (`Panel::profile()`): details (photo, name, email), the password, with
+ * `->login(twoFactor: ...)` two-factor, each its own form; and with `->notifications(live: true)` the bell's switches.
  */
 export default function Profile({ labels, profile, withAvatar, emailEditable = true, updateUrl, passwordUrl, twoFactor }) {
     const details = useForm({ _method: 'put', name: profile.name ?? '', email: profile.email ?? '', avatar: null, remove_avatar: false })
     const password = useForm({ current_password: '', password: '', password_confirmation: '' })
+    const { panel, auth } = usePage().props
 
     function saveDetails(event) {
         event.preventDefault()
@@ -188,6 +190,12 @@ export default function Profile({ labels, profile, withAvatar, emailEditable = t
                 <>
                     <Rule />
                     <TwoFactorSection labels={labels} twoFactor={twoFactor} />
+                </>
+            )}
+            {panel?.notifications?.live && (
+                <>
+                    <Rule />
+                    <NotificationPreferences url={panel.notifications.url} user={auth?.user?.id} />
                 </>
             )}
         </>

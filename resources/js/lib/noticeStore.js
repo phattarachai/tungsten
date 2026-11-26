@@ -339,6 +339,7 @@ function createStore(url) {
 
     return {
         attach,
+        refresh: refreshPreferences,
         load: () => (state.signedOut ? undefined : load()),
         open,
         read,

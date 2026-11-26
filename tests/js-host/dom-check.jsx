@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 import { act, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
-import { Avatar, Chart, Checkbox, Combobox, CopyButton, DataTable, DatePicker, Launchpad, NotificationBell, PickerDialog, Sortable, DateRangePicker, Facts, FormDialog, Input, PasswordInput, RadioGroup, Select, Textarea, getJson, postJson, SearchInput, sendJson, StatsStrip, Thumb, Zoomable } from '@tungsten'
+import { Avatar, Chart, Checkbox, Combobox, CopyButton, DataTable, DatePicker, Launchpad, NotificationBell, NotificationPreferences, PickerDialog, Sortable, DateRangePicker, Facts, FormDialog, Input, PasswordInput, RadioGroup, Select, Textarea, getJson, postJson, SearchInput, sendJson, StatsStrip, Thumb, Zoomable } from '@tungsten'
 import { FlashToastFor } from '@tungsten/components/panel/FlashToast'
 import { PageWidthContext } from '@tungsten/lib/pageWidth'
 import { AvatarField } from '@tungsten/pages/auth/Profile'
@@ -1045,7 +1045,7 @@ Object.assign(checks, {
         box.unmount()
     },
 
-    'desktop notices: asked from the switch only, shown once behind the tab, opening one focuses the page': async () => {
+    'desktop notices: asked from the profile switch only, shown once behind the tab, opening one focuses the page': async () => {
         window.localStorage.clear()
         const shown = []
         let asked = 0
@@ -1069,12 +1069,18 @@ Object.assign(checks, {
         let items = [bellItem('a')]
         const calls = []
         globalThis.fetch = async (url, init) => (calls.push(`${init.method} ${url}`), bellAnswer(items))
-        const box = mount(<NotificationBell url="/admin/desk" poll={0.03} live user={1} />)
+        const box = mount(
+            <>
+                <NotificationBell url="/admin/desk" poll={0.03} live user={1} />
+                <NotificationPreferences url="/admin/desk" user={1} />
+            </>,
+        )
         await wait()
         assert.equal(asked, 0)
 
         await act(async () => bellButton().click())
         const control = () => document.querySelector('[role="switch"][aria-label="แจ้งบนเดสก์ท็อป"]')
+        assert.equal(document.querySelectorAll('[role="switch"]').length, 2, 'the two on the profile, none in the open menu')
         assert.equal(control().getAttribute('aria-checked'), 'false')
         await act(async () => control().click())
         await wait()
