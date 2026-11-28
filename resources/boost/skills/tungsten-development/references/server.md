@@ -33,6 +33,8 @@ class AdminPanelProvider extends \Phattarachai\Tungsten\PanelProvider
 authenticator codes: the user model implements `HasTwoFactor` (trait `InteractsWithTwoFactor`, Fortify's columns from
 `vendor:publish --tag=tungsten-migrations`); required users enrol at their next sign-in; routes outside the panel on
 the same guard (Filament, dev tools) add `EnsureTwoFactor::for('admin')`; `Tungsten::amr($user)` gives `pwd` / `otp`.
+`twoFactorRememberDays: 30` adds "don't ask again on this device" to the code page (a signed cookie that skips the code,
+not the password, until the password or the phone changes); 0, the default, hides it.
 
 Switcher rows for things that aren't panels and footer links go in a provider's `boot()`:
 

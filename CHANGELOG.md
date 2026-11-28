@@ -7,7 +7,7 @@ Release notes are drafted automatically from merged pull requests and published 
 
 This file records anything released before that automation landed.
 
-## Unreleased
+## v0.5.0 — 2026-11-26
 
 - **Added**: `->notifications(poll: 10, live: true, all: 'admin.inbox')`. `live` announces new notifications while a page
   is open: toasts, the unread count in the tab title, and from switches in the menu a desktop notification while the tab
