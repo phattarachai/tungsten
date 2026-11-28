@@ -53,9 +53,10 @@ class LoginController
         $user = $request->verifiedUserFor($panel, $login);
         $session = $request->session();
 
-        $remembered = $login->twoFactor?->challenges($user) && RememberedDevice::recognizes($request, $user);
+        $challenged = $login->twoFactor?->challenges($user) === true;
+        $remembered = $challenged && RememberedDevice::recognizes($request, $user);
 
-        if ($login->twoFactor?->challenges($user) && ! $remembered) {
+        if ($challenged && ! $remembered) {
             $session->regenerate();
             AuthSession::startChallenge($session, $panel->getId(), $user, $request->boolean('remember'));
 
